@@ -7,10 +7,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "postinstall": "prisma generate",
+    "vercel-build": "if [ -n \"$DATABASE_URL\" ]; then prisma migrate deploy; fi && next build",
     "lint": "tsc --noEmit",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
+    "db:demo": "tsx prisma/demo-boerse.ts",
     "test": "dotenv -e .env.test -- prisma migrate deploy && dotenv -e .env.test -- vitest run",
     "test:watch": "dotenv -e .env.test -- vitest"
   },
@@ -18,6 +21,8 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@fontsource-variable/albert-sans": "^5.3.0",
+    "@fontsource-variable/imbue": "^5.3.0",
     "@prisma/client": "^6.19.3",
     "next": "^15.5.28",
     "react": "^19.1.1",

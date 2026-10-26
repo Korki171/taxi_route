@@ -61,9 +61,9 @@ export const VEHICLE_LABEL: Record<VehicleCategory, string> = {
 };
 
 export function statusTone(s: string): "ok" | "warn" | "bad" | "neutral" {
-  if (s === "VERIFIED" || s === "APPROVED" || s === "ACTIVE") return "ok";
-  if (s === "PENDING_REVIEW" || s === "PENDING" || s === "RESTRICTED") return "warn";
-  if (s === "REJECTED" || s === "SUSPENDED") return "bad";
+  if (["VERIFIED", "APPROVED", "ACTIVE", "CONFIRMED", "ACCEPTED", "COMPLETED", "ASSIGNED"].includes(s)) return "ok";
+  if (["PENDING_REVIEW", "PENDING", "RESTRICTED", "SUBMITTED", "IN_PROGRESS", "PLANNED", "OPEN"].includes(s)) return "warn";
+  if (["REJECTED", "SUSPENDED", "CANCELLED", "DISPUTED"].includes(s)) return "bad";
   return "neutral";
 }
 
@@ -76,4 +76,39 @@ export function overallVerification(
   if (caps.some((c) => c.status === "VERIFIED")) return { label: "Geprüft", tone: "ok" };
   if (caps.some((c) => c.status === "PENDING_REVIEW")) return { label: "In Prüfung", tone: "warn" };
   return { label: "Ungeprüft", tone: "neutral" };
+}
+
+export const TRANSFER_STATUS_LABEL: Record<string, string> = {
+  OPEN: "Offen",
+  ASSIGNED: "Vergeben",
+  IN_PROGRESS: "Unterwegs",
+  COMPLETED: "Abgeschlossen",
+  CANCELLED: "Storniert",
+  DISPUTED: "Beanstandet",
+};
+
+export const BOOKING_STATUS_LABEL: Record<string, string> = {
+  CONFIRMED: "Bestätigt",
+  IN_PROGRESS: "Unterwegs",
+  COMPLETED: "Abgeschlossen",
+  CANCELLED: "Storniert",
+  DISPUTED: "Beanstandet",
+};
+
+export const QUOTE_STATUS_LABEL: Record<string, string> = {
+  SUBMITTED: "Abgegeben",
+  WITHDRAWN: "Zurückgezogen",
+  ACCEPTED: "Angenommen",
+  REJECTED: "Abgelehnt",
+};
+
+export const CAPACITY_STATUS_LABEL: Record<string, string> = {
+  PLANNED: "Geplant, unverbindlich",
+  CONFIRMED: "Bestätigt",
+  WITHDRAWN: "Zurückgezogen",
+};
+
+/** Preiszustände klar getrennt (Kernfunktion E). */
+export function priceStateLabel(mode: "FIXED" | "NEGOTIABLE"): string {
+  return mode === "FIXED" ? "Festpreis" : "Richtpreis (unverbindlich)";
 }

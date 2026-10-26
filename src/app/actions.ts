@@ -17,6 +17,22 @@ import {
 } from "@/server/services/members";
 import { requestCapabilityReview, updateOrganizationProfile, updateTransportProfile } from "@/server/services/organizations";
 import { registerOrganization } from "@/server/services/registration";
+import { createVehicle, publishCapacity, setCapacityStatus, setVehicleActive } from "@/server/services/fleet";
+import {
+  acceptQuote,
+  cancelBooking,
+  cancelTransferRequest,
+  completeTrip,
+  createTransferRequest,
+  disputeBooking,
+  rejectQuote,
+  startTrip,
+  submitQuote,
+  takeFixedPriceRequest,
+  withdrawQuote,
+} from "@/server/services/marketplace";
+import { fromLocalInput } from "@/lib/format";
+import { parseEuroToCents } from "@/lib/money";
 import {
   clearSessionCookie,
   formObject,
@@ -207,3 +223,135 @@ export async function adminSetOrgStatusAction(fd: FormData) {
   });
 }
 
+
+// ---------- Börse ----------
+
+function localDate(fd: FormData, k: string) {
+  const v = str(fd, k);
+  if (!v) return "";
+  const d = fromLocalInput(v);
+  return d ? d.toISOString() : "invalid";
+}
+
+function cents(fd: FormData, k: string) {
+  const c = parseEuroToCents(str(fd, k));
+  return c == null ? "" : Number.isNaN(c) ? "invalid" : c;
+}
+
+export async function createTransferRequestAction(fd: FormData) {
+  await runAction("/boerse/neu", async () => {
+    const req = await createTransferRequest(await getActor(), {
+      ...formObject(fd, [
+        "pickupPlaceId", "dropoffPlaceId", "pickupAddress", "dropoffAddress", "pickupWindowMinutes", "passengers",
+        "luggage", "skiEquipment", "specialLuggage", "vehicleCategory", "childSeats", "requirements", "flightNumber",
+        "pickupNotes", "priceMode", "bookingTerms", "cancellationTerms", "clientReference", "passengerName", "passengerPhone",
+      ]),
+      pickupAt: localDate(fd, "pickupAt"),
+      flightArrivalAt: localDate(fd, "flightArrivalAt"),
+      quoteDeadline: localDate(fd, "quoteDeadline"),
+      priceCents: cents(fd, "price"),
+    });
+    return withParam(`/boerse/auftrag/${req.id}`, "ok", "Auftrag veröffentlicht.");
+  });
+}
+
+export async function cancelTransferRequestAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await cancelTransferRequest(await getActor(), id);
+    return withParam(`/boerse/auftrag/${id}`, "ok", "Auftrag zurückgezogen.");
+  });
+}
+
+export async function takeFixedPriceAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await takeFixedPriceRequest(await getActor(), id, { vehicleId: str(fd, "vehicleId") || undefined });
+    return withParam(`/boerse/auftrag/${id}`, "ok", "Auftrag verbindlich übernommen.");
+  });
+}
+
+export async function submitQuoteAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await submitQuote(await getActor(), id, {
+      amountCents: cents(fd, "amount"),
+      vehicleCategory: str(fd, "vehicleCategory"),
+      message: str(fd, "message"),
+      validUntil: localDate(fd, "validUntil") || undefined,
+    });
+    return withParam(`/boerse/auftrag/${id}`, "ok", "Angebot abgegeben.");
+  });
+}
+
+export async function withdrawQuoteAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await withdrawQuote(await getActor(), str(fd, "quoteId"));
+  });
+}
+
+export async function acceptQuoteAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await acceptQuote(await getActor(), str(fd, "quoteId"));
+    return withParam(`/boerse/auftrag/${id}`, "ok", "Angebot angenommen. Die Buchung ist verbindlich.");
+  });
+}
+
+export async function rejectQuoteAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await rejectQuote(await getActor(), str(fd, "quoteId"));
+  });
+}
+
+export async function bookingTransitionAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  const bookingId = str(fd, "bookingId");
+  const note = str(fd, "note");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    const actor = await getActor();
+    switch (str(fd, "to")) {
+      case "start": await startTrip(actor, bookingId); break;
+      case "complete": await completeTrip(actor, bookingId, note); break;
+      case "cancel": await cancelBooking(actor, bookingId, note); break;
+      case "dispute": await disputeBooking(actor, bookingId, note); break;
+      default: throw invalid("Unbekannte Aktion.");
+    }
+  });
+}
+
+// ---------- Flotte und Kapazitäten ----------
+
+export async function createVehicleAction(fd: FormData) {
+  await runAction("/flotte", async () => {
+    await createVehicle(await getActor(), formObject(fd, ["label", "category", "licensePlate", "seats", "luggage", "skiCapacity"]));
+    return withParam("/flotte", "ok", "Fahrzeug angelegt.");
+  });
+}
+
+export async function setVehicleActiveAction(fd: FormData) {
+  await runAction("/flotte", async () => {
+    await setVehicleActive(await getActor(), str(fd, "vehicleId"), str(fd, "active") === "1");
+  });
+}
+
+export async function publishCapacityAction(fd: FormData) {
+  await runAction("/flotte", async () => {
+    await publishCapacity(await getActor(), {
+      ...formObject(fd, ["vehicleId", "fromPlaceId", "toPlaceId", "maxDetourMinutes", "maxWaitMinutes", "note"]),
+      // Ohne Fahrzeug aus der Flotte: Kategorie und Plätze direkt angeben
+      ...Object.fromEntries(["vehicleCategory", "seats", "luggage"].map((k) => [k, str(fd, k) || undefined])),
+      availableFrom: localDate(fd, "availableFrom"),
+      availableUntil: localDate(fd, "availableUntil"),
+    });
+    return withParam("/boerse?view=rueckfahrten", "ok", "Fahrt veröffentlicht. Sie ist noch als unverbindlich markiert.");
+  });
+}
+
+export async function setCapacityStatusAction(fd: FormData) {
+  await runAction("/boerse?view=rueckfahrten", async () => {
+    await setCapacityStatus(await getActor(), str(fd, "offerId"), str(fd, "status") === "CONFIRMED" ? "CONFIRMED" : "WITHDRAWN");
+  });
+}
