@@ -17,8 +17,8 @@ export default async function RegisterPage({ searchParams }: { searchParams: SP 
         <div className="card stack">
           <h2>Art des Unternehmens</h2>
           <div className="checks">
-            <label><input type="radio" name="type" value="TRANSPORT_COMPANY" required /> Taxi- oder Transferunternehmen</label>
-            <label><input type="radio" name="type" value="TRAVEL_AGENCY" /> Reisebüro</label>
+            <label><input type="radio" name="type" value="TRANSPORT_COMPANY" required defaultChecked={sp.type === "TRANSPORT_COMPANY"} /> Taxi- oder Transferunternehmen</label>
+            <label><input type="radio" name="type" value="TRAVEL_AGENCY" defaultChecked={sp.type === "TRAVEL_AGENCY"} /> Reisebüro</label>
           </div>
           <p className="muted">
             Reisebüros können Transfers anfragen und buchen. Eigene Beförderungen anbieten dürfen nur Unternehmen,

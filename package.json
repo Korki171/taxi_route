@@ -18,6 +18,8 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@fontsource-variable/albert-sans": "^5.3.0",
+    "@fontsource-variable/imbue": "^5.3.0",
     "@prisma/client": "^6.19.3",
     "next": "^15.5.28",
     "react": "^19.1.1",
