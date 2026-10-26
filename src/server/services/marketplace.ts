@@ -7,6 +7,14 @@ import { actorCan, requirePermission, type Actor, type OrgActor } from "../authz
 import { conflict, forbidden, invalid, notFound } from "../errors";
 import { parse } from "../validation";
 import { categoryFits } from "./matching";
+import {
+  notificationFailed,
+  notifyBooked,
+  notifyBookingStatus,
+  notifyNewRequest,
+  notifyQuoteSubmitted,
+  notifyRequestCancelled,
+} from "../notifications";
 import { transferEvent } from "./transfer-events";
 
 // ---------------------------------------------------------------------------
@@ -116,7 +124,7 @@ export async function createTransferRequest(actor: Actor | null, input: unknown)
   const d = parse(transferRequestSchema, input);
   if (d.pickupAt <= new Date()) throw invalid("Die Abholzeit liegt in der Vergangenheit.");
 
-  return db.$transaction(async (tx) => {
+  const created = await db.$transaction(async (tx) => {
     const req = await tx.transferRequest.create({
       data: {
         requesterOrgId: actor.org.id,
@@ -153,6 +161,8 @@ export async function createTransferRequest(actor: Actor | null, input: unknown)
     });
     return req;
   });
+  await notifyNewRequest(created.id).catch(notificationFailed);
+  return created;
 }
 
 export async function cancelTransferRequest(actor: Actor | null, requestId: string) {
@@ -166,6 +176,7 @@ export async function cancelTransferRequest(actor: Actor | null, requestId: stri
     await tx.quote.updateMany({ where: { requestId, status: "SUBMITTED" }, data: { status: "REJECTED" } });
     await transferEvent(tx, requestId, "request.cancelled", { userId: actor.userId, orgId: actor.org.id });
   });
+  await notifyRequestCancelled(requestId).catch(notificationFailed);
 }
 
 // ---------------------------------------------------------------------------
@@ -339,8 +350,9 @@ export async function takeFixedPriceRequest(actor: Actor | null, requestId: stri
   if (req.pickupAt <= new Date()) throw invalid("Die Abholzeit ist bereits vorbei.");
   const vehicleId = await ownVehicleId(actor, input.vehicleId);
 
+  let booking;
   try {
-    return await db.$transaction(async (tx) => {
+    booking = await db.$transaction(async (tx) => {
       const locked = await tx.transferRequest.updateMany({ where: { id: requestId, status: "OPEN" }, data: { status: "ASSIGNED" } });
       if (locked.count !== 1) throw conflict("Dieser Auftrag wurde soeben von einem anderen Unternehmen übernommen.");
       const booking = await tx.booking.create({
@@ -369,6 +381,8 @@ export async function takeFixedPriceRequest(actor: Actor | null, requestId: stri
     }
     throw e;
   }
+  await notifyBooked(booking.id).catch(notificationFailed);
+  return booking;
 }
 
 async function ownVehicleId(actor: OrgActor, vehicleId?: string) {
@@ -391,7 +405,7 @@ export async function submitQuote(actor: Actor | null, requestId: string, input:
   if (req.requesterOrgId === actor.org.id) throw forbidden("Auf eigene Aufträge kann kein Angebot abgegeben werden.");
   if (d.validUntil && d.validUntil <= now) throw invalid("Die Gültigkeit des Angebots liegt in der Vergangenheit.");
 
-  return db.$transaction(async (tx) => {
+  const saved = await db.$transaction(async (tx) => {
     const existing = await tx.quote.findUnique({ where: { requestId_providerOrgId: { requestId, providerOrgId: actor.org.id } } });
     if (existing && (existing.status === "ACCEPTED" || existing.status === "REJECTED")) {
       throw invalid("Ihr Angebot wurde bereits entschieden.");
@@ -408,6 +422,8 @@ export async function submitQuote(actor: Actor | null, requestId: string, input:
     });
     return quote;
   });
+  await notifyQuoteSubmitted(saved.id).catch(notificationFailed);
+  return saved;
 }
 
 export async function withdrawQuote(actor: Actor | null, quoteId: string) {
@@ -449,8 +465,9 @@ export async function acceptQuote(actor: Actor | null, quoteId: string) {
   if (!providerOk) throw invalid("Das anbietende Unternehmen ist derzeit nicht freigeschaltet.");
   const req = q.request;
 
+  let booking;
   try {
-    return await db.$transaction(async (tx) => {
+    booking = await db.$transaction(async (tx) => {
       const locked = await tx.transferRequest.updateMany({ where: { id: req.id, status: "OPEN" }, data: { status: "ASSIGNED" } });
       if (locked.count !== 1) throw conflict("Dieser Auftrag ist bereits vergeben.");
       const booking = await tx.booking.create({
@@ -479,6 +496,8 @@ export async function acceptQuote(actor: Actor | null, quoteId: string) {
     if (e instanceof P.PrismaClientKnownRequestError && e.code === "P2002") throw conflict("Dieser Auftrag ist bereits vergeben.");
     throw e;
   }
+  await notifyBooked(booking.id).catch(notificationFailed);
+  return booking;
 }
 
 // ---------------------------------------------------------------------------
@@ -507,7 +526,7 @@ async function transitionBooking(
       : { id: bookingId, OR: [{ providerOrgId: actor.org.id }, { requesterOrgId: actor.org.id }] };
   const b = await db.booking.findFirst({ where });
   if (!b) throw notFound();
-  return db.$transaction(async (tx) => {
+  await db.$transaction(async (tx) => {
     const res = await tx.booking.updateMany({
       where: { id: b.id, status: { in: from } },
       data: { status: to, ...(to === "COMPLETED" ? { completedAt: new Date(), completionNote: note ?? null } : {}) },
@@ -516,6 +535,7 @@ async function transitionBooking(
     await tx.transferRequest.update({ where: { id: b.requestId }, data: { status: BOOKING_TO_REQUEST[to] } });
     await transferEvent(tx, b.requestId, eventType, { userId: actor.userId, orgId: actor.org.id }, note ? { note } : undefined);
   });
+  await notifyBookingStatus(b.id, eventType, actor.org.id, note).catch(notificationFailed);
 }
 
 export async function startTrip(actor: Actor | null, bookingId: string) {

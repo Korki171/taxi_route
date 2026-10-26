@@ -33,7 +33,10 @@ import {
 } from "@/server/services/marketplace";
 import { fromLocalInput } from "@/lib/format";
 import { parseEuroToCents } from "@/lib/money";
+import { rateLimit } from "@/server/rate-limit";
+import { requestPasswordReset, resetPassword } from "@/server/services/password-reset";
 import {
+  clientIp,
   clearSessionCookie,
   formObject,
   getActor,
@@ -55,6 +58,8 @@ const str = (fd: FormData, k: string) => String(fd.get(k) ?? "");
 
 export async function registerAction(fd: FormData) {
   await runAction("/register", async () => {
+    const ip = await clientIp();
+    if (ip) await rateLimit(`register:ip:${ip}`, 5, 60);
     const { user, organization } = await registerOrganization({
       user: { name: str(fd, "userName"), email: str(fd, "userEmail"), password: str(fd, "password") },
       organization: { type: str(fd, "type"), ...formObject(fd, ORG_FIELDS) },
@@ -68,10 +73,25 @@ export async function registerAction(fd: FormData) {
 export async function loginAction(fd: FormData) {
   const next = str(fd, "next");
   await runAction("/login", async () => {
-    const s = await login({ email: str(fd, "email"), password: str(fd, "password") });
+    const s = await login({ email: str(fd, "email"), password: str(fd, "password") }, { ip: await clientIp() });
     await setSessionCookie(s.token, s.expiresAt);
     // Nur interne Pfade als Rücksprungziel (kein Open Redirect).
     return next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+  });
+}
+
+export async function requestPasswordResetAction(fd: FormData) {
+  await runAction("/passwort-vergessen", async () => {
+    await requestPasswordReset({ email: str(fd, "email") });
+    return withParam("/passwort-vergessen", "ok", "Falls ein Konto mit dieser E-Mail existiert, haben wir einen Link zum Zurücksetzen geschickt.");
+  });
+}
+
+export async function resetPasswordAction(token: string, fd: FormData) {
+  await runAction(`/passwort-zuruecksetzen/${token}`, async () => {
+    if (str(fd, "password") !== str(fd, "password2")) throw invalid("Die Passwörter stimmen nicht überein.");
+    await resetPassword(token, { password: str(fd, "password") });
+    return withParam("/login", "ok", "Passwort geändert. Bitte melden Sie sich neu an.");
   });
 }
 

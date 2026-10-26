@@ -14,7 +14,13 @@ Plattformadmins, Sperren/Einschränken von Konten, Audit-Protokoll.
 ohne Doppelannahme, Buchungen mit bestätigtem Preis und Verlauf, Fahrzeuge und freie Fahrten unter
 `/flotte`, Rückfahrt-Matching (Umweg und Wartezeit geschätzt, noch ohne Routingdienst).
 Reisebüros können Aufträge einstellen und Angebote annehmen. Das eigene Reisebüro-Dashboard, gezielte
-Angebotsanfragen und PDF-Bestätigungen (Phase 4) sowie Benachrichtigungen (Phase 5) fehlen noch.
+Angebotsanfragen und PDF-Bestätigungen (Phase 4) fehlen noch.
+
+**Pilotbetrieb:** App und Landing Page auf Deutsch und Englisch (Umschalter oben rechts, Adminbereich nur
+Deutsch), Passwort zurücksetzen per E-Mail, E-Mail-Benachrichtigungen (neuer Auftrag, Angebot, Vergabe,
+Storno, Beanstandung, Abschluss), Begrenzung von Anmelde-, Registrierungs- und Reset-Versuchen, Entwürfe
+für Impressum, Datenschutzerklärung und Nutzungsbedingungen (vor dem Start rechtlich prüfen lassen und
+die Platzhalter in eckigen Klammern ausfüllen).
 
 Die Startseite (`/`) ist die öffentliche Landing Page, angemeldete Nutzer landen in der Übersicht.
 
@@ -45,6 +51,11 @@ Das Projekt ist für Vercel vorbereitet (`vercel-build`, `postinstall: prisma ge
 - **Ganze App:** Eine PostgreSQL-Datenbank anlegen (z. B. Neon über den Vercel Marketplace, Region EU)
   und `DATABASE_URL` setzen. `vercel-build` führt dann vor dem Build `prisma migrate deploy` aus.
   Den Plattformadmin einmalig mit `npm run db:seed` gegen diese Datenbank anlegen.
+- **E-Mails:** Ein Konto bei [Resend](https://resend.com) anlegen, die eigene Domain dort verifizieren und
+  `RESEND_API_KEY` sowie `EMAIL_FROM` (z. B. `TaxiRoute <noreply@taxiroute.at>`) setzen. Ohne Schlüssel
+  werden E-Mails nicht verschickt, sondern nur ins Server-Log geschrieben.
+- **Links in E-Mails:** `APP_URL` auf die öffentliche Adresse setzen (z. B. `https://taxiroute.at`).
+  Ohne `APP_URL` wird die Produktions-Domain von Vercel verwendet.
 
 ## Tests
 

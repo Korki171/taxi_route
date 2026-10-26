@@ -1,5 +1,5 @@
 import "server-only";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { SESSION_COOKIE, validateSessionToken } from "./auth/session";
 import { loadActor, type Actor, type OrgActor } from "./authz/context";
@@ -57,7 +57,7 @@ export async function runAction(backTo: string, fn: () => Promise<void | string>
     next = result ?? backTo;
   } catch (e) {
     if (e instanceof AppError) {
-      if (e.code === "UNAUTHENTICATED") redirect("/login");
+      if (e.code === "UNAUTHENTICATED") redirect(e.message ? withParam("/login", "error", e.message) : "/login");
       redirect(withParam(backTo, "error", e.message));
     }
     throw e;
@@ -72,4 +72,10 @@ export function withParam(path: string, key: string, value: string) {
 
 export function formObject(fd: FormData, keys: string[]) {
   return Object.fromEntries(keys.map((k) => [k, (fd.get(k) as string | null) ?? ""]));
+}
+
+/** IP-Adresse des Aufrufers (hinter Vercel/Proxy aus X-Forwarded-For). */
+export async function clientIp(): Promise<string | undefined> {
+  const h = await headers();
+  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || undefined;
 }

@@ -108,3 +108,11 @@ tr.match td { background: var(--ok-bg); }
   table.responsive td { border: 0; padding: 0; }
   table.responsive td[data-label]::before { content: attr(data-label) ": "; color: var(--muted); }
 }
+p.right { text-align: right; margin: 0; }
+a.plain { color: inherit; text-decoration: none; }
+a.lang { color: var(--muted); font-size: 13px; }
+.legal { max-width: 760px; }
+.legal h2 { margin-top: 28px; }
+.legal .draft { background: var(--warn-bg); color: var(--warn); padding: 10px 12px; border-radius: 4px; }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin: 32px 0 16px; }
+.footer-links a { color: var(--muted); }

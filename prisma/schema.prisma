@@ -96,6 +96,29 @@ model User {
   updatedAt       DateTime     @updatedAt
   memberships     Membership[]
   sessions        Session[]
+  passwordResets  PasswordResetToken[]
+}
+
+/// Einmal-Link zum Zurücksetzen des Passworts. Gespeichert wird nur der SHA-256 des Tokens.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// Versuche je Schlüssel (z. B. "login:email:…", "login:ip:…") für einfaches, instanzübergreifendes Rate-Limiting.
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
 }
 
 model Session {

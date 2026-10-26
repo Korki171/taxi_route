@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
 import "@fontsource-variable/albert-sans";
 import "./globals.css";
+import { getI18n } from "@/server/i18n";
 
-export const metadata: Metadata = {
-  title: "TaxiRoute",
-  description: "B2B-Auftragsbörse für Taxi-/Transferunternehmen und Reisebüros",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return { title: "TaxiRoute", description: t("B2B-Auftragsbörse für Taxi-/Transferunternehmen und Reisebüros") };
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { locale } = await getI18n();
   return (
-    <html lang="de">
+    <html lang={locale}>
       <body>{children}</body>
     </html>
   );
