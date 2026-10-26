@@ -39,6 +39,10 @@ const ALIASES: Record<string, string> = {
   muenchen: "flughafen münchen",
   flughafen: "flughafen münchen",
   "flughafen muenchen": "flughafen münchen",
+  "munich airport": "flughafen münchen",
+  munich: "flughafen münchen",
+  airport: "flughafen münchen",
+  tyrol: "tirol",
   ibk: "innsbruck",
   hall: "hall in tirol",
   kitz: "kitzbühel",
@@ -52,7 +56,7 @@ function norm(s: string) {
 
 /** "A → B", "A nach B", "A - B" oder nur ein Ort. */
 export function matchOrders(query: string): SampleOrder[] {
-  const parts = query.split(/→|->|\bnach\b|–| - /i).map(norm).filter(Boolean);
+  const parts = query.split(/→|->|\bnach\b|\bto\b|–| - /i).map(norm).filter(Boolean);
   if (parts.length === 0) return [];
   const hit = (place: string, q: string) => {
     const p = place.toLowerCase();

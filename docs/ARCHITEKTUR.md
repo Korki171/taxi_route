@@ -95,6 +95,30 @@ bestätigter Preis (`Booking`). Doppelte Annahme verhindert ein Unique-Constrain
 5. **Phase 5** – Statusmaschine, Buchungsereignisse, auftragsbezogene Nachrichten, E-Mail-Benachrichtigungen, Partnernetzwerk
 6. **Phase 6** – End-to-End-Tests aller Szenarien, Sicherheitsprüfung, Rate-Limiting, Deployment
 
+## Pilotbetrieb: Sprache, E-Mails, Missbrauchsschutz
+
+**Mehrsprachigkeit.** Der deutsche Text ist der Schlüssel (`t("Anmelden")`), die englischen Texte stehen
+in `src/lib/i18n-en.ts`. Serverkomponenten holen `t` und Formatierer (`f.dateTime`, `f.money` …) über
+`getI18n()`. Die Sprache kommt aus dem Cookie `tr_lang` (gesetzt über `/lang/de|en`), sonst aus dem
+Browser (Deutsch für deutschsprachige Browser, sonst Englisch). Fehlermeldungen der Services bleiben
+deutsch und werden erst bei der Anzeige übersetzt. `tests/i18n.test.ts` stellt sicher, dass jeder Text
+eine Übersetzung mit denselben Platzhaltern hat. Der Adminbereich und die Rechtstexte bleiben deutsch.
+Eingaben der Nutzer (Notizen, Bedingungen) werden nicht übersetzt.
+
+**E-Mails.** `src/server/email.ts` verschickt über Resend; ohne `RESEND_API_KEY` nur ins Log.
+`src/server/notifications.ts` benachrichtigt nach dem Speichern: neue Aufträge an alle geprüften
+Beförderungsunternehmen, Angebote an den Auftraggeber, Vergabe an beide Seiten, Storno/Beanstandung/
+Abschluss an die andere Seite, zurückgezogene Aufträge an Anbieter mit Angebot. Die Sprache folgt dem
+Land der Organisation. Mails enthalten keine Fahrgastdaten und keine genauen Adressen. Ein
+Versandfehler lässt die Aktion nicht scheitern.
+
+**Passwort zurücksetzen.** Einmal-Link (Token nur als Hash gespeichert, 1 Stunde gültig), danach werden
+alle Sitzungen beendet. Die Antwort verrät nicht, ob eine Adresse registriert ist.
+
+**Missbrauchsschutz.** Zähler in der Datenbank (`RateLimitHit`), damit die Grenze auch über mehrere
+Vercel-Instanzen gilt: Anmeldung 10 Fehlversuche je E-Mail und 50 je IP in 15 Minuten, Registrierung
+5 je IP pro Stunde, Reset-Mails 3 je Adresse pro Stunde.
+
 ## Offene Fragen (Annahmen getroffen, reversibel)
 
 - **E-Mail-Versand:** Noch kein Anbieter festgelegt. Einladungslinks werden einmalig in der UI angezeigt.

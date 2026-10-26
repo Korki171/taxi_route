@@ -5,8 +5,10 @@ import { AppError } from "@/server/errors";
 import { getInvitationPreview } from "@/server/services/members";
 import { getActor } from "@/server/web";
 import { acceptInvitationAction, registerViaInvitationAction } from "../../actions";
+import { getI18n } from "@/server/i18n";
 
 export default async function InvitePage({ params, searchParams }: { params: Promise<{ token: string }>; searchParams: SP }) {
+  const { t, f } = await getI18n();
   const { token } = await params;
   const sp = await searchParams;
   let preview;
@@ -16,9 +18,9 @@ export default async function InvitePage({ params, searchParams }: { params: Pro
     if (!(e instanceof AppError)) throw e;
     return (
       <main className="narrow">
-        <h1>Einladung</h1>
+        <h1>{t("Einladung")}</h1>
         <div className="flash error">{e.message}</div>
-        <Link href="/login">Zur Anmeldung</Link>
+        <Link href="/login">{t("Zur Anmeldung")}</Link>
       </main>
     );
   }
@@ -28,14 +30,14 @@ export default async function InvitePage({ params, searchParams }: { params: Pro
     <main className="narrow">
       <h1>Einladung zu {preview.organization.name}</h1>
       <p className="sub">
-        {ORG_TYPE_LABEL[preview.organization.type]} · Rolle: {ROLE_LABEL[preview.role]} · für {preview.email}
+        {t(ORG_TYPE_LABEL[preview.organization.type])} · Rolle: {t(ROLE_LABEL[preview.role])} · für {preview.email}
       </p>
       <Flash searchParams={sp} />
       {actor ? (
         <div className="card">
           {actor.email === preview.email ? (
             <form action={acceptInvitationAction.bind(null, token)}>
-              <button type="submit">Einladung annehmen</button>
+              <button type="submit">{t("Einladung annehmen")}</button>
             </form>
           ) : (
             <p>Sie sind als {actor.email} angemeldet. Diese Einladung gilt für {preview.email}.</p>
@@ -43,14 +45,14 @@ export default async function InvitePage({ params, searchParams }: { params: Pro
         </div>
       ) : (
         <div className="card">
-          <h2>Zugang anlegen</h2>
+          <h2>{t("Zugang anlegen")}</h2>
           <form action={registerViaInvitationAction.bind(null, token)} className="stack">
-            <label>Name<input name="name" required autoComplete="name" /></label>
-            <label>Passwort <small>mind. 10 Zeichen</small><input name="password" type="password" minLength={10} required autoComplete="new-password" /></label>
-            <div><button type="submit">Konto anlegen und beitreten</button></div>
+            <label>{t("Name")}<input name="name" required autoComplete="name" /></label>
+            <label>{t("Passwort")}{" "}<small>{t("mind. 10 Zeichen")}</small><input name="password" type="password" minLength={10} required autoComplete="new-password" /></label>
+            <div><button type="submit">{t("Konto anlegen und beitreten")}</button></div>
           </form>
           <p className="muted">
-            Sie haben bereits ein Konto? <Link href={`/login?next=/invite/${token}`}>Anmelden</Link> und danach annehmen.
+            {t("Sie haben bereits ein Konto?")}{" "}<Link href={`/login?next=/invite/${token}`}>{t("Anmelden")}</Link>{" "}{t("und danach annehmen.")}
           </p>
         </div>
       )}

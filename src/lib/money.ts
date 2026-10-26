@@ -1,7 +1,12 @@
-const fmt = new Intl.NumberFormat("de-AT", { style: "currency", currency: "EUR" });
+import type { Locale } from "./i18n";
 
-export function formatCents(cents: number | null | undefined): string {
-  return cents == null ? "–" : fmt.format(cents / 100);
+const fmt = {
+  de: new Intl.NumberFormat("de-AT", { style: "currency", currency: "EUR" }),
+  en: new Intl.NumberFormat("en-GB", { style: "currency", currency: "EUR" }),
+};
+
+export function formatCents(cents: number | null | undefined, l: Locale = "de"): string {
+  return cents == null ? "–" : fmt[l].format(cents / 100);
 }
 
 /** "245", "245,50" oder "245.50" → Cent. */

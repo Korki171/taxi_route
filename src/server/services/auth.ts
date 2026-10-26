@@ -2,17 +2,21 @@ import { db } from "@/lib/db";
 import { hashPassword, verifyPassword } from "../auth/password";
 import { createSession } from "../auth/session";
 import { AppError } from "../errors";
+import { rateLimit, resetRateLimit } from "../rate-limit";
 import { emailSchema, parse } from "../validation";
 import { z } from "zod";
 
 // Dummy-Hash, damit unbekannte E-Mails gleich lange brauchen (kein User-Enumeration-Timing).
 let dummyHash: Promise<string> | null = null;
 
-export async function login(input: unknown) {
+export async function login(input: unknown, meta: { ip?: string } = {}) {
   const { email, password } = parse(
     z.object({ email: emailSchema, password: z.string().min(1).max(200) }),
     input,
   );
+  // Schutz gegen Passwort-Raten: je E-Mail und je IP-Adresse
+  await rateLimit(`login:email:${email}`, 10, 15);
+  if (meta.ip) await rateLimit(`login:ip:${meta.ip}`, 50, 15);
   const user = await db.user.findUnique({
     where: { email },
     include: { memberships: { orderBy: { createdAt: "asc" }, take: 1 } },
@@ -22,6 +26,7 @@ export async function login(input: unknown) {
   if (!user || !ok || user.status !== "ACTIVE") {
     throw new AppError("UNAUTHENTICATED", "E-Mail oder Passwort ist falsch.");
   }
+  await resetRateLimit(`login:email:${email}`);
   return createSession(user.id, user.memberships[0]?.organizationId ?? null);
 }
 

@@ -1,10 +1,25 @@
-const dt = new Intl.DateTimeFormat("de-AT", { weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Vienna" });
-const d = new Intl.DateTimeFormat("de-AT", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Vienna" });
-const t = new Intl.DateTimeFormat("de-AT", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Vienna" });
+import type { Locale } from "./i18n";
 
-export const fmtDateTime = (x: Date | null | undefined) => (x ? dt.format(x) : "–");
-export const fmtDate = (x: Date | null | undefined) => (x ? d.format(x) : "–");
-export const fmtTime = (x: Date | null | undefined) => (x ? t.format(x) : "–");
+const TZ = "Europe/Vienna";
+const tag = (l: Locale) => (l === "en" ? "en-GB" : "de-AT");
+const cache = new Map<string, Intl.DateTimeFormat>();
+function df(l: Locale, kind: "dt" | "d" | "t") {
+  const key = l + kind;
+  let f = cache.get(key);
+  if (!f) {
+    const opts: Intl.DateTimeFormatOptions =
+      kind === "dt" ? { weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: TZ }
+      : kind === "d" ? { day: "2-digit", month: "2-digit", year: "numeric", timeZone: TZ }
+      : { hour: "2-digit", minute: "2-digit", timeZone: TZ };
+    f = new Intl.DateTimeFormat(tag(l), opts);
+    cache.set(key, f);
+  }
+  return f;
+}
+
+export const fmtDateTime = (x: Date | null | undefined, l: Locale = "de") => (x ? df(l, "dt").format(x) : "–");
+export const fmtDate = (x: Date | null | undefined, l: Locale = "de") => (x ? df(l, "d").format(x) : "–");
+export const fmtTime = (x: Date | null | undefined, l: Locale = "de") => (x ? df(l, "t").format(x) : "–");
 
 export function fmtMinutes(m: number | null | undefined) {
   if (m == null) return "–";
