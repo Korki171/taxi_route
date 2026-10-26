@@ -36,6 +36,16 @@ Beispieldaten für die Börse (nur lokal): `npm run db:demo` legt fünf als „D
 freigeschaltete Unternehmen mit Aufträgen, Angeboten, Buchungen und freien Fahrten an (ersetzt vorhandene
 Demo-Unternehmen). Anmeldung z. B. mit `taxi@demo.test` oder `reise@demo.test`, Passwort `demo-passwort-123`.
 
+## Vercel
+
+Das Projekt ist für Vercel vorbereitet (`vercel-build`, `postinstall: prisma generate`).
+
+- **Nur Landing Page:** Repository auf vercel.com/new importieren und ohne Umgebungsvariablen deployen.
+  Die Startseite braucht keine Datenbank. Anmeldung und Registrierung funktionieren dann noch nicht.
+- **Ganze App:** Eine PostgreSQL-Datenbank anlegen (z. B. Neon über den Vercel Marketplace, Region EU)
+  und `DATABASE_URL` setzen. `vercel-build` führt dann vor dem Build `prisma migrate deploy` aus.
+  Den Plattformadmin einmalig mit `npm run db:seed` gegen diese Datenbank anlegen.
+
 ## Tests
 
 Die Tests laufen gegen eine eigene Datenbank (`.env.test`, Standard `taxiroute_test`), deren Tabellen
