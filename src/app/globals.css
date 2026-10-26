@@ -1,0 +1,72 @@
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --text: #1c2430;
+  --muted: #5b6676;
+  --border: #d9dee6;
+  --accent: #0b5cad;
+  --accent-text: #ffffff;
+  --ok-bg: #e3f4e8; --ok: #1b6b35;
+  --warn-bg: #fff3d6; --warn: #7a5300;
+  --bad-bg: #fde4e2; --bad: #9b1c14;
+  --neutral-bg: #eceff3; --neutral: #46505e;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12161c; --surface: #1b2129; --text: #e4e8ee; --muted: #9aa5b4; --border: #2e3744;
+    --accent: #4d9be6; --accent-text: #0d1117;
+    --ok-bg: #173323; --ok: #7fd59a; --warn-bg: #3a2f12; --warn: #f1c75b;
+    --bad-bg: #3d1a18; --bad: #f19a92; --neutral-bg: #262d37; --neutral: #b7c0cc;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+a { color: var(--accent); }
+header.top { background: var(--surface); border-bottom: 1px solid var(--border); }
+header.top .inner { max-width: 1200px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+header.top .brand { font-weight: 700; text-decoration: none; color: var(--text); font-size: 16px; }
+header.top nav { display: flex; gap: 14px; flex-wrap: wrap; flex: 1; }
+header.top nav a { text-decoration: none; color: var(--muted); }
+header.top nav a:hover { color: var(--text); }
+.who { display: flex; gap: 8px; align-items: center; color: var(--muted); flex-wrap: wrap; }
+main { max-width: 1200px; margin: 0 auto; padding: 20px 16px 48px; }
+main.narrow { max-width: 640px; }
+h1 { font-size: 22px; margin: 0 0 4px; }
+h2 { font-size: 16px; margin: 0 0 12px; }
+.sub { color: var(--muted); margin: 0 0 20px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px; margin-bottom: 16px; }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+form.stack { display: grid; gap: 12px; }
+.fields { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+label { display: grid; gap: 4px; font-weight: 500; }
+label small { font-weight: 400; color: var(--muted); }
+input, select, textarea { font: inherit; padding: 7px 9px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--text); width: 100%; }
+fieldset { border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; }
+legend { font-weight: 600; padding: 0 4px; }
+.checks { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.checks label { display: flex; gap: 6px; align-items: center; font-weight: 400; }
+.checks input { width: auto; }
+button { font: inherit; padding: 7px 14px; border-radius: 4px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-text); cursor: pointer; }
+button.secondary { background: transparent; color: var(--accent); }
+button.danger { background: transparent; border-color: var(--bad); color: var(--bad); }
+button.link { border: 0; background: none; color: var(--muted); padding: 0; }
+.inline { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.inline select, .inline input { width: auto; }
+.badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.badge.ok { background: var(--ok-bg); color: var(--ok); }
+.badge.warn { background: var(--warn-bg); color: var(--warn); }
+.badge.bad { background: var(--bad-bg); color: var(--bad); }
+.badge.neutral { background: var(--neutral-bg); color: var(--neutral); }
+.flash { padding: 10px 12px; border-radius: 4px; margin-bottom: 16px; }
+.flash.error { background: var(--bad-bg); color: var(--bad); }
+.flash.ok { background: var(--ok-bg); color: var(--ok); }
+.muted { color: var(--muted); }
+dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; }
+dl.kv dt { color: var(--muted); }
+dl.kv dd { margin: 0; }
+code.copy { display: block; padding: 8px; background: var(--neutral-bg); border-radius: 4px; word-break: break-all; }
+ul.plain { margin: 0; padding-left: 18px; }

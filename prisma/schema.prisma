@@ -1,0 +1,236 @@
+// TaxiRoute – Datenmodell Phase 2: Organisationen, Nutzer, Rollen, Verifizierung.
+// Spätere Phasen (Aufträge, Angebote, Buchungen, Kapazitäten) bauen auf
+// Organization/Membership auf und erhalten eigene Modelle.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Primärer Typ einer Organisation. Bestimmt Onboarding und Standard-Dashboard,
+/// NICHT die Berechtigungen – diese ergeben sich aus OrganizationCapability.
+enum OrganizationType {
+  TRANSPORT_COMPANY
+  TRAVEL_AGENCY
+  TOUR_OPERATOR
+  HOTEL
+}
+
+/// Kontostatus einer Organisation, vom Plattformadmin gesteuert.
+enum OrganizationStatus {
+  ACTIVE
+  RESTRICTED
+  SUSPENDED
+}
+
+/// Geschäftsfunktionen, die eine Organisation auf der Plattform nutzen darf.
+/// Jede Funktion wird separat verifiziert (Mischbetriebe!).
+enum Capability {
+  /// Führt Beförderungen durch: Fahrzeuge, Kapazitäten, Auftragsübernahme.
+  TRANSPORT_PROVIDER
+  /// Fragt Transfers an und bucht sie (Reisebüro, Taxiunternehmen als Auftraggeber).
+  TRANSFER_BOOKER
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING_REVIEW
+  VERIFIED
+  REJECTED
+  SUSPENDED
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  DISPATCHER
+  BOOKER
+  FINANCE
+  VIEWER
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum DocumentType {
+  BUSINESS_LICENSE
+  TAXI_CONCESSION
+  RENTAL_CAR_LICENSE
+  INSURANCE
+  COMMERCIAL_REGISTER
+  OTHER
+}
+
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum VehicleCategory {
+  SEDAN
+  ESTATE
+  MINIVAN
+  VAN
+  MINIBUS
+  BUS
+  LUXURY
+  WHEELCHAIR
+}
+
+model User {
+  id              String       @id @default(cuid())
+  email           String       @unique
+  name            String
+  phone           String?
+  passwordHash    String
+  status          UserStatus   @default(ACTIVE)
+  isPlatformAdmin Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  memberships     Membership[]
+  sessions        Session[]
+}
+
+model Session {
+  /// SHA-256 des Session-Tokens; das Klartext-Token existiert nur im Cookie.
+  id          String        @id
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeOrgId String?
+  activeOrg   Organization? @relation(fields: [activeOrgId], references: [id], onDelete: SetNull)
+  expiresAt   DateTime
+  createdAt   DateTime      @default(now())
+
+  @@index([userId])
+}
+
+model Organization {
+  id             String             @id @default(cuid())
+  type           OrganizationType
+  status         OrganizationStatus @default(ACTIVE)
+  name           String
+  legalName      String?
+  street         String
+  postalCode     String
+  city           String
+  /// ISO-3166-1 alpha-2, z. B. AT, DE, IT, CH
+  country        String
+  email          String
+  phone          String
+  website        String?
+  vatId          String?
+  registerNumber String?
+  contactPerson  String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  capabilities     OrganizationCapability[]
+  memberships      Membership[]
+  invitations      Invitation[]
+  documents        VerificationDocument[]
+  transportProfile TransportProfile?
+  sessions         Session[]
+  auditEvents      AuditEvent[]
+}
+
+model OrganizationCapability {
+  id             String             @id @default(cuid())
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  capability     Capability
+  status         VerificationStatus @default(UNVERIFIED)
+  reviewNote     String?
+  reviewedById   String?
+  reviewedAt     DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@unique([organizationId, capability])
+}
+
+/// Zusatzdaten für Beförderungsunternehmen.
+model TransportProfile {
+  organizationId    String            @id
+  organization      Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  concessionNumber  String?
+  vehicleCategories VehicleCategory[]
+  /// Selbstangabe des Unternehmens (z. B. "AT-7 Tirol", "DE-BY"); wird separat geprüft.
+  declaredRegions   String[]
+  fleetSize         Int?
+  updatedAt         DateTime          @updatedAt
+}
+
+model Membership {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           MemberRole
+  createdAt      DateTime     @default(now())
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+}
+
+model Invitation {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           MemberRole
+  /// SHA-256 des Einladungs-Tokens
+  tokenHash      String       @unique
+  invitedById    String
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+}
+
+model VerificationDocument {
+  id             String         @id @default(cuid())
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  type           DocumentType
+  title          String
+  fileName       String
+  mimeType       String
+  sizeBytes      Int
+  /// MVP: Datei in der DB, damit jeder Zugriff serverseitig geprüft wird.
+  /// Später: Objektspeicher mit signierten URLs.
+  content        Bytes
+  validUntil     DateTime?
+  status         DocumentStatus @default(PENDING)
+  reviewNote     String?
+  reviewedById   String?
+  reviewedAt     DateTime?
+  uploadedById   String
+  createdAt      DateTime       @default(now())
+
+  @@index([organizationId])
+}
+
+/// Nachvollziehbare Protokollierung sicherheits- und geschäftsrelevanter Aktionen.
+model AuditEvent {
+  id             String        @id @default(cuid())
+  actorUserId    String?
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  action         String
+  targetType     String?
+  targetId       String?
+  data           Json?
+  createdAt      DateTime      @default(now())
+
+  @@index([organizationId, createdAt])
+}
