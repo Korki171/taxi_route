@@ -80,3 +80,42 @@ export function addDocument(orgId: string, type: DocumentType, status: "PENDING"
     },
   });
 }
+
+/** Verifiziertes Taxiunternehmen (Beförderung + Auftraggeber). */
+export async function verifiedTaxi(name?: string) {
+  const r = await register("TRANSPORT_COMPANY", name);
+  await setCapability(r.org.id, "TRANSPORT_PROVIDER", "VERIFIED");
+  await setCapability(r.org.id, "TRANSFER_BOOKER", "VERIFIED");
+  return { ...r, actor: await reload(r.actor) };
+}
+
+/** Verifiziertes Reisebüro (nur Auftraggeber). */
+export async function verifiedAgency(name?: string) {
+  const r = await register("TRAVEL_AGENCY", name);
+  await setCapability(r.org.id, "TRANSFER_BOOKER", "VERIFIED");
+  return { ...r, actor: await reload(r.actor) };
+}
+
+export function inHours(h: number) {
+  return new Date(Date.now() + h * 3600_000);
+}
+
+export function requestInput(over: Record<string, unknown> = {}) {
+  return {
+    pickupPlaceId: "innsbruck",
+    dropoffPlaceId: "muc",
+    pickupAddress: "Maria-Theresien-Straße 1, 6020 Innsbruck",
+    pickupAt: inHours(48).toISOString(),
+    pickupWindowMinutes: 15,
+    passengers: 3,
+    luggage: 4,
+    skiEquipment: 2,
+    flightNumber: "LH2471",
+    priceMode: "NEGOTIABLE",
+    priceCents: 24000,
+    clientReference: "RB-4711",
+    passengerName: "Familie Gruber",
+    passengerPhone: "+43 660 1234567",
+    ...over,
+  };
+}

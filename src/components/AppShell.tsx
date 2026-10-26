@@ -18,6 +18,8 @@ export async function AppShell({ actor, children, narrow }: { actor: Actor; chil
           <Link href="/dashboard" className="brand">TaxiRoute</Link>
           <nav>
             {actor.org && <Link href="/dashboard">Übersicht</Link>}
+            {(actorCan(actor, "jobs.accept") || actorCan(actor, "transfers.request")) && <Link href="/boerse">Börse</Link>}
+            {actorCan(actor, "fleet.manage") && <Link href="/flotte">Flotte</Link>}
             {actor.org && <Link href="/organization">Unternehmen</Link>}
             {actor.org && <Link href="/organization/members">Team</Link>}
             {actorCan(actor, "documents.read") && <Link href="/organization/documents">Nachweise</Link>}

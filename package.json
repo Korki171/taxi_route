@@ -11,6 +11,7 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
+    "db:demo": "tsx prisma/demo-boerse.ts",
     "test": "dotenv -e .env.test -- prisma migrate deploy && dotenv -e .env.test -- vitest run",
     "test:watch": "dotenv -e .env.test -- vitest"
   },

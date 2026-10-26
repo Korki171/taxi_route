@@ -56,6 +56,15 @@ Taxi- oder Mietwagenkonzession **und** geprüftem Versicherungsnachweis.
 **Umgesetzt in Phase 2:** `User`, `Session`, `Organization`, `OrganizationCapability`,
 `TransportProfile`, `Membership`, `Invitation`, `VerificationDocument`, `AuditEvent`.
 
+**Umgesetzt in Phase 3:** `Vehicle`, `TransferRequest` (Referenz `TR-000123`), `PassengerContact`
+(getrennt gespeichert, nur für Beteiligte), `Quote` (ein Angebot je Unternehmen und Auftrag), `Booking`
+(Leistungsumfang als unveränderlicher Snapshot), `TransferEvent` (Verlauf je Auftrag), `CapacityOffer`.
+Orte kommen aus einem Katalog mit Koordinaten (`src/lib/places.ts`); Fahrzeit ≈ Luftlinie × 1,3 / 85 km/h.
+
+Sichtbarkeit: Fremde Unternehmen sehen in der Börse keine Adressen, Abholhinweise, Fahrgastdaten,
+Kundenreferenzen oder Kontaktdaten des Auftraggebers. Anbieter sehen nur ihr eigenes Angebot, auch im
+Verlauf. Nach der Vergabe ist der Auftrag für alle Unbeteiligten nicht mehr auffindbar.
+
 **Geplant für die nächsten Phasen** (Skizze, wird bei der Umsetzung verfeinert):
 
 | Modell | Kernfelder | Phase |
@@ -81,7 +90,7 @@ bestätigter Preis (`Booking`). Doppelte Annahme verhindert ein Unique-Constrain
 
 1. ✅ **Phase 1** – Analyse, Architektur (dieses Dokument)
 2. ✅ **Phase 2** – Organisationen, Nutzer, Rollen, Auth, Profile, Verifizierung, Admin-Prüfung
-3. **Phase 3** – Fahrzeuge, Transferaufträge in der Börse, Filter, Preisangebote, Übernahme (Szenario A), freie Kapazitäten/Rückfahrten mit Matching (Szenario C)
+3. ✅ **Phase 3** – Fahrzeuge, Transferaufträge in der Börse, Filter, Preisangebote, Übernahme (Szenario A), freie Kapazitäten/Rückfahrten mit Matching (Szenario C)
 4. **Phase 4** – Reisebüro-Dashboard, gezielte Angebotsanfragen, Angebotsvergleich, Buchungsbestätigung, Referenzen, Buchungsbestätigung als PDF (Szenario B)
 5. **Phase 5** – Statusmaschine, Buchungsereignisse, auftragsbezogene Nachrichten, E-Mail-Benachrichtigungen, Partnernetzwerk
 6. **Phase 6** – End-to-End-Tests aller Szenarien, Sicherheitsprüfung, Rate-Limiting, Deployment
@@ -90,7 +99,8 @@ bestätigter Preis (`Booking`). Doppelte Annahme verhindert ein Unique-Constrain
 
 - **E-Mail-Versand:** Noch kein Anbieter festgelegt. Einladungslinks werden einmalig in der UI angezeigt.
 - **Dateispeicher:** Nachweise liegen im MVP in der Datenbank (max. 5 MB). Für Produktion: Objektspeicher (z. B. S3-kompatibel, EU-Region) mit signierten URLs.
-- **Routen-/Geodaten:** Für Umweg- und Rückfahrtberechnung wird in Phase 3 ein Routingdienst benötigt (z. B. OpenRouteService oder Google Routes). Bis dahin Matching über Regionen/Orte + Luftlinie.
+- **Routen-/Geodaten:** Umweg und Wartezeit beim Rückfahrt-Matching werden aus Luftlinie × Straßenfaktor geschätzt und in der UI als Schätzung gekennzeichnet. Für Produktion ein Routingdienst (z. B. OpenRouteService oder Google Routes) und freie Adresseingabe statt Ortskatalog.
+- **Verbindlichkeit bei Festpreis:** Die Übernahme zum Festpreis ist sofort verbindlich (wer zuerst bestätigt). Ein zusätzlicher Bestätigungsschritt des Auftraggebers wäre leicht ergänzbar.
 - **Login-Schutz:** Rate-Limiting und Passwort-Zurücksetzen fehlen noch (Phase 6 bzw. mit E-Mail-Versand).
 - **Rechtliches:** Vertragspartner, Zahlungsempfänger, Haftung und Umsatzsteuer müssen vor Produktivbetrieb geklärt werden. Bis dahin werden Preise und Gebühren nur dokumentiert, keine Zahlungen abgewickelt.
 - **Hosting:** Noch offen; empfohlen EU-Hosting wegen DSGVO.

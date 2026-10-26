@@ -138,6 +138,13 @@ model Organization {
   transportProfile TransportProfile?
   sessions         Session[]
   auditEvents      AuditEvent[]
+
+  vehicles          Vehicle[]
+  requests          TransferRequest[] @relation("RequesterRequests")
+  quotes            Quote[]           @relation("ProviderQuotes")
+  requesterBookings Booking[]         @relation("RequesterBookings")
+  providerBookings  Booking[]         @relation("ProviderBookings")
+  capacityOffers    CapacityOffer[]
 }
 
 model OrganizationCapability {
@@ -233,4 +240,216 @@ model AuditEvent {
   createdAt      DateTime      @default(now())
 
   @@index([organizationId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 3: Auftragsbörse
+// ---------------------------------------------------------------------------
+
+/// Festpreis: direkt übernehmbar. Verhandelbar: Unternehmen geben Angebote ab.
+enum PriceMode {
+  FIXED
+  NEGOTIABLE
+}
+
+enum TransferStatus {
+  /// In der Börse sichtbar, wartet auf Übernahme oder Angebote
+  OPEN
+  /// Verbindlich vergeben (Buchung existiert)
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+enum QuoteStatus {
+  SUBMITTED
+  WITHDRAWN
+  ACCEPTED
+  REJECTED
+}
+
+enum BookingStatus {
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+enum CapacityStatus {
+  /// Geplant, aber noch nicht vom Unternehmen als verbindlich bestätigt
+  PLANNED
+  /// Vom Unternehmen bestätigt: Fahrzeug und Fahrer stehen fest
+  CONFIRMED
+  WITHDRAWN
+}
+
+model Vehicle {
+  id             String          @id @default(cuid())
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  label          String
+  category       VehicleCategory
+  licensePlate   String?
+  seats          Int
+  luggage        Int
+  skiCapacity    Int             @default(0)
+  active         Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  capacities     CapacityOffer[]
+  bookings       Booking[]
+
+  @@index([organizationId])
+}
+
+/// Transferauftrag bzw. Transferanfrage. Orte stammen aus dem Ortskatalog (src/lib/places.ts).
+model TransferRequest {
+  id             String         @id @default(cuid())
+  number         Int            @unique @default(autoincrement())
+  requesterOrgId String
+  requesterOrg   Organization   @relation("RequesterRequests", fields: [requesterOrgId], references: [id], onDelete: Cascade)
+  createdById    String
+  status         TransferStatus @default(OPEN)
+
+  pickupPlaceId       String
+  dropoffPlaceId      String
+  /// Genaue Adressen: nur für Auftraggeber und ausführendes Unternehmen sichtbar
+  pickupAddress       String?
+  dropoffAddress      String?
+  pickupAt            DateTime
+  pickupWindowMinutes Int      @default(0)
+  estimatedMinutes    Int?
+
+  passengers      Int
+  luggage         Int              @default(0)
+  skiEquipment    Int              @default(0)
+  specialLuggage  String?
+  vehicleCategory VehicleCategory?
+  childSeats      Int              @default(0)
+  requirements    String?
+  flightNumber    String?
+  flightArrivalAt DateTime?
+  pickupNotes     String?
+
+  priceMode         PriceMode
+  /// Festpreis bzw. unverbindlicher Richtpreis/Budget in Cent
+  priceCents        Int?
+  currency          String    @default("EUR")
+  quoteDeadline     DateTime?
+  bookingTerms      String?
+  cancellationTerms String?
+  clientReference   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  passengersContact PassengerContact[]
+  quotes            Quote[]
+  booking           Booking?
+  events            TransferEvent[]
+
+  @@index([status, pickupAt])
+  @@index([requesterOrgId])
+}
+
+/// Sensible Fahrgastdaten, getrennt gespeichert und nur für Beteiligte sichtbar.
+model PassengerContact {
+  id        String          @id @default(cuid())
+  requestId String
+  request   TransferRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  name      String
+  phone     String?
+
+  @@index([requestId])
+}
+
+model Quote {
+  id              String          @id @default(cuid())
+  requestId       String
+  request         TransferRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  providerOrgId   String
+  providerOrg     Organization    @relation("ProviderQuotes", fields: [providerOrgId], references: [id], onDelete: Cascade)
+  createdById     String
+  amountCents     Int
+  vehicleCategory VehicleCategory
+  message         String?
+  validUntil      DateTime?
+  status          QuoteStatus     @default(SUBMITTED)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  booking         Booking?
+
+  /// Ein Angebot je Unternehmen und Auftrag (neu abgeben ersetzt das alte)
+  @@unique([requestId, providerOrgId])
+}
+
+/// Verbindliche Vereinbarung. requestId ist eindeutig: ein Auftrag kann nur einmal vergeben werden.
+model Booking {
+  id                String          @id @default(cuid())
+  requestId         String          @unique
+  request           TransferRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  quoteId           String?         @unique
+  quote             Quote?          @relation(fields: [quoteId], references: [id])
+  requesterOrgId    String
+  requesterOrg      Organization    @relation("RequesterBookings", fields: [requesterOrgId], references: [id])
+  providerOrgId     String
+  providerOrg       Organization    @relation("ProviderBookings", fields: [providerOrgId], references: [id])
+  vehicleId         String?
+  vehicle           Vehicle?        @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  capacityOfferId   String?
+  agreedPriceCents  Int
+  currency          String          @default("EUR")
+  /// Leistungsumfang zum Zeitpunkt der Annahme (unveränderlich)
+  scope             Json
+  cancellationTerms String?
+  status            BookingStatus   @default(CONFIRMED)
+  acceptedAt        DateTime        @default(now())
+  acceptedById      String
+  completedAt       DateTime?
+  completionNote    String?
+
+  @@index([providerOrgId])
+  @@index([requesterOrgId])
+}
+
+/// Nachvollziehbare Ereignisse je Auftrag (Erstellung, Angebote, Vergabe, Statuswechsel).
+model TransferEvent {
+  id          String          @id @default(cuid())
+  requestId   String
+  request     TransferRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  type        String
+  actorOrgId  String?
+  actorUserId String?
+  data        Json?
+  createdAt   DateTime        @default(now())
+
+  @@index([requestId, createdAt])
+}
+
+/// Freie Kapazität bzw. geplante (Rück-)Fahrt eines Beförderungsunternehmens.
+model CapacityOffer {
+  id               String          @id @default(cuid())
+  organizationId   String
+  organization     Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById      String
+  vehicleId        String?
+  vehicle          Vehicle?        @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  vehicleCategory  VehicleCategory
+  fromPlaceId      String
+  toPlaceId        String
+  availableFrom    DateTime
+  availableUntil   DateTime
+  seats            Int
+  luggage          Int
+  maxDetourMinutes Int             @default(20)
+  maxWaitMinutes   Int             @default(60)
+  note             String?
+  status           CapacityStatus  @default(PLANNED)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([status, availableFrom])
+  @@index([organizationId])
 }
