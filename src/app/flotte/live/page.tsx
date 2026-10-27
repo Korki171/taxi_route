@@ -41,7 +41,7 @@ export default async function LiveFleetPage({ searchParams }: { searchParams: SP
           <p className="sub">{t("Wo Ihre Fahrzeuge gerade sind, wohin sie fahren und wer welchen Auftrag hat. Sichtbar sind Fahrer mit laufender Schicht.")}</p>
         </div>
         {live.unassigned > 0 && (
-          <a href="#disposition" className="badge warn">{t("{n} Fahrt(en) in den nächsten 24 h ohne Fahrer", { n: live.unassigned })}</a>
+          <a href="#disposition" className="alert-link">{t("{n} Fahrt(en) in den nächsten 24 h ohne Fahrer", { n: live.unassigned })}</a>
         )}
       </div>
       <Flash searchParams={sp} />
@@ -91,14 +91,14 @@ export default async function LiveFleetPage({ searchParams }: { searchParams: SP
               <tbody>
                 {bookings.map((b) => (
                   <tr key={b.id} className={b.driverId ? undefined : "match-warn"}>
-                    <td className="nowrap">{f.dateTime(b.request.pickupAt)}<br /><span className="muted">{referenceOf(b.request.number)} · {t("{n} Pers.", { n: b.request.passengers })}</span></td>
+                    <td className="nowrap">{f.dateTime(b.request.pickupAt)}<span className="price-note">{referenceOf(b.request.number)} · {t("{n} Pers.", { n: b.request.passengers })}</span></td>
                     <td><Route from={b.request.pickupPlaceId} to={b.request.dropoffPlaceId} href={`/boerse/auftrag/${b.request.id}`} /></td>
                     <td>
                       <Badge status={b.status}>{t(BOOKING_STATUS_LABEL[b.status])}</Badge>
-                      {b.tripStage && <><br /><small className="muted">{t(TRIP_STAGE_LABEL[b.tripStage])}</small></>}
+                      {b.tripStage && <span className="price-note">{t(TRIP_STAGE_LABEL[b.tripStage])}</span>}
                     </td>
                     <td>
-                      <form action={assignBookingAction} className="inline">
+                      <form action={assignBookingAction} className="inline assign">
                         <input type="hidden" name="bookingId" value={b.id} />
                         <select name="driverId" defaultValue={b.driverId ?? ""} aria-label={t("Fahrer")}>
                           <option value="">{t("– kein Fahrer –")}</option>

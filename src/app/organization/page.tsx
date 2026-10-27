@@ -70,7 +70,7 @@ export default async function OrganizationPage({ searchParams }: { searchParams:
         <section className="card">
           <h2>{t("Beförderungsbetrieb")}</h2>
           <form action={updateTransportProfileAction} className="stack">
-            <fieldset disabled={!canEdit} style={{ border: 0, padding: 0, margin: 0 }} className="stack">
+            <fieldset disabled={!canEdit} className="bare stack">
               <div className="fields">
                 <label>{t("Konzessionsnummer")}<input name="concessionNumber" defaultValue={tp?.concessionNumber ?? ""} /></label>
                 <label>{t("Anzahl Fahrzeuge")}<input name="fleetSize" type="number" min={0} defaultValue={tp?.fleetSize ?? ""} /></label>

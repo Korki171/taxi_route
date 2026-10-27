@@ -16,7 +16,7 @@ export default async function NewRequestPage({ searchParams }: { searchParams: S
 
   return (
     <AppShell actor={actor}>
-      <p className="muted" style={{ margin: 0 }}><Link href="/boerse?view=meine">{t("← Eigene Aufträge")}</Link></p>
+      <p className="back"><Link href="/boerse?view=meine">{t("← Eigene Aufträge")}</Link></p>
       <h1>{t("Transferauftrag einstellen")}</h1>
       <p className="sub">{t("Sichtbar für geprüfte Beförderungsunternehmen. Genaue Adressen und Fahrgastdaten sehen nur Sie und das Unternehmen, das den Auftrag erhält.")}</p>
       <Flash searchParams={sp} />
@@ -76,7 +76,7 @@ export default async function NewRequestPage({ searchParams }: { searchParams: S
           </div>
         </section>
 
-        <div><button type="submit">{t("Auftrag veröffentlichen")}</button></div>
+        <div><button type="submit" className="accent">{t("Auftrag veröffentlichen")}</button></div>
       </form>
     </AppShell>
   );
