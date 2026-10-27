@@ -80,6 +80,36 @@ describe("Schicht und Standort", () => {
     expect(shift.lastLat).toBeNull();
   });
 
+  it("Etappe zeigt Start, Ziel, gefahrene Strecke und Fortschritt", async () => {
+    const { taxi, driver, booking } = await setup();
+    await assignBooking(taxi.actor, booking.id, { driverId: driver.user.id });
+    const shift = await startShift(driver.actor, { consent: true });
+    await db.driverShift.update({ where: { id: shift.id }, data: { startedAt: new Date(Date.now() - 60 * 60_000) } });
+
+    // Geplant: vom aktuellen Standort zur Abholung, noch kein Fortschritt
+    await recordPositions(driver.actor, [point(47.2833, 11.5079, 40 * 60_000)]);
+    let v = (await liveFleet(taxi.actor)).vehicles[0];
+    expect(v.leg).toMatchObject({ kind: "planned", end: { name: "Innsbruck" }, progress: 0 });
+
+    // „Losfahren“ vor 10 Minuten in Hall, inzwischen kurz vor Innsbruck
+    await advanceTrip(driver.actor, booking.id, "TO_PICKUP");
+    await db.booking.update({ where: { id: booking.id }, data: { tripStageAt: new Date(Date.now() - 10 * 60_000) } });
+    await recordPositions(driver.actor, [point(47.2833, 11.5079, 9 * 60_000), point(47.275, 11.44, 60_000)]);
+    v = (await liveFleet(taxi.actor)).vehicles[0];
+    expect(v.trail).toHaveLength(2);
+    expect(v.leg).toMatchObject({ kind: "to-pickup", start: { name: "Hall in Tirol" }, end: { name: "Innsbruck" } });
+    expect(v.leg!.drivenKm).toBeGreaterThan(4);
+    expect(v.leg!.remainingKm).toBeGreaterThan(0);
+    expect(v.leg!.progress).toBeGreaterThan(50);
+    expect(v.leg!.progress).toBeLessThan(100);
+
+    // Mit Fahrgast an Bord beginnt die neue Etappe am Abholort
+    await advanceTrip(driver.actor, booking.id, "ON_BOARD");
+    v = (await liveFleet(taxi.actor)).vehicles[0];
+    expect(v.leg).toMatchObject({ kind: "to-dropoff", start: { name: "Innsbruck" }, end: { name: "Flughafen München" }, drivenKm: 0, progress: 0 });
+    expect(v.leg!.etaMinutes).toBeGreaterThan(60);
+  });
+
   it("alter Standortverlauf wird gelöscht", async () => {
     const { driver } = await setup();
     const shift = await startShift(driver.actor, { consent: true });

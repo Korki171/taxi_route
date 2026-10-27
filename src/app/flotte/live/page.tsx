@@ -7,7 +7,7 @@ import { Badge, Flash, type SP } from "@/components/ui";
 import { BOOKING_STATUS_LABEL, ROLE_LABEL, TRIP_STAGE_LABEL } from "@/lib/labels";
 import { actorCan } from "@/server/authz/context";
 import { getI18n } from "@/server/i18n";
-import { listDispatchBookings, listDrivers, liveFleet } from "@/server/services/dispatch";
+import { listDispatchBookings, listDrivers, liveFleet, translateLive } from "@/server/services/dispatch";
 import { listVehicles } from "@/server/services/fleet";
 import { referenceOf } from "@/server/services/marketplace";
 import { requireOrgActor } from "@/server/web";
@@ -24,12 +24,7 @@ export default async function LiveFleetPage({ searchParams }: { searchParams: SP
     listDrivers(actor),
     listVehicles(actor),
   ]);
-  for (const v of live.vehicles) {
-    if (v.trip) {
-      v.trip.pickup.name = t(v.trip.pickup.name);
-      v.trip.dropoff.name = t(v.trip.dropoff.name);
-    }
-  }
+  translateLive(live, (s) => t(s));
   const activeVehicles = vehicles.filter((v) => v.active);
   const onlyOwner = drivers.every((d) => d.role !== "DRIVER");
 
@@ -66,6 +61,13 @@ export default async function LiveFleetPage({ searchParams }: { searchParams: SP
           open: t("Fahrer in der Schicht"),
           updated: t("Aktualisiert {time}"),
           offline: t("Verbindung unterbrochen, versuche erneut …"),
+          start: t("Start"),
+          position: t("Aktueller Standort"),
+          eta: t("ca. {d} ({km} km)"),
+          arrival: t("Ankunft ca. {time}"),
+          estimate: t("geschätzt"),
+          driven: t("{km} km gefahren"),
+          order: t("Auftrag {ref}"),
         }}
       />
       <p className="map-legend">
