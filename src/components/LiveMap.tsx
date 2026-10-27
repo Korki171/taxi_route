@@ -108,6 +108,12 @@ export function LiveMap({ initial, text, locale }: { initial: LiveData; text: Li
           ...tiles,
           attribution: "Esri, Maxar, Earthstar Geographics",
         }),
+        // Österreich: amtliches Orthofoto von basemap.at (CC BY 4.0, deutlich schärfer als Esri)
+        mod.tileLayer("https://mapsneu.wien.gv.at/basemap/bmaporthofoto30cm/normal/google3857/{z}/{y}/{x}.jpeg", {
+          ...tiles,
+          bounds: [[46.35, 9.5], [49.05, 17.2]],
+          attribution: 'Luftbild Österreich: <a href="https://basemap.at" target="_blank">basemap.at</a>',
+        }),
         // Orts- und Straßennamen über dem Luftbild
         mod.tileLayer(`${esri}/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}`, tiles),
         mod.tileLayer(`${esri}/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}`, { ...tiles, opacity: 0.6 }),
