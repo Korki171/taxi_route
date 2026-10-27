@@ -119,6 +119,12 @@ alle Sitzungen beendet. Die Antwort verrät nicht, ob eine Adresse registriert i
 Vercel-Instanzen gilt: Anmeldung 10 Fehlversuche je E-Mail und 50 je IP in 15 Minuten, Registrierung
 5 je IP pro Stunde, Reset-Mails 3 je Adresse pro Stunde.
 
+**Datenbank bei Supabase.** Supabase macht das Schema `public` über seine Data API mit dem öffentlichen
+Projektschlüssel erreichbar. Die Migration `supabase_lockdown` schaltet deshalb Row Level Security ohne
+Policies auf allen Tabellen ein und entzieht den Rollen `anon` und `authenticated` alle Rechte, auch für
+künftige Tabellen. Die App selbst greift nur serverseitig als Tabelleneigentümer zu und ist davon nicht
+betroffen. Als `DATABASE_URL` den „Session pooler“ (Port 5432) verwenden.
+
 ## Offene Fragen (Annahmen getroffen, reversibel)
 
 - **E-Mail-Versand:** Noch kein Anbieter festgelegt. Einladungslinks werden einmalig in der UI angezeigt.
