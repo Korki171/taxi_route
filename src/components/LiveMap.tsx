@@ -1,6 +1,7 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import type * as Leaflet from "leaflet";
 import { useEffect, useRef, useState } from "react";
 import type { LiveVehicle } from "@/server/services/dispatch";
@@ -84,16 +85,22 @@ export function LiveMap({ initial, text, locale }: { initial: LiveData; text: Li
   // Karte einmalig aufbauen (Leaflet braucht das Fenster, daher erst im Browser laden).
   useEffect(() => {
     let cancelled = false;
-    void import("leaflet").then((mod) => {
+    void (async () => {
+      const mod = await import("leaflet");
+      // Plugin hängt L.maplibreGL an Leaflet an (Vektorkarte über MapLibre GL).
+      await import("@maplibre/maplibre-gl-leaflet");
       if (cancelled || !el.current || map.current) return;
       L.current = mod;
       const m = mod.map(el.current, { zoomControl: true }).setView(TIROL, 9);
-      // Die Seite sendet sonst keinen Referer (Referrer-Policy: same-origin), und OpenStreetMap
-      // sperrt Kachelabrufe ohne Referer. Für die Kacheln nur die Herkunft mitschicken.
+      // Kacheln mit Herkunft anfragen: die Seite selbst sendet keinen Referer (Referrer-Policy: same-origin).
       const tiles = { maxZoom: 19, referrerPolicy: "strict-origin-when-cross-origin" } as const;
-      const streets = mod.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        ...tiles,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      // Straßenkarte von OpenFreeMap: kostenlos, auch kommerziell, ohne Schlüssel und ohne Abrufgrenze.
+      // Das Plugin erweitert das CommonJS-Objekt von Leaflet; je nach Bundling steckt es unter default.
+      type WithGL = { maplibreGL?: (o: object) => Leaflet.Layer };
+      const gl = ((mod as unknown as { default?: WithGL }).default?.maplibreGL ?? (window as unknown as { L?: WithGL }).L?.maplibreGL)!;
+      const streets = gl({
+        style: "https://tiles.openfreemap.org/styles/liberty",
+        attribution: '<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/" target="_blank">OpenMapTiles</a> Daten von <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
       });
       const esri = "https://server.arcgisonline.com/ArcGIS/rest/services";
       const satellite = mod.layerGroup([
@@ -116,7 +123,7 @@ export function LiveMap({ initial, text, locale }: { initial: LiveData; text: Li
       layer.current = mod.layerGroup().addTo(m);
       map.current = m;
       setReady(true);
-    });
+    })();
     return () => {
       cancelled = true;
       map.current?.remove();

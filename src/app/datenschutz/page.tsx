@@ -27,6 +27,13 @@ export default function Datenschutz() {
           <strong>Sicherheit:</strong> Protokoll wichtiger Aktionen, Anmeldeversuche je E-Mail und IP-Adresse (höchstens 24
           Stunden). Zweck: Schutz vor Missbrauch (Art. 6 Abs. 1 lit. f DSGVO).
         </li>
+        <li>
+          <strong>Standort von Fahrern:</strong> Nur während einer vom Fahrer gestarteten Schicht und nach seiner Zustimmung
+          überträgt das Handy etwa alle 15 Sekunden die Position (Koordinaten, Genauigkeit, Geschwindigkeit, Richtung). Sie
+          ist nur für die Disposition des eigenen Unternehmens sichtbar, die letzte Position wird bei Schichtende entfernt und
+          der Verlauf nach 30 Tagen gelöscht. Zweck: Koordination und Nachweis der Fahrten (Art. 6 Abs. 1 lit. a, b und f
+          DSGVO). Die Zustimmung kann jederzeit widerrufen werden; ohne Schicht wird nichts übertragen.
+        </li>
       </ul>
 
       <h2>3. Cookies</h2>
@@ -40,6 +47,11 @@ export default function Datenschutz() {
         <li>Hosting: Vercel Inc. [Region, Vertrag zur Auftragsverarbeitung]</li>
         <li>Datenbank: [Anbieter, z. B. Neon, Region EU (Frankfurt)]</li>
         <li>E-Mail-Versand: Resend [Region, Vertrag zur Auftragsverarbeitung]</li>
+        <li>
+          Kartendarstellung auf der Live-Karte: Straßenkarte von OpenFreeMap (openfreemap.org), Satellitenbild von Esri
+          (arcgisonline.com). Beim Anzeigen der Karte lädt Ihr Browser Kartenkacheln direkt von diesen Servern; dabei werden
+          Ihre IP-Adresse und die Adresse unserer Website übermittelt, nicht aber Fahrzeug- oder Fahrerpositionen.
+        </li>
       </ul>
       <p>
         Soweit Daten in die USA übermittelt werden, stützen wir uns auf das EU-US Data Privacy Framework oder
