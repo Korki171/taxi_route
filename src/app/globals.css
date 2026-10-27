@@ -116,3 +116,55 @@ a.lang { color: var(--muted); font-size: 13px; }
 .legal .draft { background: var(--warn-bg); color: var(--warn); padding: 10px 12px; border-radius: 4px; }
 .footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin: 32px 0 16px; }
 .footer-links a { color: var(--muted); }
+
+/* Live-Karte */
+.live { display: grid; grid-template-columns: 1fr 320px; gap: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: var(--surface); margin-bottom: 8px; }
+.live-map { height: min(68vh, 640px); min-height: 360px; z-index: 0; }
+.live-list { border-left: 1px solid var(--border); overflow-y: auto; max-height: min(68vh, 640px); }
+.live-meta { font-size: 12px; padding: 8px 12px; margin: 0; border-bottom: 1px solid var(--border); }
+.live-list .empty { padding: 16px 12px; }
+.live-item { display: flex; gap: 10px; width: 100%; text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.live-item:hover, .live-item:focus-visible { background: var(--neutral-bg); outline: none; }
+.live-item.sel { background: var(--neutral-bg); box-shadow: inset 3px 0 0 var(--accent); }
+.live-body { display: grid; gap: 2px; min-width: 0; }
+.live-line { display: block; font-size: 13px; }
+.dot { display: inline-block; flex: none; width: 12px; height: 12px; border-radius: 50%; margin-top: 4px; background: var(--neutral); }
+.s-free { --pin: #1b8a46; }
+.s-next { --pin: #12827a; }
+.s-to-pickup { --pin: #c27c00; }
+.s-on-board { --pin: #0b5cad; }
+.s-stale, .s-none { --pin: #8a94a3; }
+.dot[class*="s-"] { background: var(--pin); }
+.map-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); margin: 0 0 16px; }
+.map-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.map-legend .dot { margin: 0; }
+.car-pin { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; }
+.car-pin::before { content: ""; width: 16px; height: 16px; border-radius: 50%; background: var(--pin); border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45); }
+.car-pin.sel::before { width: 20px; height: 20px; box-shadow: 0 0 0 4px rgba(11,92,173,.35), 0 1px 4px rgba(0,0,0,.45); }
+.car-pin i { position: absolute; left: 50%; top: 50%; width: 0; height: 0; margin: -22px 0 0 -5px; border: 5px solid transparent; border-bottom: 8px solid var(--pin); transform-origin: 5px 22px; }
+.car-pin span { position: absolute; left: 16px; white-space: nowrap; background: #fff; color: #1c2430; font: 600 12px/1 "Albert Sans Variable", system-ui, sans-serif; padding: 3px 6px; border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+tr.match-warn td { background: var(--warn-bg); }
+@media (max-width: 860px) {
+  .live { grid-template-columns: 1fr; }
+  .live-map { height: 55vh; }
+  .live-list { border-left: 0; border-top: 1px solid var(--border); max-height: none; }
+}
+
+/* Fahrer-Ansicht */
+button.big { padding: 14px 20px; font-size: 16px; font-weight: 600; width: 100%; min-height: 52px; }
+.consent { background: var(--neutral-bg); padding: 12px; border-radius: 4px; }
+.consent p { margin: 0 0 10px; }
+label.check { display: flex; gap: 8px; align-items: flex-start; font-weight: 500; }
+label.check input { width: auto; margin-top: 3px; }
+.tracker { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 4px; background: var(--neutral-bg); }
+.tracker.ok { background: var(--ok-bg); color: var(--ok); }
+.tracker.bad { background: var(--bad-bg); color: var(--bad); }
+.tracker small { display: block; color: inherit; opacity: .85; }
+.tracker .pulse { flex: none; width: 12px; height: 12px; margin-top: 4px; border-radius: 50%; background: currentColor; }
+.tracker.ok .pulse { animation: pulse 1.6s ease-out infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(27,107,53,.5); } 100% { box-shadow: 0 0 0 12px rgba(27,107,53,0); } }
+@media (prefers-reduced-motion: reduce) { .tracker.ok .pulse { animation: none; } }
+.trip .trip-time { font-size: 18px; font-weight: 700; }
+.trip.current { border-color: var(--accent); }
+.trip dl.kv { margin: 12px 0; }
+.trip-action { margin-top: 4px; }

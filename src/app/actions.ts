@@ -18,6 +18,8 @@ import {
 import { requestCapabilityReview, updateOrganizationProfile, updateTransportProfile } from "@/server/services/organizations";
 import { registerOrganization } from "@/server/services/registration";
 import { createVehicle, publishCapacity, setCapacityStatus, setVehicleActive } from "@/server/services/fleet";
+import { assignBooking } from "@/server/services/dispatch";
+import { advanceTrip, endShift, startShift } from "@/server/services/driver";
 import {
   acceptQuote,
   cancelBooking,
@@ -339,6 +341,33 @@ export async function bookingTransitionAction(fd: FormData) {
       case "dispute": await disputeBooking(actor, bookingId, note); break;
       default: throw invalid("Unbekannte Aktion.");
     }
+  });
+}
+
+// ---------- Disposition und Fahrer ----------
+
+export async function assignBookingAction(fd: FormData) {
+  await runAction("/flotte/live", async () => {
+    await assignBooking(await getActor(), str(fd, "bookingId"), formObject(fd, ["driverId", "vehicleId"]));
+    return withParam("/flotte/live", "ok", "Zuweisung gespeichert.") + "#disposition";
+  });
+}
+
+export async function startShiftAction(fd: FormData) {
+  await runAction("/fahrer", async () => {
+    await startShift(await getActor(), { vehicleId: str(fd, "vehicleId"), consent: fd.get("consent") === "on" });
+  });
+}
+
+export async function endShiftAction() {
+  await runAction("/fahrer", async () => {
+    await endShift(await getActor());
+  });
+}
+
+export async function advanceTripAction(fd: FormData) {
+  await runAction("/fahrer", async () => {
+    await advanceTrip(await getActor(), str(fd, "bookingId"), str(fd, "step"));
   });
 }
 

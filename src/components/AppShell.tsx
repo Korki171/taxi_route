@@ -18,13 +18,15 @@ export async function AppShell({ actor, children, narrow, path }: { actor: Actor
     <>
       <header className="top">
         <div className="inner">
-          <Link href="/dashboard" className="brand">TaxiRoute</Link>
+          <Link href={actor.org?.role === "DRIVER" ? "/fahrer" : "/dashboard"} className="brand">TaxiRoute</Link>
           <nav>
-            {actor.org && <Link href="/dashboard">{t("Übersicht")}</Link>}
+            {actor.org && actor.org.role !== "DRIVER" && <Link href="/dashboard">{t("Übersicht")}</Link>}
             {(actorCan(actor, "jobs.accept") || actorCan(actor, "transfers.request")) && <Link href="/boerse">{t("Börse")}</Link>}
+            {actorCan(actor, "fleet.manage") && <Link href="/flotte/live">{t("Live-Karte")}</Link>}
             {actorCan(actor, "fleet.manage") && <Link href="/flotte">{t("Flotte")}</Link>}
-            {actor.org && <Link href="/organization">{t("Unternehmen")}</Link>}
-            {actor.org && <Link href="/organization/members">{t("Team")}</Link>}
+            {actor.org?.role === "DRIVER" && <Link href="/fahrer">{t("Meine Fahrten")}</Link>}
+            {actor.org && actor.org.role !== "DRIVER" && <Link href="/organization">{t("Unternehmen")}</Link>}
+            {actor.org && actor.org.role !== "DRIVER" && <Link href="/organization/members">{t("Team")}</Link>}
             {actorCan(actor, "documents.read") && <Link href="/organization/documents">{t("Nachweise")}</Link>}
             {actor.isPlatformAdmin && <Link href="/admin">{t("Administration")}</Link>}
           </nav>

@@ -24,6 +24,8 @@ export const EVENT_LABEL: Record<string, string> = {
   "quote.accepted": "Angebot angenommen",
   "booking.fixed_price_taken": "Zum Festpreis übernommen",
   "booking.started": "Fahrt begonnen",
+  "booking.at_pickup": "Fahrer am Abholort",
+  "booking.on_board": "Fahrgast an Bord",
   "booking.completed": "Fahrt abgeschlossen",
   "booking.cancelled": "Buchung storniert",
   "booking.disputed": "Beanstandung gemeldet",

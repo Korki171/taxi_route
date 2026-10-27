@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { AppShell } from "@/components/AppShell";
@@ -27,6 +28,8 @@ const FEATURES: { permission: Permission; label: string }[] = [
 export default async function Dashboard({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
   const actor = await requireOrgActor();
+  // Fahrer brauchen keine Unternehmensübersicht, nur ihre Fahrten.
+  if (actor.org.role === "DRIVER") redirect("/fahrer");
   const { t } = await getI18n();
   const org = await db.organization.findUniqueOrThrow({
     where: { id: actor.org.id },

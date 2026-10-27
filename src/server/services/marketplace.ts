@@ -260,7 +260,7 @@ export async function getTransferRequest(actor: Actor | null, requestId: string)
     where: { id: requestId },
     include: {
       requesterOrg: { select: { id: true, name: true, city: true, type: true, email: true, phone: true } },
-      booking: { include: { providerOrg: { select: { id: true, name: true, city: true, email: true, phone: true } }, vehicle: true } },
+      booking: { include: { providerOrg: { select: { id: true, name: true, city: true, email: true, phone: true } }, vehicle: true, driver: { select: { name: true } } } },
     },
   });
   if (!req) throw notFound();
@@ -511,7 +511,7 @@ const BOOKING_TO_REQUEST: Record<string, TransferStatus> = {
   DISPUTED: "DISPUTED",
 };
 
-async function transitionBooking(
+export async function transitionBooking(
   actor: OrgActor,
   bookingId: string,
   who: "provider" | "either",
@@ -529,7 +529,11 @@ async function transitionBooking(
   await db.$transaction(async (tx) => {
     const res = await tx.booking.updateMany({
       where: { id: b.id, status: { in: from } },
-      data: { status: to, ...(to === "COMPLETED" ? { completedAt: new Date(), completionNote: note ?? null } : {}) },
+      data: {
+        status: to,
+        ...(to === "COMPLETED" ? { completedAt: new Date(), completionNote: note ?? null } : {}),
+        ...(to === "IN_PROGRESS" ? {} : { tripStage: null, tripStageAt: new Date() }),
+      },
     });
     if (res.count !== 1) throw invalid("Dieser Statuswechsel ist im aktuellen Zustand nicht möglich.");
     await tx.transferRequest.update({ where: { id: b.requestId }, data: { status: BOOKING_TO_REQUEST[to] } });

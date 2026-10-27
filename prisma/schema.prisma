@@ -51,6 +51,8 @@ enum MemberRole {
   BOOKER
   FINANCE
   VIEWER
+  /// Fahrer: sieht nur die eigenen zugewiesenen Fahrten und teilt während der Schicht den Standort
+  DRIVER
 }
 
 enum UserStatus {
@@ -97,6 +99,8 @@ model User {
   memberships     Membership[]
   sessions        Session[]
   passwordResets  PasswordResetToken[]
+  driverBookings  Booking[]            @relation("DriverBookings")
+  driverShifts    DriverShift[]
 }
 
 /// Einmal-Link zum Zurücksetzen des Passworts. Gespeichert wird nur der SHA-256 des Tokens.
@@ -168,6 +172,7 @@ model Organization {
   requesterBookings Booking[]         @relation("RequesterBookings")
   providerBookings  Booking[]         @relation("ProviderBookings")
   capacityOffers    CapacityOffer[]
+  driverShifts      DriverShift[]
 }
 
 model OrganizationCapability {
@@ -204,6 +209,8 @@ model Membership {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   role           MemberRole
+  /// Zustimmung des Fahrers zur Standortfreigabe während der Schicht
+  trackingConsentAt DateTime?
   createdAt      DateTime     @default(now())
 
   @@unique([userId, organizationId])
@@ -323,6 +330,7 @@ model Vehicle {
   createdAt      DateTime        @default(now())
   capacities     CapacityOffer[]
   bookings       Booking[]
+  driverShifts   DriverShift[]
 
   @@index([organizationId])
 }
@@ -421,6 +429,12 @@ model Booking {
   providerOrg       Organization    @relation("ProviderBookings", fields: [providerOrgId], references: [id])
   vehicleId         String?
   vehicle           Vehicle?        @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  /// Vom Disponenten zugewiesener Fahrer (Mitglied des ausführenden Unternehmens)
+  driverId          String?
+  driver            User?           @relation("DriverBookings", fields: [driverId], references: [id], onDelete: SetNull)
+  /// Fortschritt laut Fahrer, solange die Fahrt läuft
+  tripStage         TripStage?
+  tripStageAt       DateTime?
   capacityOfferId   String?
   agreedPriceCents  Int
   currency          String          @default("EUR")
@@ -435,6 +449,7 @@ model Booking {
 
   @@index([providerOrgId])
   @@index([requesterOrgId])
+  @@index([driverId])
 }
 
 /// Nachvollziehbare Ereignisse je Auftrag (Erstellung, Angebote, Vergabe, Statuswechsel).
@@ -475,4 +490,52 @@ model CapacityOffer {
 
   @@index([status, availableFrom])
   @@index([organizationId])
+}
+
+enum TripStage {
+  TO_PICKUP
+  AT_PICKUP
+  ON_BOARD
+}
+
+/// Schicht eines Fahrers. Nur während einer offenen Schicht wird der Standort übertragen und
+/// dem eigenen Unternehmen angezeigt. Die letzte Position steht direkt an der Schicht.
+model DriverShift {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicleId      String?
+  vehicle        Vehicle?     @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  startedAt      DateTime     @default(now())
+  endedAt        DateTime?
+
+  lastLat        Float?
+  lastLng        Float?
+  lastAccuracy   Float?
+  lastSpeed      Float?
+  lastHeading    Float?
+  lastPositionAt DateTime?
+
+  positions PositionPing[]
+
+  @@index([organizationId, endedAt])
+  @@index([userId, endedAt])
+}
+
+/// Standortverlauf je Schicht; wird nach POSITION_RETENTION_DAYS gelöscht.
+model PositionPing {
+  id         BigInt      @id @default(autoincrement())
+  shiftId    String
+  shift      DriverShift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  lat        Float
+  lng        Float
+  accuracy   Float?
+  speed      Float?
+  heading    Float?
+  recordedAt DateTime
+
+  @@index([shiftId, recordedAt])
+  @@index([recordedAt])
 }

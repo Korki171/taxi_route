@@ -26,6 +26,7 @@ export const PERMISSIONS = [
   "capacity.publish",
   "jobs.accept",
   "quotes.submit",
+  "trips.drive",
   // Auftraggeber (erfordert verifiziertes TRANSFER_BOOKER)
   "transfers.request",
   "bookings.manage",
@@ -46,12 +47,14 @@ export const ROLE_PERMISSIONS: Record<MemberRole, ReadonlySet<Permission>> = {
     "capacity.publish",
     "jobs.accept",
     "quotes.submit",
+    "trips.drive",
     "transfers.request",
     "bookings.manage",
   ]),
   BOOKER: new Set<Permission>(["org.read", "members.read", "transfers.request", "bookings.manage"]),
   FINANCE: new Set<Permission>(["org.read", "members.read", "documents.read", "billing.read"]),
   VIEWER: new Set<Permission>(["org.read", "members.read"]),
+  DRIVER: new Set<Permission>(["org.read", "trips.drive"]),
 };
 
 /** Welche verifizierte Geschäftsfunktion eine Berechtigung zusätzlich voraussetzt. */
@@ -60,6 +63,7 @@ export const PERMISSION_CAPABILITY: Partial<Record<Permission, Capability>> = {
   "capacity.publish": "TRANSPORT_PROVIDER",
   "jobs.accept": "TRANSPORT_PROVIDER",
   "quotes.submit": "TRANSPORT_PROVIDER",
+  "trips.drive": "TRANSPORT_PROVIDER",
   "transfers.request": "TRANSFER_BOOKER",
   "bookings.manage": "TRANSFER_BOOKER",
 };
@@ -109,7 +113,7 @@ export function can(input: OrgAuthzInput, permission: Permission): boolean {
 
 /** Rollen, die ein Nutzer mit `actorRole` vergeben bzw. verwalten darf. */
 export function assignableRoles(actorRole: MemberRole): MemberRole[] {
-  if (actorRole === "OWNER") return ["OWNER", "ADMIN", "DISPATCHER", "BOOKER", "FINANCE", "VIEWER"];
-  if (actorRole === "ADMIN") return ["ADMIN", "DISPATCHER", "BOOKER", "FINANCE", "VIEWER"];
+  if (actorRole === "OWNER") return ["OWNER", "ADMIN", "DISPATCHER", "DRIVER", "BOOKER", "FINANCE", "VIEWER"];
+  if (actorRole === "ADMIN") return ["ADMIN", "DISPATCHER", "DRIVER", "BOOKER", "FINANCE", "VIEWER"];
   return [];
 }
