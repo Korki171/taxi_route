@@ -106,17 +106,21 @@ export function LiveMap({ initial, text, locale }: { initial: LiveData; text: Li
       const satellite = mod.layerGroup([
         mod.tileLayer(`${esri}/World_Imagery/MapServer/tile/{z}/{y}/{x}`, {
           ...tiles,
+          // Auf Stufe 19 fehlen am Land oft Kacheln ("Map data not yet available"): dann Stufe 18 vergrößern
+          maxNativeZoom: 18,
           attribution: "Esri, Maxar, Earthstar Geographics",
         }),
         // Österreich: amtliches Orthofoto von basemap.at (CC BY 4.0, deutlich schärfer als Esri)
         mod.tileLayer("https://mapsneu.wien.gv.at/basemap/bmaporthofoto30cm/normal/google3857/{z}/{y}/{x}.jpeg", {
           ...tiles,
+          // Erst ab Stadtteil-Zoom: weiter draußen ist Esri gleich gut und Österreich stünde als dunkler Fleck da
+          minZoom: 12,
           bounds: [[46.35, 9.5], [49.05, 17.2]],
           attribution: 'Luftbild Österreich: <a href="https://basemap.at" target="_blank">basemap.at</a>',
         }),
         // Orts- und Straßennamen über dem Luftbild
         mod.tileLayer(`${esri}/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}`, tiles),
-        mod.tileLayer(`${esri}/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}`, { ...tiles, opacity: 0.6 }),
+        mod.tileLayer(`${esri}/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}`, { ...tiles, minZoom: 9, opacity: 0.6 }),
       ]);
       // Gewählte Ansicht pro Browser merken
       let saved: string | null = null;
