@@ -263,6 +263,9 @@ async function liveFleetDemo(alpen: OrgActor, reise: OrgActor, v: { vClass: stri
   await advanceTrip(stefan, onBoard.id, "ON_BOARD");
   await db.transferRequest.update({ where: { id: onBoard.requestId }, data: { pickupAt: new Date(Date.now() - 30 * 60_000) } });
   await advanceTrip(martina, toPickup.id, "TO_PICKUP");
+  // Etappen begannen mit der ersten Position der Spur (für Start-Schild und Fortschritt)
+  await db.booking.update({ where: { id: onBoard.id }, data: { tripStageAt: new Date(Date.now() - 26 * 60_000) } });
+  await db.booking.update({ where: { id: toPickup.id }, data: { tripStageAt: new Date(Date.now() - 13 * 60_000) } });
 }
 
 main().finally(() => db.$disconnect());

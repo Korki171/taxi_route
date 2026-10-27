@@ -59,10 +59,13 @@ export function isPlaceId(id: string): boolean {
   return BY_ID.has(id);
 }
 
-const ROAD_FACTOR = 1.3; // Luftlinie → Straße (Alpentäler)
+export const ROAD_FACTOR = 1.3; // Luftlinie → Straße (Alpentäler)
 const AVG_KMH = 85;
 
-function haversineKm(a: Place, b: Place) {
+type Point = { lat: number; lng: number };
+
+/** Luftlinie in Kilometern. */
+export function haversineKm(a: Point, b: Point) {
   const R = 6371;
   const dLat = ((b.lat - a.lat) * Math.PI) / 180;
   const dLng = ((b.lng - a.lng) * Math.PI) / 180;
@@ -81,4 +84,15 @@ export function estimateMinutes(fromId: string, toId: string): number {
   const b = BY_ID.get(toId);
   if (!a || !b || a.id === b.id) return 0;
   return Math.round(((haversineKm(a, b) * ROAD_FACTOR) / AVG_KMH) * 60);
+}
+
+/** Nächstgelegener Ort aus dem Katalog, z. B. um eine GPS-Position grob zu benennen. */
+export function nearestPlace(p: Point): Place {
+  let best = PLACES[0];
+  let dist = Infinity;
+  for (const c of PLACES) {
+    const d = haversineKm(p, c);
+    if (d < dist) [best, dist] = [c, d];
+  }
+  return best;
 }
