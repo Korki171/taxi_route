@@ -66,6 +66,8 @@ export default async function LiveFleetPage({ searchParams }: { searchParams: SP
           open: t("Fahrer in der Schicht"),
           updated: t("Aktualisiert {time}"),
           offline: t("Verbindung unterbrochen, versuche erneut …"),
+          streets: t("Karte"),
+          satellite: t("Satellit"),
         }}
       />
       <p className="map-legend">

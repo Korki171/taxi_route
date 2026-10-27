@@ -168,3 +168,6 @@ label.check input { width: auto; margin-top: 3px; }
 .trip.current { border-color: var(--accent); }
 .trip dl.kv { margin: 12px 0; }
 .trip-action { margin-top: 4px; }
+.leaflet-control-layers label { display: block; font-weight: 500; }
+.leaflet-control-layers label > span { display: inline-flex; gap: 6px; align-items: center; }
+.leaflet-control-layers input { width: auto; margin: 0; }

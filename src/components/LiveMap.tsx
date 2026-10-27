@@ -24,6 +24,8 @@ export type LiveText = {
   open: string;
   updated: string;
   offline: string;
+  streets: string;
+  satellite: string;
 };
 
 type State = "free" | "next" | "to-pickup" | "on-board" | "stale" | "none";
@@ -31,6 +33,7 @@ type State = "free" | "next" | "to-pickup" | "on-board" | "stale" | "none";
 const POLL_MS = 10_000;
 const STALE_MS = 120_000;
 const TIROL: [number, number] = [47.3, 11.4];
+const BASEMAP_KEY = "tr_basemap";
 
 function stateOf(v: LiveVehicle, now: number): State {
   if (!v.positionAt) return "none";
@@ -85,10 +88,28 @@ export function LiveMap({ initial, text, locale }: { initial: LiveData; text: Li
       if (cancelled || !el.current || map.current) return;
       L.current = mod;
       const m = mod.map(el.current, { zoomControl: true }).setView(TIROL, 9);
-      mod.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      const streets = mod.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      }).addTo(m);
+      });
+      const esri = "https://server.arcgisonline.com/ArcGIS/rest/services";
+      const satellite = mod.layerGroup([
+        mod.tileLayer(`${esri}/World_Imagery/MapServer/tile/{z}/{y}/{x}`, {
+          maxZoom: 19,
+          attribution: "Esri, Maxar, Earthstar Geographics",
+        }),
+        // Orts- und Straßennamen über dem Luftbild
+        mod.tileLayer(`${esri}/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}`, { maxZoom: 19 }),
+        mod.tileLayer(`${esri}/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}`, { maxZoom: 19, opacity: 0.6 }),
+      ]);
+      // Gewählte Ansicht pro Browser merken
+      let saved: string | null = null;
+      try { saved = localStorage.getItem(BASEMAP_KEY); } catch { /* z. B. privater Modus */ }
+      (saved === "satellite" ? satellite : streets).addTo(m);
+      mod.control.layers({ [text.streets]: streets, [text.satellite]: satellite }, undefined, { position: "topright" }).addTo(m);
+      m.on("baselayerchange", (e: Leaflet.LayersControlEvent) => {
+        try { localStorage.setItem(BASEMAP_KEY, e.layer === satellite ? "satellite" : "streets"); } catch { /* egal */ }
+      });
       layer.current = mod.layerGroup().addTo(m);
       map.current = m;
       setReady(true);
