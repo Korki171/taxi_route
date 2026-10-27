@@ -773,8 +773,6 @@ export const EN: Record<string, string> = {
   "Losfahren zur Abholung": "Head to pickup",
   "Am Abholort angekommen": "Arrived at pickup",
   "Eigene Fahrten sehen und Standort während der Schicht teilen": "See own trips and share location during shift",
-  "Karte": "Map",
-  "Satellit": "Satellite",
   // Neues App-Design
   "Weitere Filter": "More filters",
   "Angebote warten auf Ihre Entscheidung": "quotes waiting for your decision",

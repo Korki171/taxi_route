@@ -25,8 +25,6 @@ export type LiveText = {
   open: string;
   updated: string;
   offline: string;
-  streets: string;
-  satellite: string;
 };
 
 type State = "free" | "next" | "to-pickup" | "on-board" | "stale" | "none";
@@ -34,7 +32,6 @@ type State = "free" | "next" | "to-pickup" | "on-board" | "stale" | "none";
 const POLL_MS = 10_000;
 const STALE_MS = 120_000;
 const TIROL: [number, number] = [47.3, 11.4];
-const BASEMAP_KEY = "tr_basemap";
 
 function stateOf(v: LiveVehicle, now: number): State {
   if (!v.positionAt) return "none";
@@ -67,7 +64,7 @@ function target(v: LiveVehicle) {
 }
 
 /**
- * Live-Karte der eigenen Flotte (OpenStreetMap über Leaflet). Fragt das Lagebild alle
+ * Live-Karte der eigenen Flotte (OpenFreeMap über Leaflet). Fragt das Lagebild alle
  * 10 Sekunden neu ab und zeichnet Fahrzeuge, Spuren und die aktuellen Ziele.
  */
 export function LiveMap({ initial, text, locale }: { initial: LiveData; text: LiveText; locale: string }) {
@@ -92,8 +89,6 @@ export function LiveMap({ initial, text, locale }: { initial: LiveData; text: Li
       if (cancelled || !el.current || map.current) return;
       L.current = mod;
       const m = mod.map(el.current, { zoomControl: true }).setView(TIROL, 9);
-      // Kacheln mit Herkunft anfragen: die Seite selbst sendet keinen Referer (Referrer-Policy: same-origin).
-      const tiles = { maxZoom: 19, referrerPolicy: "strict-origin-when-cross-origin" } as const;
       // Straßenkarte von OpenFreeMap: kostenlos, auch kommerziell, ohne Schlüssel und ohne Abrufgrenze.
       // Das Plugin erweitert das CommonJS-Objekt von Leaflet; je nach Bundling steckt es unter default.
       type WithGL = { maplibreGL?: (o: object) => Leaflet.Layer };
@@ -102,34 +97,7 @@ export function LiveMap({ initial, text, locale }: { initial: LiveData; text: Li
         style: "https://tiles.openfreemap.org/styles/liberty",
         attribution: '<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/" target="_blank">OpenMapTiles</a> Daten von <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
       });
-      const esri = "https://server.arcgisonline.com/ArcGIS/rest/services";
-      const satellite = mod.layerGroup([
-        mod.tileLayer(`${esri}/World_Imagery/MapServer/tile/{z}/{y}/{x}`, {
-          ...tiles,
-          // Auf Stufe 19 fehlen am Land oft Kacheln ("Map data not yet available"): dann Stufe 18 vergrößern
-          maxNativeZoom: 18,
-          attribution: "Esri, Maxar, Earthstar Geographics",
-        }),
-        // Österreich: amtliches Orthofoto von basemap.at (CC BY 4.0, deutlich schärfer als Esri)
-        mod.tileLayer("https://mapsneu.wien.gv.at/basemap/bmaporthofoto30cm/normal/google3857/{z}/{y}/{x}.jpeg", {
-          ...tiles,
-          // Erst ab Stadtteil-Zoom: weiter draußen ist Esri gleich gut und Österreich stünde als dunkler Fleck da
-          minZoom: 12,
-          bounds: [[46.35, 9.5], [49.05, 17.2]],
-          attribution: 'Luftbild Österreich: <a href="https://basemap.at" target="_blank">basemap.at</a>',
-        }),
-        // Orts- und Straßennamen über dem Luftbild
-        mod.tileLayer(`${esri}/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}`, tiles),
-        mod.tileLayer(`${esri}/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}`, { ...tiles, minZoom: 9, opacity: 0.6 }),
-      ]);
-      // Gewählte Ansicht pro Browser merken
-      let saved: string | null = null;
-      try { saved = localStorage.getItem(BASEMAP_KEY); } catch { /* z. B. privater Modus */ }
-      (saved === "satellite" ? satellite : streets).addTo(m);
-      mod.control.layers({ [text.streets]: streets, [text.satellite]: satellite }, undefined, { position: "topright" }).addTo(m);
-      m.on("baselayerchange", (e: Leaflet.LayersControlEvent) => {
-        try { localStorage.setItem(BASEMAP_KEY, e.layer === satellite ? "satellite" : "streets"); } catch { /* egal */ }
-      });
+      streets.addTo(m);
       layer.current = mod.layerGroup().addTo(m);
       map.current = m;
       setReady(true);

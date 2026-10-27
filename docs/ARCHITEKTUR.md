@@ -135,8 +135,7 @@ weil in kleinen Betrieben oft der Chef selbst fährt. Fahrer sehen nur `/fahrer`
 Fahrzeug zu (`Booking.driverId`, `Booking.vehicleId`). Darüber liegt die Live-Karte (Leaflet; Straßenkarte
 als Vektorkarte von OpenFreeMap über MapLibre GL, kostenlos und ohne Schlüssel), die `/api/fleet/live` alle 10 Sekunden abfragt: Fahrer in offener Schicht,
 letzte Position, Spur der letzten 30 Minuten und der aktuelle bzw. nächste Auftrag mit Ziel. Ohne neue
-Position seit 2 Minuten gilt ein Fahrzeug als „kein Signal“. Oben rechts lässt sich zwischen Straßenkarte und Satellitenbild (Esri World Imagery mit
-Orts- und Straßennamen) umschalten; die Wahl merkt sich der Browser. Ziele liegen auf Ortsebene (Ortskatalog),
+Position seit 2 Minuten gilt ein Fahrzeug als „kein Signal“. Eine Satellitenansicht gibt es bewusst nicht. Ziele liegen auf Ortsebene (Ortskatalog),
 die genaue Adresse steht im Text.
 
 **Fahrer-Ansicht.** `/fahrer` ist für das Handy gebaut und lässt sich über `manifest.webmanifest` auf den
@@ -150,9 +149,8 @@ des Auftraggebers.
 
 **Datenschutz.** Positionen werden nur in offener Schicht angenommen und nur dem eigenen Unternehmen
 gezeigt. Beim Schichtende wird die letzte Position an der Schicht gelöscht, der Verlauf (`PositionPing`)
-nach `POSITION_RETENTION_DAYS` (30 Tage). Die Kacheln kommen von den Servern von OpenFreeMap bzw. Esri; das gehört in die
-Datenschutzerklärung. Für den kommerziellen Dauerbetrieb der Satellitenansicht einen (kostenlosen)
-ArcGIS-Location-Platform-Schlüssel oder einen Anbieter wie MapTiler verwenden.
+nach `POSITION_RETENTION_DAYS` (30 Tage). Die Kacheln kommen von den Servern von OpenFreeMap; das steht in der
+Datenschutzerklärung.
 
 **Grenze der Web-App.** Auf iPhones sendet der Browser nur, solange die Seite offen und im Vordergrund
 ist. Für Hintergrund-Tracking braucht es später eine native App, die dieselbe API nutzt.
