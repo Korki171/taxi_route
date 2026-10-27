@@ -11,7 +11,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: SP 
   return (
     <AuthLayout path="/register" wide>
       <h1>{t("Unternehmen registrieren")}</h1>
-      <p className="sub">{t("Die Registrierung ist kostenlos. Marktplatzfunktionen werden freigeschaltet, sobald TaxiRoute Ihr Unternehmen geprüft hat.")}</p>
+      <p className="sub">{t("Die Registrierung ist kostenlos. Marktplatzfunktionen werden freigeschaltet, sobald Transferborsa Ihr Unternehmen geprüft hat.")}</p>
       <Flash searchParams={sp} />
       <form action={registerAction} className="stack">
         <section className="card section stack">

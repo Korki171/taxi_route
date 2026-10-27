@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 /** Lässt sich die Fahrer-Ansicht auf dem Handy als App auf den Startbildschirm legen. */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "TaxiRoute",
-    short_name: "TaxiRoute",
+    name: "Transferborsa",
+    short_name: "Transferborsa",
     description: "Fahrten und Disposition für Taxi- und Transferunternehmen",
     start_url: "/fahrer",
     display: "standalone",

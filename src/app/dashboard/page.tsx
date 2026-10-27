@@ -96,7 +96,7 @@ export default async function Dashboard({ searchParams }: { searchParams: SP }) 
         <section className="band">
           <p className="band-line">
             {isAgency
-              ? t("Sobald TaxiRoute Ihr Reisebüro freigeschaltet hat, stellen Sie hier Transfers ein und vergleichen Angebote.")
+              ? t("Sobald Transferborsa Ihr Reisebüro freigeschaltet hat, stellen Sie hier Transfers ein und vergleichen Angebote.")
               : t("Sobald Konzession und Versicherung geprüft sind, schalten wir die Börse für Sie frei.")}
           </p>
           {actorCan(actor, "org.update") && (

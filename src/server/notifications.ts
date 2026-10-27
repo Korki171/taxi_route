@@ -31,14 +31,14 @@ function mail(org: Org, req: Req, subject: string, lines: string[], vars: Record
   };
   return {
     to: org.email,
-    subject: `TaxiRoute: ${t(subject, v)}`,
+    subject: `Transferborsa: ${t(subject, v)}`,
     text: [
       ...lines.map((l) => t(l, v)),
       "",
       appUrl(`/boerse/auftrag/${req.id}`),
       "",
       "—",
-      t("Diese Nachricht wurde automatisch von TaxiRoute verschickt."),
+      t("Diese Nachricht wurde automatisch von Transferborsa verschickt."),
     ].join("\n"),
   };
 }
@@ -77,7 +77,7 @@ export async function notifyQuoteSubmitted(quoteId: string) {
   await sendAll([
     mail(q.request.requesterOrg, q.request, "Neues Angebot für {ref}", [
       "{provider} bietet {amount} für {route} (Abholung {pickup}).",
-      "Sie können das Angebot in TaxiRoute vergleichen und annehmen.",
+      "Sie können das Angebot in Transferborsa vergleichen und annehmen.",
     ], { provider: q.providerOrg.name, amount: formatCents(q.amountCents) }),
   ]);
 }

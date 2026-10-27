@@ -23,7 +23,7 @@ export default async function DocumentsPage({ searchParams }: { searchParams: SP
     <AppShell actor={actor}>
       <h1>{t("Nachweise")}</h1>
       <p className="sub">
-        {t("Gewerbe-, Konzessions- und Versicherungsnachweise. Nur Ihre Organisation und die TaxiRoute-Prüfer haben Zugriff.")}
+        {t("Gewerbe-, Konzessions- und Versicherungsnachweise. Nur Ihre Organisation und die Transferborsa-Prüfer haben Zugriff.")}
       </p>
       <Flash searchParams={sp} />
 

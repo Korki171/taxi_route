@@ -1,27 +1,27 @@
 import { LegalPage } from "@/components/LegalPage";
 
-export const metadata = { title: "Nutzungsbedingungen · TaxiRoute" };
+export const metadata = { title: "Nutzungsbedingungen · Transferborsa" };
 
 export default function Nutzungsbedingungen() {
   return (
     <LegalPage title="Nutzungsbedingungen" path="/nutzungsbedingungen">
       <h2>1. Geltungsbereich</h2>
       <p>
-        Diese Bedingungen gelten für die Nutzung von TaxiRoute durch Unternehmen. TaxiRoute steht nur Unternehmern im Sinne
+        Diese Bedingungen gelten für die Nutzung von Transferborsa durch Unternehmen. Transferborsa steht nur Unternehmern im Sinne
         des § 1 KSchG offen, nicht Verbrauchern. Betreiber ist [Firmenname, Anschrift].
       </p>
 
-      <h2>2. Rolle von TaxiRoute</h2>
+      <h2>2. Rolle von Transferborsa</h2>
       <p>
-        TaxiRoute stellt eine Plattform bereit, auf der Unternehmen Transferaufträge einstellen, Angebote abgeben und
+        Transferborsa stellt eine Plattform bereit, auf der Unternehmen Transferaufträge einstellen, Angebote abgeben und
         Aufträge vergeben. Der Beförderungsvertrag kommt ausschließlich zwischen dem Auftraggeber und dem ausführenden
-        Unternehmen zustande. TaxiRoute ist nicht Vertragspartner der Beförderung und wickelt keine Zahlungen ab.
+        Unternehmen zustande. Transferborsa ist nicht Vertragspartner der Beförderung und wickelt keine Zahlungen ab.
       </p>
 
       <h2>3. Registrierung und Prüfung</h2>
       <p>
         Die Angaben bei der Registrierung müssen wahr und aktuell sein. Beförderungen anbieten und Aufträge übernehmen darf
-        nur, wer eine gültige Konzession und eine ausreichende Versicherung nachweist und von TaxiRoute freigeschaltet wurde.
+        nur, wer eine gültige Konzession und eine ausreichende Versicherung nachweist und von Transferborsa freigeschaltet wurde.
         Das Unternehmen ist selbst dafür verantwortlich, dass es für jede übernommene Fahrt, auch grenzüberschreitend, die
         nötigen Berechtigungen besitzt. Änderungen (etwa der Wegfall der Konzession) sind unverzüglich zu melden.
       </p>
@@ -48,13 +48,13 @@ export default function Nutzungsbedingungen() {
 
       <h2>7. Haftung</h2>
       <p>
-        TaxiRoute haftet nicht für die Durchführung der Fahrten und nicht für Angaben der Nutzer. Für leichte Fahrlässigkeit
-        haftet TaxiRoute nicht, ausgenommen bei Personenschäden. [Haftungsregeln rechtlich prüfen lassen.]
+        Transferborsa haftet nicht für die Durchführung der Fahrten und nicht für Angaben der Nutzer. Für leichte Fahrlässigkeit
+        haftet Transferborsa nicht, ausgenommen bei Personenschäden. [Haftungsregeln rechtlich prüfen lassen.]
       </p>
 
       <h2>8. Sperre und Kündigung</h2>
       <p>
-        Beide Seiten können jederzeit kündigen. TaxiRoute kann Konten bei Verstößen oder bei Wegfall der Voraussetzungen
+        Beide Seiten können jederzeit kündigen. Transferborsa kann Konten bei Verstößen oder bei Wegfall der Voraussetzungen
         einschränken oder sperren.
       </p>
 

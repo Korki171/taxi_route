@@ -1,6 +1,6 @@
 import { LegalPage } from "@/components/LegalPage";
 
-export const metadata = { title: "Datenschutz · TaxiRoute" };
+export const metadata = { title: "Datenschutz · Transferborsa" };
 
 export default function Datenschutz() {
   return (

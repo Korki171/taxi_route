@@ -14,7 +14,7 @@ import { referenceOf } from "@/server/services/marketplace";
 import { requireOrgActor } from "@/server/web";
 import { advanceTripAction, endShiftAction, startShiftAction } from "../actions";
 
-export const metadata: Metadata = { title: "TaxiRoute Fahrer" };
+export const metadata: Metadata = { title: "Transferborsa Fahrer" };
 
 const NEXT_STEP: Record<string, { step: TripStep; label: string }> = {
   NONE: { step: "TO_PICKUP", label: "Losfahren zur Abholung" },
@@ -80,7 +80,7 @@ export default async function DriverPage({ searchParams }: { searchParams: SP })
               <p className="muted">{t("Während der Schicht wird Ihr Standort an Ihr Unternehmen übertragen. Nach Schichtende nicht mehr.")}</p>
             ) : (
               <div className="consent">
-                <p>{t("Während einer Schicht überträgt TaxiRoute etwa alle 15 Sekunden Ihren Standort an die Disposition Ihres Unternehmens, damit Fahrten koordiniert werden können. Außerhalb der Schicht wird nichts übertragen. Der Verlauf wird nach 30 Tagen gelöscht.")}</p>
+                <p>{t("Während einer Schicht überträgt Transferborsa etwa alle 15 Sekunden Ihren Standort an die Disposition Ihres Unternehmens, damit Fahrten koordiniert werden können. Außerhalb der Schicht wird nichts übertragen. Der Verlauf wird nach 30 Tagen gelöscht.")}</p>
                 <label className="check"><input type="checkbox" name="consent" required /> {t("Ich bin einverstanden, dass mein Standort während der Schicht übertragen wird.")}</label>
               </div>
             )}

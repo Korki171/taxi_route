@@ -1,4 +1,4 @@
-// TaxiRoute – Datenmodell Phase 2: Organisationen, Nutzer, Rollen, Verifizierung.
+// Transferborsa – Datenmodell Phase 2: Organisationen, Nutzer, Rollen, Verifizierung.
 // Spätere Phasen (Aufträge, Angebote, Buchungen, Kapazitäten) bauen auf
 // Organization/Membership auf und erhalten eigene Modelle.
 

@@ -6,7 +6,7 @@ import { getI18n } from "@/server/i18n";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: "TaxiRoute", description: t("B2B-Auftragsbörse für Taxi-/Transferunternehmen und Reisebüros") };
+  return { title: "Transferborsa", description: t("B2B-Auftragsbörse für Taxi-/Transferunternehmen und Reisebüros") };
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

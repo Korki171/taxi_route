@@ -37,7 +37,7 @@ function keysInSource(): Set<string> {
 
 describe("Übersetzungen", () => {
   it("jeder angezeigte Text hat eine englische Übersetzung", () => {
-    const missing = [...keysInSource()].filter((k) => !(k in EN)).filter((k) => !/^(TaxiRoute|–|·)$/.test(k));
+    const missing = [...keysInSource()].filter((k) => !(k in EN)).filter((k) => !/^(TaxiRoute|Transferborsa|–|·)$/.test(k));
     expect(missing).toEqual([]);
   });
 

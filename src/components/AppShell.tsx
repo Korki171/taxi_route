@@ -30,7 +30,7 @@ export async function AppShell({ actor, children, narrow, path }: { actor: Actor
       <a href="#main" className="skip">{t("Zum Inhalt springen")}</a>
       <header className="shell">
         <div className="shell-bar">
-          <Link href={isDriver ? "/fahrer" : "/dashboard"} className="wordmark">TaxiRoute</Link>
+          <Link href={isDriver ? "/fahrer" : "/dashboard"} className="wordmark">Transferborsa</Link>
           <ShellNav
             items={items}
             name={actor.name}

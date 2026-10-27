@@ -2,7 +2,7 @@
   "name": "taxiroute",
   "version": "0.1.0",
   "private": true,
-  "description": "TaxiRoute – B2B-Auftragsbörse für Taxi-/Transferunternehmen und Reisebüros",
+  "description": "Transferborsa – B2B-Auftragsbörse für Taxi-/Transferunternehmen und Reisebüros",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -70,8 +70,8 @@ export const EN: Record<string, string> = {
   "Noch kein Konto?": "No account yet?",
   "Unternehmen registrieren": "Register your company",
   "Bereits registriert?": "Already registered?",
-  "Die Registrierung ist kostenlos. Marktplatzfunktionen werden freigeschaltet, sobald TaxiRoute Ihr Unternehmen geprüft hat.":
-    "Registration is free. Marketplace features are unlocked once TaxiRoute has verified your company.",
+  "Die Registrierung ist kostenlos. Marktplatzfunktionen werden freigeschaltet, sobald Transferborsa Ihr Unternehmen geprüft hat.":
+    "Registration is free. Marketplace features are unlocked once Transferborsa has verified your company.",
   "Art des Unternehmens": "Type of company",
   "Taxi- oder Transferunternehmen": "Taxi or transfer company",
   "Reisebüro": "Travel agency",
@@ -211,8 +211,8 @@ export const EN: Record<string, string> = {
   "Für diese E-Mail-Adresse existiert bereits ein Konto.": "An account already exists for this email address.",
 
   // Nachweise
-  "Gewerbe-, Konzessions- und Versicherungsnachweise. Nur Ihre Organisation und die TaxiRoute-Prüfer haben Zugriff.":
-    "Trade, licence and insurance documents. Only your organisation and TaxiRoute reviewers have access.",
+  "Gewerbe-, Konzessions- und Versicherungsnachweise. Nur Ihre Organisation und die Transferborsa-Prüfer haben Zugriff.":
+    "Trade, licence and insurance documents. Only your organisation and Transferborsa reviewers have access.",
   "Hinterlegte Dokumente": "Uploaded documents",
   "Noch keine Dokumente hochgeladen.": "No documents uploaded yet.",
   "Abgelaufen": "Expired",
@@ -570,8 +570,8 @@ export const EN: Record<string, string> = {
   "Preise": "Pricing",
   "Hin voll.": "Out full.",
   "Retour voll.": "Back full.",
-  "TaxiRoute ist die Auftragsbörse für Taxiunternehmen und Reisebüros in Tirol: Transfers zum Flughafen München vergeben, Angebote vergleichen und leere Rückfahrten füllen.":
-    "TaxiRoute is the transfer exchange for taxi companies and travel agencies in Tyrol: hand over transfers to Munich Airport, compare quotes and fill empty return trips.",
+  "Transferborsa ist die Auftragsbörse für Taxiunternehmen und Reisebüros in Tirol: Transfers zum Flughafen München vergeben, Angebote vergleichen und leere Rückfahrten füllen.":
+    "Transferborsa is the transfer exchange for taxi companies and travel agencies in Tyrol: hand over transfers to Munich Airport, compare quotes and fill empty return trips.",
   "Die Börse ausprobieren": "Try the exchange",
   "Von der Anfrage zur Fahrt": "From request to ride",
   "Zwei Minuten": "Two minutes",
@@ -620,8 +620,8 @@ export const EN: Record<string, string> = {
   "Bereits registriert? Anmelden": "Already registered? Sign in",
   "Was Sie wissen sollten": "What you should know",
   "Ist eine Anfrage schon eine Buchung?": "Is a request already a booking?",
-  "Nein. TaxiRoute trennt drei Zustände: die Anfrage mit einem unverbindlichen Richtpreis, das abgegebene Angebot und die bestätigte Buchung mit dem endgültigen Preis. Erst die Bestätigung ist verbindlich, und jeder Schritt ist für beide Seiten sichtbar.":
-    "No. TaxiRoute separates three states: the request with a non-binding guide price, the submitted quote and the confirmed booking with the final price. Only the confirmation is binding, and every step is visible to both sides.",
+  "Nein. Transferborsa trennt drei Zustände: die Anfrage mit einem unverbindlichen Richtpreis, das abgegebene Angebot und die bestätigte Buchung mit dem endgültigen Preis. Erst die Bestätigung ist verbindlich, und jeder Schritt ist für beide Seiten sichtbar.":
+    "No. Transferborsa separates three states: the request with a non-binding guide price, the submitted quote and the confirmed booking with the final price. Only the confirmation is binding, and every step is visible to both sides.",
   "Wer prüft die Unternehmen?": "Who verifies the companies?",
   "Wir prüfen Konzession, Versicherung und Firmendaten, bevor ein Unternehmen Aufträge übernehmen oder Fahrzeuge anbieten darf. Geprüft wird je Geschäftsfunktion. Grenzüberschreitende Strecken werden gesondert betrachtet.":
     "We check the operating licence, insurance and company details before a company may take jobs or offer vehicles. Verification is per business function. Cross-border routes are assessed separately.",
@@ -632,8 +632,8 @@ export const EN: Record<string, string> = {
   "Nur der Auftraggeber und das Unternehmen, das die bestätigte Fahrt durchführt. Andere Teilnehmer der Börse sehen Strecke, Zeit, Personenzahl und Gepäck, aber keine Namen oder Telefonnummern.":
     "Only the client and the company that carries out the confirmed ride. Other exchange members see the route, time, number of passengers and luggage, but no names or phone numbers.",
   "Wie wird bezahlt?": "How is payment handled?",
-  "Im Pilotbetrieb wickelt TaxiRoute keine Zahlungen ab. Vereinbarter Preis, Gebühr und Rechnungsreferenz werden mit der Buchung gespeichert, abgerechnet wird direkt zwischen den beteiligten Unternehmen.":
-    "During the pilot TaxiRoute does not process payments. The agreed price, fee and invoice reference are stored with the booking; invoicing happens directly between the companies involved.",
+  "Im Pilotbetrieb wickelt Transferborsa keine Zahlungen ab. Vereinbarter Preis, Gebühr und Rechnungsreferenz werden mit der Buchung gespeichert, abgerechnet wird direkt zwischen den beteiligten Unternehmen.":
+    "During the pilot Transferborsa does not process payments. The agreed price, fee and invoice reference are stored with the booking; invoicing happens directly between the companies involved.",
   "Was gilt bei Storno oder Verspätung?": "What about cancellations or delays?",
   "Die vereinbarten Stornobedingungen werden mit jeder Buchung festgehalten. Änderungen, Verspätungen und Rückfragen laufen über den Auftrag selbst, damit beide Seiten denselben Stand sehen.":
     "The agreed cancellation terms are recorded with every booking. Changes, delays and questions go through the job itself so both sides see the same status.",
@@ -674,7 +674,7 @@ export const EN: Record<string, string> = {
   "Ankunft 08:50, Terminal 2": "Arrival 08:50, Terminal 2",
 
   // E-Mails
-  "Diese Nachricht wurde automatisch von TaxiRoute verschickt.": "This message was sent automatically by TaxiRoute.",
+  "Diese Nachricht wurde automatisch von Transferborsa verschickt.": "This message was sent automatically by Transferborsa.",
   "Neuer Auftrag {route}": "New job {route}",
   "Neuer Auftrag in der Börse: {route}, Abholung {pickup}.": "New job on the exchange: {route}, pickup {pickup}.",
   "Festpreis: {price}. Das erste Unternehmen, das übernimmt, erhält den Auftrag.": "Fixed price: {price}. The first company to take it gets the job.",
@@ -682,7 +682,7 @@ export const EN: Record<string, string> = {
   "{pax} Personen, Auftraggeber: {requester}.": "{pax} passengers, client: {requester}.",
   "Neues Angebot für {ref}": "New quote for {ref}",
   "{provider} bietet {amount} für {route} (Abholung {pickup}).": "{provider} offers {amount} for {route} (pickup {pickup}).",
-  "Sie können das Angebot in TaxiRoute vergleichen und annehmen.": "You can compare and accept the quote in TaxiRoute.",
+  "Sie können das Angebot in Transferborsa vergleichen und annehmen.": "You can compare and accept the quote in Transferborsa.",
   "Auftrag {ref} verbindlich vergeben": "Job {ref} assigned to you",
   "Sie fahren {route} am {pickup} für {amount}.": "You drive {route} on {pickup} for {amount}.",
   "Auftraggeber: {requester}. Adressen und Fahrgastdaten finden Sie jetzt in der Buchung.": "Client: {requester}. Addresses and passenger details are now in the booking.",
@@ -732,7 +732,7 @@ export const EN: Record<string, string> = {
   "Schicht starten": "Start shift",
   "ohne festes Fahrzeug": "no fixed vehicle",
   "Während der Schicht wird Ihr Standort an Ihr Unternehmen übertragen. Nach Schichtende nicht mehr.": "During the shift your location is shared with your company. Not after the shift ends.",
-  "Während einer Schicht überträgt TaxiRoute etwa alle 15 Sekunden Ihren Standort an die Disposition Ihres Unternehmens, damit Fahrten koordiniert werden können. Außerhalb der Schicht wird nichts übertragen. Der Verlauf wird nach 30 Tagen gelöscht.": "During a shift, TaxiRoute sends your location to your company's dispatch team about every 15 seconds so trips can be coordinated. Nothing is sent outside your shift. The history is deleted after 30 days.",
+  "Während einer Schicht überträgt Transferborsa etwa alle 15 Sekunden Ihren Standort an die Disposition Ihres Unternehmens, damit Fahrten koordiniert werden können. Außerhalb der Schicht wird nichts übertragen. Der Verlauf wird nach 30 Tagen gelöscht.": "During a shift, Transferborsa sends your location to your company's dispatch team about every 15 seconds so trips can be coordinated. Nothing is sent outside your shift. The history is deleted after 30 days.",
   "Ich bin einverstanden, dass mein Standort während der Schicht übertragen wird.": "I agree that my location is shared during my shift.",
   "Zugewiesene Fahrten": "Assigned trips",
   "Ihnen sind gerade keine Fahrten zugewiesen.": "No trips are assigned to you right now.",
@@ -781,7 +781,7 @@ export const EN: Record<string, string> = {
   "offene Aufträge anderer Unternehmen in der Börse": "open jobs from other companies on the exchange",
   "eigene Aufträge noch nicht vergeben": "of your jobs not yet awarded",
   "bestätigte Fahrten stehen an": "confirmed trips coming up",
-  "Sobald TaxiRoute Ihr Reisebüro freigeschaltet hat, stellen Sie hier Transfers ein und vergleichen Angebote.": "Once TaxiRoute has approved your travel agency, you post transfers here and compare quotes.",
+  "Sobald Transferborsa Ihr Reisebüro freigeschaltet hat, stellen Sie hier Transfers ein und vergleichen Angebote.": "Once Transferborsa has approved your travel agency, you post transfers here and compare quotes.",
   "Sobald Konzession und Versicherung geprüft sind, schalten wir die Börse für Sie frei.": "Once your licence and insurance have been checked, we unlock the exchange for you.",
   "Nächste Fahrten": "Next trips",
   "Alle {n} ansehen": "View all {n}",
