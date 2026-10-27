@@ -88,19 +88,22 @@ export function LiveMap({ initial, text, locale }: { initial: LiveData; text: Li
       if (cancelled || !el.current || map.current) return;
       L.current = mod;
       const m = mod.map(el.current, { zoomControl: true }).setView(TIROL, 9);
+      // Die Seite sendet sonst keinen Referer (Referrer-Policy: same-origin), und OpenStreetMap
+      // sperrt Kachelabrufe ohne Referer. Für die Kacheln nur die Herkunft mitschicken.
+      const tiles = { maxZoom: 19, referrerPolicy: "strict-origin-when-cross-origin" } as const;
       const streets = mod.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
+        ...tiles,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       });
       const esri = "https://server.arcgisonline.com/ArcGIS/rest/services";
       const satellite = mod.layerGroup([
         mod.tileLayer(`${esri}/World_Imagery/MapServer/tile/{z}/{y}/{x}`, {
-          maxZoom: 19,
+          ...tiles,
           attribution: "Esri, Maxar, Earthstar Geographics",
         }),
         // Orts- und Straßennamen über dem Luftbild
-        mod.tileLayer(`${esri}/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}`, { maxZoom: 19 }),
-        mod.tileLayer(`${esri}/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}`, { maxZoom: 19, opacity: 0.6 }),
+        mod.tileLayer(`${esri}/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}`, tiles),
+        mod.tileLayer(`${esri}/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}`, { ...tiles, opacity: 0.6 }),
       ]);
       // Gewählte Ansicht pro Browser merken
       let saved: string | null = null;
