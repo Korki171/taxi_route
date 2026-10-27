@@ -1,6 +1,6 @@
 import { LegalPage } from "@/components/LegalPage";
 
-export const metadata = { title: "Impressum · TaxiRoute" };
+export const metadata = { title: "Impressum · Transferborsa" };
 
 export default function Impressum() {
   return (
@@ -18,10 +18,10 @@ export default function Impressum() {
         <dt>Kammer</dt><dd>[Wirtschaftskammer Tirol, Fachgruppe]</dd>
       </dl>
       <h2>Blattlinie</h2>
-      <p>Informationen über TaxiRoute, eine Auftragsbörse für Personenbeförderung zwischen Unternehmen.</p>
+      <p>Informationen über Transferborsa, eine Auftragsbörse für Personenbeförderung zwischen Unternehmen.</p>
       <h2>Streitbeilegung</h2>
       <p>
-        TaxiRoute richtet sich ausschließlich an Unternehmen. Zur Teilnahme an einem Streitbeilegungsverfahren vor einer
+        Transferborsa richtet sich ausschließlich an Unternehmen. Zur Teilnahme an einem Streitbeilegungsverfahren vor einer
         Verbraucherschlichtungsstelle sind wir nicht verpflichtet und nicht bereit.
       </p>
     </LegalPage>

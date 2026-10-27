@@ -45,7 +45,7 @@ const STAGES = [
 const FAQ: [string, string][] = [
   [
     "Ist eine Anfrage schon eine Buchung?",
-    "Nein. TaxiRoute trennt drei Zustände: die Anfrage mit einem unverbindlichen Richtpreis, das abgegebene Angebot und die bestätigte Buchung mit dem endgültigen Preis. Erst die Bestätigung ist verbindlich, und jeder Schritt ist für beide Seiten sichtbar.",
+    "Nein. Transferborsa trennt drei Zustände: die Anfrage mit einem unverbindlichen Richtpreis, das abgegebene Angebot und die bestätigte Buchung mit dem endgültigen Preis. Erst die Bestätigung ist verbindlich, und jeder Schritt ist für beide Seiten sichtbar.",
   ],
   [
     "Wer prüft die Unternehmen?",
@@ -61,7 +61,7 @@ const FAQ: [string, string][] = [
   ],
   [
     "Wie wird bezahlt?",
-    "Im Pilotbetrieb wickelt TaxiRoute keine Zahlungen ab. Vereinbarter Preis, Gebühr und Rechnungsreferenz werden mit der Buchung gespeichert, abgerechnet wird direkt zwischen den beteiligten Unternehmen.",
+    "Im Pilotbetrieb wickelt Transferborsa keine Zahlungen ab. Vereinbarter Preis, Gebühr und Rechnungsreferenz werden mit der Buchung gespeichert, abgerechnet wird direkt zwischen den beteiligten Unternehmen.",
   ],
   [
     "Was gilt bei Storno oder Verspätung?",
@@ -75,7 +75,7 @@ export async function Landing() {
     <div className="lp">
       <Motion />
       <header className="lp-header" data-ink="paper">
-        <Link href="/" className="lp-wordmark">TaxiRoute</Link>
+        <Link href="/" className="lp-wordmark">Transferborsa</Link>
         <nav aria-label={t("Hauptnavigation")}>
           <a href="#boerse">{t("Börse")}</a>
           <a href="#ablauf">{t("Ablauf")}</a>
@@ -94,7 +94,7 @@ export async function Landing() {
           </h1>
           <div className="lp-hero-low" data-ink="navy">
             <p className="lp-hero-lead">
-              {t("TaxiRoute ist die Auftragsbörse für Taxiunternehmen und Reisebüros in Tirol: Transfers zum Flughafen München vergeben, Angebote vergleichen und leere Rückfahrten füllen.")}
+              {t("Transferborsa ist die Auftragsbörse für Taxiunternehmen und Reisebüros in Tirol: Transfers zum Flughafen München vergeben, Angebote vergleichen und leere Rückfahrten füllen.")}
             </p>
           </div>
         </section>
@@ -217,12 +217,12 @@ export async function Landing() {
 
       <footer className="lp-footer" data-ink="navy">
         <div className="lp-footer-top">
-          <p><strong>TaxiRoute</strong>, {t("die Auftragsbörse für Personenbeförderung in Tirol und Bayern.")}</p>
+          <p><strong>Transferborsa</strong>, {t("die Auftragsbörse für Personenbeförderung in Tirol und Bayern.")}</p>
           <p>{t("Pilotbetrieb ab Innsbruck.")}</p>
           <a href="#lp-title" className="lp-textlink">{t("Nach oben")}</a>
         </div>
         <h2 className="lp-sr">{t("Kontakt")}</h2>
-        <a className="lp-contact" href="mailto:hallo@taxiroute.at?subject=TaxiRoute%20Pilotbetrieb">
+        <a className="lp-contact" href="mailto:hallo@taxiroute.at?subject=Transferborsa%20Pilotbetrieb">
           hallo<wbr />@taxiroute.at
         </a>
         <div className="lp-footer-meta">

@@ -27,7 +27,7 @@ export async function requestPasswordReset(input: unknown) {
   });
   await sendEmail({
     to: user.email,
-    subject: "TaxiRoute: Passwort zurücksetzen / Reset your password",
+    subject: "Transferborsa: Passwort zurücksetzen / Reset your password",
     text: [
       `Hallo ${user.name},`,
       "",

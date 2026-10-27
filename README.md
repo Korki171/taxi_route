@@ -1,4 +1,4 @@
-# TaxiRoute
+# Transferborsa
 
 B2B-Auftragsbörse für Taxi- und Transferunternehmen und Reisebüros (Start: Tirol ↔ Flughafen München).
 
@@ -52,7 +52,7 @@ Das Projekt ist für Vercel vorbereitet (`vercel-build`, `postinstall: prisma ge
   und `DATABASE_URL` setzen. `vercel-build` führt dann vor dem Build `prisma migrate deploy` aus.
   Den Plattformadmin einmalig mit `npm run db:seed` gegen diese Datenbank anlegen.
 - **E-Mails:** Ein Konto bei [Resend](https://resend.com) anlegen, die eigene Domain dort verifizieren und
-  `RESEND_API_KEY` sowie `EMAIL_FROM` (z. B. `TaxiRoute <noreply@taxiroute.at>`) setzen. Ohne Schlüssel
+  `RESEND_API_KEY` sowie `EMAIL_FROM` (z. B. `Transferborsa <noreply@taxiroute.at>`) setzen. Ohne Schlüssel
   werden E-Mails nicht verschickt, sondern nur ins Server-Log geschrieben.
 - **Links in E-Mails:** `APP_URL` auf die öffentliche Adresse setzen (z. B. `https://taxiroute.at`).
   Ohne `APP_URL` wird die Produktions-Domain von Vercel verwendet.

@@ -8,7 +8,7 @@ export async function LegalPage({ title, path, children }: { title: string; path
   return (
     <main className="legal">
       <div className="legal-top">
-        <Link href="/" className="wordmark">TaxiRoute</Link>
+        <Link href="/" className="wordmark">Transferborsa</Link>
         <LangSwitch path={path} />
       </div>
       <h1>{t(title)}</h1>
