@@ -69,7 +69,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
 
   return (
     <AppShell actor={actor}>
-      <p className="muted" style={{ margin: 0 }}>
+      <p className="back">
         <Link href={role === "market" ? "/boerse" : role === "requester" ? "/boerse?view=meine" : "/boerse?view=uebernommen"}>{t("← Zur Börse")}</Link>
       </p>
       <div className="head-row">
@@ -112,12 +112,12 @@ export default async function RequestDetailPage({ params, searchParams }: { para
           <h2>{t("Preis")}</h2>
           {booking ? (
             <>
-              <p className="price-fixed" style={{ fontSize: 24, margin: "0 0 4px" }}>{f.money(booking.agreedPriceCents)}</p>
+              <p className="price-big">{f.money(booking.agreedPriceCents)}</p>
               <p className="price-note">{t("Bestätigter Preis, verbindlich vereinbart am {date}", { date: f.dateTime(booking.acceptedAt) })}</p>
             </>
           ) : (
             <>
-              <p className={r.priceMode === "FIXED" ? "price-fixed" : "price-guide"} style={{ fontSize: 24, margin: "0 0 4px" }}>
+              <p className="price-big">
                 {r.priceCents ? f.money(r.priceCents) : t("offen")}
               </p>
               <p className="price-note">{t(priceStateLabel(r.priceMode))}{r.quoteDeadline ? ` · ${t("Angebote bis")} ${f.dateTime(r.quoteDeadline)}` : ""}</p>
@@ -164,7 +164,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
                     {vehicles.map((v) => <option key={v.id} value={v.id}>{v.label} · {t(VEHICLE_LABEL[v.category])} · {t("{n} Plätze", { n: v.seats })}</option>)}
                   </select>
                 )}
-                <button type="submit">{t("Für {price} verbindlich übernehmen", { price: f.money(r.priceCents) })}</button>
+                <button type="submit" className="accent">{t("Für {price} verbindlich übernehmen", { price: f.money(r.priceCents) })}</button>
               </form>
             </>
           )}
@@ -182,12 +182,12 @@ export default async function RequestDetailPage({ params, searchParams }: { para
                   </div>
                   <label>{t("Nachricht an den Auftraggeber")}<textarea name="message" rows={2} maxLength={500} defaultValue={myQuote?.message ?? ""} /></label>
                   <div className="inline">
-                    <button type="submit">{myQuote?.status === "SUBMITTED" ? t("Angebot aktualisieren") : t("Angebot abgeben")}</button>
+                    <button type="submit" className="accent">{myQuote?.status === "SUBMITTED" ? t("Angebot aktualisieren") : t("Angebot abgeben")}</button>
                   </div>
                 </form>
               )}
               {myQuote?.status === "SUBMITTED" && (
-                <form action={withdrawQuoteAction} style={{ marginTop: 8 }}>
+                <form action={withdrawQuoteAction} className="gap-top">
                   <input type="hidden" name="requestId" value={r.id} />
                   <input type="hidden" name="quoteId" value={myQuote.id} />
                   <button type="submit" className="link">{t("Angebot zurückziehen")}</button>
@@ -261,7 +261,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
             {booking.completedAt && <><dt>{t("Abgeschlossen")}</dt><dd>{f.dateTime(booking.completedAt)}{booking.completionNote ? `, ${booking.completionNote}` : ""}</dd></>}
           </dl>
           <p className="price-note">{t("Der Leistungsumfang ist zum Zeitpunkt der Vereinbarung festgehalten und ändert sich nicht mehr.")}</p>
-          <div className="inline" style={{ marginTop: 12 }}>
+          <div className="actions-row gap-top">
             {role === "provider" && booking.status === "CONFIRMED" && (
               <form action={bookingTransitionAction}>
                 <input type="hidden" name="requestId" value={r.id} />
@@ -281,9 +281,9 @@ export default async function RequestDetailPage({ params, searchParams }: { para
             )}
           </div>
           {booking.status !== "CANCELLED" && booking.status !== "DISPUTED" && (
-            <details style={{ marginTop: 12 }}>
+            <details className="more-actions gap-top">
               <summary>{t("Stornieren oder Problem melden")}</summary>
-              <div className="stack" style={{ marginTop: 8 }}>
+              <div className="stack gap-top">
                 {booking.status === "CONFIRMED" && (
                   <form action={bookingTransitionAction} className="inline">
                     <input type="hidden" name="requestId" value={r.id} />
@@ -307,7 +307,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
       )}
 
       {role === "requester" && r.status === "OPEN" && (
-        <form action={cancelTransferRequestAction} style={{ marginBottom: 16 }}>
+        <form action={cancelTransferRequestAction} className="gap-bottom">
           <input type="hidden" name="requestId" value={r.id} />
           <button type="submit" className="danger">{t("Auftrag zurückziehen")}</button>
         </form>

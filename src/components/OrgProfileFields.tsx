@@ -10,7 +10,7 @@ export async function OrgProfileFields({ org = {}, disabled }: { org?: Org; disa
   const v = (k: keyof Org) => org[k] ?? "";
   const { t } = await getI18n();
   return (
-    <fieldset disabled={disabled} style={{ border: 0, padding: 0, margin: 0 }} className="stack">
+    <fieldset disabled={disabled} className="bare stack">
       <div className="fields">
         <label>{t("Firmenname")}<input name="name" defaultValue={v("name")} required /></label>
         <label>{t("Rechtlicher Name")} <small>{t("falls abweichend")}</small><input name="legalName" defaultValue={v("legalName")} /></label>

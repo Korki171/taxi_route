@@ -69,8 +69,8 @@ export default async function BoersePage({ searchParams }: { searchParams: SP })
           <p className="sub">{t("Transferaufträge, Angebote und freie Kapazitäten zwischen geprüften Unternehmen")}</p>
         </div>
         <div className="inline">
-          {actorCan(actor, "transfers.request") && <Link href="/boerse/neu"><button type="button">{t("Auftrag einstellen")}</button></Link>}
-          {actorCan(actor, "capacity.publish") && <Link href="/flotte#fahrt"><button type="button" className="secondary">{t("Rückfahrt anbieten")}</button></Link>}
+          {actorCan(actor, "transfers.request") && <Link href="/boerse/neu" className="btn accent">{t("Auftrag einstellen")}</Link>}
+          {actorCan(actor, "capacity.publish") && <Link href="/flotte#fahrt" className="btn secondary">{t("Rückfahrt anbieten")}</Link>}
         </div>
       </div>
       <Flash searchParams={sp} />
@@ -104,6 +104,9 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
         <input type="hidden" name="view" value={sp.newOnly ? "neu" : "markt"} />
         <label>{t("Von")}<PlaceSelect name="from" defaultValue={sp.from} emptyLabel={t("Alle Orte")} /></label>
         <label>{t("Nach")}<PlaceSelect name="to" defaultValue={sp.to} emptyLabel={t("Alle Orte")} /></label>
+        <input type="checkbox" id="more-filters" className="more-check" defaultChecked={FILTER_KEYS.some((k) => k !== "from" && k !== "to" && sp[k])} />
+        <label htmlFor="more-filters" className="more-toggle">{t("Weitere Filter")}</label>
+        <div className="more">
         <label>{t("Region Start")}
           <select name="fromRegion" defaultValue={sp.fromRegion ?? ""}>
             <option value="">{t("Alle")}</option>
@@ -133,9 +136,10 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
             <option value="">{t("Alle")}</option><option value="FIXED">{t("Festpreis")}</option><option value="NEGOTIABLE">{t("Verhandelbar")}</option>
           </select>
         </label>
+        </div>
         <div className="actions">
           <button type="submit">{t("Filtern")}</button>
-          {active && <Link href={`/boerse?view=${sp.newOnly ? "neu" : "markt"}`}><button type="button" className="secondary">{t("Zurücksetzen")}</button></Link>}
+          {active && <Link href={`/boerse?view=${sp.newOnly ? "neu" : "markt"}`} className="btn secondary">{t("Zurücksetzen")}</Link>}
         </div>
       </form>
       <section className="card">
@@ -159,7 +163,7 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
                       <td data-label={t("Fahrzeug")}>{r.vehicleCategory ? t(VEHICLE_LABEL[r.vehicleCategory]) : <span className="muted">{t("beliebig")}</span>}</td>
                       <td data-label={t("Auftraggeber")}>{r.requesterOrg.name}<span className="price-note">{r.requesterOrg.city} · {t("geprüft")}</span></td>
                       <td className="num"><PriceCell mode={r.priceMode} cents={r.priceCents} /></td>
-                      <td>{mine ? <Badge status={mine.status}>{t("Ihr Angebot")} {f.money(mine.amountCents)}</Badge> : <Link href={`/boerse/auftrag/${r.id}`}>{r.priceMode === "FIXED" ? t("Übernehmen") : t("Angebot abgeben")}</Link>}</td>
+                      <td className="nowrap">{mine ? <Badge status={mine.status}>{t("Ihr Angebot")} {f.money(mine.amountCents)}</Badge> : <Link href={`/boerse/auftrag/${r.id}`}>{r.priceMode === "FIXED" ? t("Übernehmen") : t("Angebot abgeben")}</Link>}</td>
                     </tr>
                   );
                 })}
@@ -216,7 +220,7 @@ async function ReturnTripsView({ actor }: { actor: OrgActor }) {
           <div className="head-row">
             <div>
               <h2><Route from={offer.fromPlaceId} to={offer.toPlaceId} /></h2>
-              <p className="muted" style={{ margin: 0 }}>
+              <p className="muted flush">
                 {f.dateTime(offer.availableFrom)} – {f.time(offer.availableUntil)} · {offer.vehicle?.label ?? t(VEHICLE_LABEL[offer.vehicleCategory])} ·{" "}
                 {t("{s} Plätze, {l} Gepäck · Umweg bis {d} min, Wartezeit bis {w} min", { s: offer.seats, l: offer.luggage, d: offer.maxDetourMinutes, w: offer.maxWaitMinutes })}
               </p>

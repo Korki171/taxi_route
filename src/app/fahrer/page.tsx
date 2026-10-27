@@ -84,12 +84,12 @@ export default async function DriverPage({ searchParams }: { searchParams: SP })
                 <label className="check"><input type="checkbox" name="consent" required /> {t("Ich bin einverstanden, dass mein Standort während der Schicht übertragen wird.")}</label>
               </div>
             )}
-            <div><button type="submit" className="big">{t("Schicht starten")}</button></div>
+            <div><button type="submit" className="big accent">{t("Schicht starten")}</button></div>
           </form>
         )}
       </section>
 
-      <h2>{t("Zugewiesene Fahrten")}</h2>
+      <h2 className="section-title">{t("Zugewiesene Fahrten")}</h2>
       {trips.length === 0 ? <Empty>{t("Ihnen sind gerade keine Fahrten zugewiesen.")}</Empty> : trips.map((b, i) => {
         const r = b.request;
         const next = NEXT_STEP[b.tripStage ?? "NONE"];
@@ -97,10 +97,11 @@ export default async function DriverPage({ searchParams }: { searchParams: SP })
         const to = t(placeName(r.dropoffPlaceId));
         return (
           <article key={b.id} className={`card trip${i === 0 ? " current" : ""}`}>
-            <div className="head-row">
+            <div className="trip-head">
               <div>
-                <div className="trip-time">{f.dateTime(r.pickupAt)}</div>
-                <div className="route">{from} <span className="muted">→</span> {to}</div>
+                <span className="trip-date">{f.date(r.pickupAt)}</span>
+                <span className="trip-time">{f.time(r.pickupAt)}</span>
+                <p className="trip-route">{from} <span className="muted">→</span> {to}</p>
               </div>
               <span className="badge warn">{b.tripStage ? t(TRIP_STAGE_LABEL[b.tripStage]) : t("Geplant")}</span>
             </div>
@@ -123,7 +124,7 @@ export default async function DriverPage({ searchParams }: { searchParams: SP })
             <form action={advanceTripAction} className="trip-action">
               <input type="hidden" name="bookingId" value={b.id} />
               <input type="hidden" name="step" value={next.step} />
-              <button type="submit" className="big">{t(next.label)}</button>
+              <button type="submit" className={i === 0 ? "big accent" : "big"}>{t(next.label)}</button>
             </form>
           </article>
         );

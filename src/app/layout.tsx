@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "@fontsource-variable/albert-sans";
+import "@fontsource-variable/imbue";
 import "./globals.css";
 import { getI18n } from "@/server/i18n";
 

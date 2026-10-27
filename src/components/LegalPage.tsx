@@ -7,8 +7,10 @@ export async function LegalPage({ title, path, children }: { title: string; path
   const { t, locale } = await getI18n();
   return (
     <main className="legal">
-      <p className="right"><LangSwitch path={path} /></p>
-      <p><Link href="/">TaxiRoute</Link></p>
+      <div className="legal-top">
+        <Link href="/" className="wordmark">TaxiRoute</Link>
+        <LangSwitch path={path} />
+      </div>
       <h1>{t(title)}</h1>
       <p className="draft">
         {t("Entwurf: Dieser Text ist eine Vorlage und muss vor dem Livebetrieb rechtlich geprüft und mit den Angaben in eckigen Klammern ergänzt werden.")}
