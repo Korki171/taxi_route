@@ -8,6 +8,7 @@ import { Badge, Flash, type SP } from "@/components/ui";
 import { fmtDateTime, fmtMinutes, fmtTime } from "@/lib/format";
 import {
   BOOKING_STATUS_LABEL,
+  TRIP_STAGE_LABEL,
   QUOTE_STATUS_LABEL,
   TRANSFER_STATUS_LABEL,
   VEHICLE_LABEL,
@@ -251,6 +252,10 @@ export default async function RequestDetailPage({ params, searchParams }: { para
             {role === "requester" && booking.providerOrg.email && <><dt>{t("E-Mail")}</dt><dd>{booking.providerOrg.email}</dd></>}
             <dt>{t("Bestätigter Preis")}</dt><dd className="price-fixed">{f.money(booking.agreedPriceCents)}</dd>
             <dt>{t("Fahrzeug")}</dt><dd>{booking.vehicle ? `${booking.vehicle.label} (${t(VEHICLE_LABEL[booking.vehicle.category])})` : scope?.vehicleCategory ? t(VEHICLE_LABEL[scope.vehicleCategory]) : t("wird vom Unternehmen zugewiesen")}</dd>
+            {role === "provider" && (
+              <><dt>{t("Fahrer")}</dt><dd>{booking.driver?.name ?? <span className="muted">{t("noch nicht zugewiesen")}</span>}{actorCan(actor, "fleet.manage") && (booking.status === "CONFIRMED" || booking.status === "IN_PROGRESS") && <> · <Link href="/flotte/live#disposition">{t("Disposition")}</Link></>}</dd></>
+            )}
+            {role === "provider" && booking.tripStage && <><dt>{t("Fortschritt")}</dt><dd>{t(TRIP_STAGE_LABEL[booking.tripStage])}</dd></>}
             <dt>{t("Storno")}</dt><dd>{booking.cancellationTerms ?? "keine gesonderten Bedingungen"}</dd>
             <dt>{t("Vereinbart")}</dt><dd>{f.dateTime(booking.acceptedAt)}{" "}{booking.quoteId ? t("durch Annahme eines Angebots") : t("durch Übernahme zum Festpreis")}</dd>
             {booking.completedAt && <><dt>{t("Abgeschlossen")}</dt><dd>{f.dateTime(booking.completedAt)}{booking.completionNote ? `, ${booking.completionNote}` : ""}</dd></>}

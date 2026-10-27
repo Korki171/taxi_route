@@ -125,6 +125,38 @@ Policies auf allen Tabellen ein und entzieht den Rollen `anon` und `authenticate
 künftige Tabellen. Die App selbst greift nur serverseitig als Tabelleneigentümer zu und ist davon nicht
 betroffen. Als `DATABASE_URL` den „Session pooler“ (Port 5432) verwenden.
 
+## Live-Flottenkarte und Fahrer
+
+**Rollen.** Neue Rolle `DRIVER` mit der Berechtigung `trips.drive` (setzt wie alle Beförderungsfunktionen
+ein geprüftes `TRANSPORT_PROVIDER` voraus). Inhaber, Administratoren und Disponenten haben sie ebenfalls,
+weil in kleinen Betrieben oft der Chef selbst fährt. Fahrer sehen nur `/fahrer`, keine Börse und keine Flotte.
+
+**Disposition.** Unter `/flotte/live` weist der Disponent (`fleet.manage`) jeder Buchung Fahrer und
+Fahrzeug zu (`Booking.driverId`, `Booking.vehicleId`). Darüber liegt die Live-Karte (Leaflet mit
+OpenStreetMap-Kacheln), die `/api/fleet/live` alle 10 Sekunden abfragt: Fahrer in offener Schicht,
+letzte Position, Spur der letzten 30 Minuten und der aktuelle bzw. nächste Auftrag mit Ziel. Ohne neue
+Position seit 2 Minuten gilt ein Fahrzeug als „kein Signal“. Oben rechts lässt sich zwischen Straßenkarte und Satellitenbild (Esri World Imagery mit
+Orts- und Straßennamen) umschalten; die Wahl merkt sich der Browser. Ziele liegen auf Ortsebene (Ortskatalog),
+die genaue Adresse steht im Text.
+
+**Fahrer-Ansicht.** `/fahrer` ist für das Handy gebaut und lässt sich über `manifest.webmanifest` auf den
+Startbildschirm legen. Vor der ersten Schicht stimmt der Fahrer der Standortfreigabe zu
+(`Membership.trackingConsentAt`). Während einer Schicht (`DriverShift`) schickt der Browser etwa alle
+15 Sekunden die neueste Position an `/api/driver/positions` (ohne Netz gesammelt und nachgereicht) und
+hält den Bildschirm über die Wake-Lock-API wach. Die Status-Knöpfe „Losfahren zur Abholung“, „Am
+Abholort“, „Fahrgast an Bord“ und „Fahrt abgeschlossen“ setzen `Booking.tripStage`; der erste startet die
+Buchung, der letzte schließt sie ab. „Am Abholort“ und „Fahrgast an Bord“ erscheinen auch im Verlauf
+des Auftraggebers.
+
+**Datenschutz.** Positionen werden nur in offener Schicht angenommen und nur dem eigenen Unternehmen
+gezeigt. Beim Schichtende wird die letzte Position an der Schicht gelöscht, der Verlauf (`PositionPing`)
+nach `POSITION_RETENTION_DAYS` (30 Tage). Die Kacheln kommen von den Servern von OpenStreetMap bzw. Esri; das gehört in die
+Datenschutzerklärung. Für den kommerziellen Dauerbetrieb der Satellitenansicht einen (kostenlosen)
+ArcGIS-Location-Platform-Schlüssel oder einen Anbieter wie MapTiler verwenden.
+
+**Grenze der Web-App.** Auf iPhones sendet der Browser nur, solange die Seite offen und im Vordergrund
+ist. Für Hintergrund-Tracking braucht es später eine native App, die dieselbe API nutzt.
+
 ## Offene Fragen (Annahmen getroffen, reversibel)
 
 - **E-Mail-Versand:** Noch kein Anbieter festgelegt. Einladungslinks werden einmalig in der UI angezeigt.

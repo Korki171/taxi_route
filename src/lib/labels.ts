@@ -47,6 +47,13 @@ export const ROLE_LABEL: Record<MemberRole, string> = {
   BOOKER: "Buchung",
   FINANCE: "Buchhaltung",
   VIEWER: "Nur lesen",
+  DRIVER: "Fahrer",
+};
+
+export const TRIP_STAGE_LABEL: Record<string, string> = {
+  TO_PICKUP: "Auf dem Weg zur Abholung",
+  AT_PICKUP: "Am Abholort",
+  ON_BOARD: "Fahrgast an Bord",
 };
 
 export const VEHICLE_LABEL: Record<VehicleCategory, string> = {

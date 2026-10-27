@@ -16,6 +16,7 @@ const ROLE_HELP: Record<string, string> = {
   BOOKER: "Transfers anfragen und Buchungen verwalten",
   FINANCE: "Abrechnung und Nachweise einsehen",
   VIEWER: "Nur lesen",
+  DRIVER: "Eigene Fahrten sehen und Standort während der Schicht teilen",
 };
 
 export default async function MembersPage({ searchParams }: { searchParams: SP }) {

@@ -13,6 +13,9 @@ import type { OrganizationType } from "@prisma/client";
 import { db } from "../src/lib/db";
 import { fromLocalInput } from "../src/lib/format";
 import { loadActor, type OrgActor } from "../src/server/authz/context";
+import { hashPassword } from "../src/server/auth/password";
+import { assignBooking } from "../src/server/services/dispatch";
+import { advanceTrip, recordPositions } from "../src/server/services/driver";
 import { createVehicle, publishCapacity, setCapacityStatus } from "../src/server/services/fleet";
 import {
   acceptQuote,
@@ -63,8 +66,8 @@ async function main() {
     await db.booking.deleteMany({ where: { OR: [{ providerOrgId: { in: ids } }, { requesterOrgId: { in: ids } }] } });
     await db.quote.deleteMany({ where: { providerOrgId: { in: ids } } });
     await db.organization.deleteMany({ where: { id: { in: ids } } });
-    await db.user.deleteMany({ where: { email: { endsWith: "@demo.test" } } });
   }
+  await db.user.deleteMany({ where: { email: { endsWith: "@demo.test" } } });
 
   const alpen = await org("TRANSPORT_COMPANY", "Demo Alpen Taxi Innsbruck", "Lukas Pichler", "taxi@demo.test", "Innsbruck", "6020");
   const ziller = await org("TRANSPORT_COMPANY", "Demo Zillertal Transfer", "Anna Eberharter", "ziller@demo.test", "Mayrhofen", "6290");
@@ -73,7 +76,8 @@ async function main() {
   const oetztal = await org("TRAVEL_AGENCY", "Demo Ötztal Reisen", "Thomas Gstrein", "oetztal@demo.test", "Sölden", "6450");
 
   const vClass = await createVehicle(alpen, { label: "Mercedes V-Klasse 1", category: "MINIVAN", licensePlate: "I-AT 101", seats: 6, luggage: 6, skiCapacity: 6 });
-  await createVehicle(alpen, { label: "Škoda Superb Kombi", category: "ESTATE", licensePlate: "I-AT 102", seats: 4, luggage: 4, skiCapacity: 4 });
+  const superb = await createVehicle(alpen, { label: "Škoda Superb Kombi", category: "ESTATE", licensePlate: "I-AT 102", seats: 4, luggage: 4, skiCapacity: 4 });
+  const caravelle = await createVehicle(alpen, { label: "VW Caravelle", category: "VAN", licensePlate: "I-AT 103", seats: 8, luggage: 8, skiCapacity: 8 });
   const sprinter = await createVehicle(ziller, { label: "Sprinter 8+1", category: "VAN", seats: 8, luggage: 10, skiCapacity: 8 });
 
   const terms = { bookingTerms: "Wartezeit am Flughafen bis 60 Minuten nach Landung inklusive", cancellationTerms: "Kostenlos bis 24 Stunden vor Abholung" };
@@ -186,7 +190,79 @@ async function main() {
     maxDetourMinutes: 30, maxWaitMinutes: 120,
   });
 
-  console.log("Beispieldaten eingespielt. Anmeldung z. B. mit taxi@demo.test oder reise@demo.test, Passwort", PASSWORD);
+  await liveFleetDemo(alpen, reise, { vClass: vClass.id, superb: superb.id, caravelle: caravelle.id }, terms);
+
+  console.log("Beispieldaten eingespielt. Anmeldung z. B. mit taxi@demo.test, reise@demo.test oder fahrer@demo.test, Passwort", PASSWORD);
+}
+
+async function driver(company: OrgActor, name: string, email: string) {
+  const user = await db.user.create({ data: { name, email, passwordHash: await hashPassword(PASSWORD) } });
+  await db.membership.create({ data: { userId: user.id, organizationId: company.org.id, role: "DRIVER", trackingConsentAt: new Date() } });
+  return (await loadActor(user.id, company.org.id)) as OrgActor;
+}
+
+/** Positionen der letzten Minuten entlang einer Strecke, die bei `to` endet. */
+function trail(points: [number, number][], minutes: number, speed = 25) {
+  const n = minutes * 2;
+  const out = [];
+  for (let i = 0; i <= n; i++) {
+    const x = (i / n) * (points.length - 1);
+    const k = Math.min(Math.floor(x), points.length - 2);
+    const f = x - k;
+    const [a, b] = [points[k], points[k + 1]];
+    const heading = (Math.atan2(b[1] - a[1], b[0] - a[0]) * 180) / Math.PI;
+    out.push({ lat: a[0] + (b[0] - a[0]) * f, lng: a[1] + (b[1] - a[1]) * f, accuracy: 6, speed, heading: (heading + 360) % 360, at: Date.now() - (n - i) * 30_000 });
+  }
+  return out;
+}
+
+/** Live-Karte: drei Fahrer von Alpen Taxi in der Schicht, mit laufenden und anstehenden Fahrten. */
+async function liveFleetDemo(alpen: OrgActor, reise: OrgActor, v: { vClass: string; superb: string; caravelle: string }, terms: Record<string, string>) {
+  const stefan = await driver(alpen, "Stefan Mair", "fahrer@demo.test");
+  const martina = await driver(alpen, "Martina Kofler", "fahrer2@demo.test");
+  const ali = await driver(alpen, "Ali Yilmaz", "fahrer3@demo.test");
+
+  const soon = (min: number) => new Date(Date.now() + min * 60_000).toISOString();
+  const book = async (input: Record<string, unknown>) => {
+    const r = await createTransferRequest(reise, { priceMode: "FIXED", ...terms, ...input });
+    return takeFixedPriceRequest(alpen, r.id);
+  };
+  // Läuft: Fahrgast an Bord Richtung Flughafen München
+  const onBoard = await book({
+    pickupPlaceId: "innsbruck", dropoffPlaceId: "muc", pickupAddress: "Hotel Grauer Bär, Universitätsstraße 5", dropoffAddress: "Terminal 2, Abflug",
+    pickupAt: soon(5), passengers: 3, luggage: 4, priceCents: 24000, flightNumber: "LH 2471", passengerName: "Familie Steiner", passengerPhone: "+43 660 555 1234",
+  });
+  // Auf dem Weg zur Abholung in Seefeld
+  const toPickup = await book({
+    pickupPlaceId: "seefeld", dropoffPlaceId: "inn", pickupAddress: "Hotel Klosterbräu, Klosterstraße 30", pickupAt: soon(35),
+    passengers: 2, luggage: 2, priceCents: 9000, flightNumber: "EW 2015", passengerName: "Hr. und Fr. Schulz",
+  });
+  // Später heute: Ali (frei am Flughafen) und eine noch nicht zugewiesene Fahrt
+  const later = await book({
+    pickupPlaceId: "inn", dropoffPlaceId: "kitzbuehel", pickupAddress: "Ankunftshalle", pickupAt: soon(150),
+    passengers: 4, luggage: 5, skiEquipment: 4, priceCents: 21000, passengerName: "Gruppe Andersson",
+  });
+  await book({ pickupPlaceId: "innsbruck", dropoffPlaceId: "muc", pickupAt: soon(300), passengers: 2, luggage: 2, priceCents: 23500, passengerName: "Fr. Lechner" });
+
+  await assignBooking(alpen, onBoard.id, { driverId: stefan.userId, vehicleId: v.vClass });
+  await assignBooking(alpen, toPickup.id, { driverId: martina.userId, vehicleId: v.superb });
+  await assignBooking(alpen, later.id, { driverId: ali.userId, vehicleId: v.caravelle });
+
+  const shifts: [OrgActor, string, [number, number][], number, number?][] = [
+    // Inntalautobahn Richtung Kufstein
+    [stefan, v.vClass, [[47.2692, 11.4041], [47.2833, 11.5079], [47.35, 11.71], [47.43, 11.86], [47.48, 11.96]], 25],
+    // Innsbruck → Zirl → Seefeld
+    [martina, v.superb, [[47.2692, 11.4041], [47.27, 11.30], [47.2735, 11.2418], [47.30, 11.215]], 12],
+    // Wartet am Flughafen Innsbruck
+    [ali, v.caravelle, [[47.2598, 11.3452], [47.2602, 11.3439]], 6, 0],
+  ];
+  for (const [actor, vehicleId, route, minutes, speed] of shifts) {
+    await db.driverShift.create({ data: { organizationId: alpen.org.id, userId: actor.userId, vehicleId, startedAt: new Date(Date.now() - 4 * 3600_000) } });
+    await recordPositions(actor, trail(route, minutes, speed));
+  }
+  await advanceTrip(stefan, onBoard.id, "ON_BOARD");
+  await db.transferRequest.update({ where: { id: onBoard.requestId }, data: { pickupAt: new Date(Date.now() - 30 * 60_000) } });
+  await advanceTrip(martina, toPickup.id, "TO_PICKUP");
 }
 
 main().finally(() => db.$disconnect());
