@@ -49,7 +49,7 @@ export default function Datenschutz() {
         <li>E-Mail-Versand: Resend [Region, Vertrag zur Auftragsverarbeitung]</li>
         <li>
           Kartendarstellung auf der Live-Karte: Straßenkarte von OpenFreeMap (openfreemap.org), Satellitenbild von Esri
-          (arcgisonline.com). Beim Anzeigen der Karte lädt Ihr Browser Kartenkacheln direkt von diesen Servern; dabei werden
+          (arcgisonline.com) und für Österreich von basemap.at (mapsneu.wien.gv.at). Beim Anzeigen der Karte lädt Ihr Browser Kartenkacheln direkt von diesen Servern; dabei werden
           Ihre IP-Adresse und die Adresse unserer Website übermittelt, nicht aber Fahrzeug- oder Fahrerpositionen.
         </li>
       </ul>
