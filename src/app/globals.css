@@ -303,62 +303,83 @@ main.legal { max-width: 800px; margin: 0 auto; padding: 32px var(--margin) 64px;
 /* ---------- Live-Karte ---------- */
 .live { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 0; background: var(--surface); margin-bottom: 12px; }
 .live-stage { position: relative; min-width: 0; }
-.live-map { height: min(72vh, 700px); min-height: 400px; z-index: 0; background: #1b1e26; }
-.live .live-map .leaflet-control-attribution { background: rgba(20,22,28,.75); color: #9aa3b5; }
+.live-map { height: min(74vh, 720px); min-height: 420px; z-index: 0; background: #16202a; }
+.live .live-map .leaflet-control-attribution { background: rgba(14,18,26,.75); color: #9aa3b5; }
 .live .live-map .leaflet-control-attribution a { color: #c9d2e3; }
-.live-stage .s-on-board { --pin: #6f8fd8; }
+.live .live-map .leaflet-bar { border: 0; box-shadow: 0 4px 14px rgba(0,0,0,.35); }
+.live .live-map .leaflet-bar a { background: rgba(18,24,34,.88); color: #fff; border-color: rgba(255,255,255,.12); width: 38px; height: 38px; line-height: 38px; }
+.live .live-map .leaflet-bar a:hover { background: rgba(30,38,52,.95); }
+/* Satellit: kräftige Farben, leicht abgedunkelt; Relief weich darüber, Namen hell obenauf */
+.sat-pane { z-index: 200; filter: saturate(1.55) contrast(1.12) brightness(.8); }
+.relief-pane { z-index: 210; mix-blend-mode: multiply; opacity: .35; }
+.names-pane { z-index: 300; pointer-events: none; filter: drop-shadow(0 1px 1px rgba(0,0,0,.6)); }
+.base-streets .relief-pane, .base-streets .names-pane { display: none; }
 .route-card .dot { box-shadow: 0 0 0 2px rgba(255,255,255,.85); }
 
-/* Fahrzeug: Auto von oben, in Fahrtrichtung gedreht */
+/* Umschalter Karte | Satellit und Legende */
+.map-tools { position: absolute; top: 14px; left: 14px; z-index: 500; display: grid; gap: 10px; justify-items: start; }
+.base-switch { display: inline-flex; gap: 4px; padding: 4px; border-radius: 22px; background: rgba(14,18,26,.82); box-shadow: 0 4px 14px rgba(0,0,0,.35); backdrop-filter: blur(6px); }
+.base-switch button { min-height: 32px; padding: 0 16px; border: 0; border-radius: 18px; background: transparent; color: #d9dfea; font: 600 14px/1 var(--font); cursor: pointer; }
+.base-switch button[aria-pressed="true"] { background: #2f80ff; color: #fff; }
+.base-switch button:focus-visible { outline: 2px solid #8fc0ff; outline-offset: 1px; }
+.map-key { list-style: none; margin: 0; padding: 10px 14px; display: grid; gap: 7px; border-radius: 12px; background: rgba(14,18,26,.82); color: #e7ebf3; font-size: 13px; box-shadow: 0 4px 14px rgba(0,0,0,.35); backdrop-filter: blur(6px); }
+.map-key li { display: flex; align-items: center; gap: 10px; }
+.key-car { width: 14px; height: 14px; border-radius: 50%; background: var(--pin); box-shadow: 0 0 0 2px rgba(255,255,255,.9); }
+.key-pin { width: 12px; height: 12px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: #f5b31b; }
+.key-pin.dropoff { background: #ef3e42; }
+.key-route { width: 16px; height: 4px; border-radius: 2px; background: #2f80ff; }
+
+/* Fahrzeug: runder Knopf mit Auto, Pfeil in Fahrtrichtung */
 .car { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; }
-.car-body { display: block; width: 22px; height: 40px; filter: drop-shadow(0 2px 4px rgba(0,0,0,.55)); transition: transform .6s ease; }
-.car-body svg { display: block; }
-.car::before { content: ""; position: absolute; width: 34px; height: 34px; border-radius: 50%; background: var(--pin); opacity: .35; }
-.car.sel::before { width: 48px; height: 48px; opacity: .45; box-shadow: 0 0 24px 6px var(--pin); }
-.car.s-stale .car-body, .car.s-none .car-body { opacity: .55; filter: grayscale(1) drop-shadow(0 2px 4px rgba(0,0,0,.55)); }
-.car-name { position: absolute; top: 30px; white-space: nowrap; background: rgba(20,22,28,.85); color: #fff; font: 600 11px/1 var(--font); padding: 4px 7px; border-radius: 10px; }
-.car-pct { position: absolute; bottom: 34px; white-space: nowrap; background: #2f7bff; color: #fff; font: 700 13px/1 var(--font); padding: 6px 9px; border-radius: 8px; box-shadow: 0 4px 12px rgba(47,123,255,.45); }
-.car-pct::after { content: ""; position: absolute; left: 50%; bottom: -5px; margin-left: -5px; border: 5px solid transparent; border-bottom: 0; border-top-color: #2f7bff; }
+.car-badge { position: relative; z-index: 1; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--pin); border: 2px solid rgba(255,255,255,.95); box-shadow: 0 3px 10px rgba(0,0,0,.45); }
+.car.sel .car-badge { width: 42px; height: 42px; box-shadow: 0 0 0 6px color-mix(in srgb, var(--pin) 35%, transparent), 0 0 26px 6px color-mix(in srgb, var(--pin) 55%, transparent); }
+.car.sel .car-badge svg { width: 22px; height: 22px; }
+.car.s-stale .car-badge, .car.s-none .car-badge { opacity: .7; }
+.car-dir { position: absolute; left: 50%; top: 50%; width: 0; height: 0; margin: -30px 0 0 -6px; border: 6px solid transparent; border-top: 0; border-bottom: 9px solid #fff; transform-origin: 6px 30px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
+.car.sel .car-dir { margin-top: -34px; transform-origin: 6px 34px; }
+.car-name { position: absolute; top: 24px; white-space: nowrap; background: rgba(14,18,26,.85); color: #fff; font: 600 11px/1 var(--font); padding: 4px 7px; border-radius: 10px; }
+.car.sel .car-name { top: 30px; }
 
-/* Start und Ziel mit Schild */
+/* Start-, Abhol- und Zielpunkt mit dunklem Schild */
 .rt-pin { position: absolute; transform: translate(-50%, -50%); }
-.rt-dot { display: block; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(61,139,255,.35), 0 0 28px 10px rgba(61,139,255,.45); }
-.rt-pin.end .rt-dot { background: #fff; border: 4px solid #2f7bff; box-shadow: 0 0 0 4px rgba(139,92,246,.3), 0 0 32px 12px rgba(139,92,246,.5); }
-.rt-pin.flip .rt-card { left: auto; right: 26px; }
-.rt-card { position: absolute; left: 26px; top: 50%; transform: translateY(-50%); display: flex; gap: 10px; align-items: center; background: #fff; color: #1f2b4d; padding: 10px 14px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.35); white-space: nowrap; font-family: var(--font); }
-.rt-card small { display: block; font-size: 11px; color: #6b7385; }
-.rt-card b { display: block; font-size: 14px; }
-.rt-pin.end .rt-card b { color: #2f7bff; }
-.rt-card em { display: block; font-style: normal; font-size: 12px; color: #6b7385; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
-.rt-ic { flex: none; width: 26px; height: 26px; border-radius: 50%; background: #e8f0ff; position: relative; }
-.rt-ic::after { content: ""; position: absolute; inset: 8px; border-radius: 50%; background: #2f7bff; }
-.rt-pin.end .rt-ic::after { inset: 7px 8px 9px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); }
+.rt-mark { display: block; width: 18px; height: 18px; border-radius: 50%; background: #1fae5b; border: 4px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.5), 0 0 0 4px rgba(31,174,91,.35); }
+.rt-pin.pickup .rt-mark, .rt-pin.dropoff .rt-mark { width: 30px; height: 30px; margin: -26px 0 0 0; border: 0; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: #f5b31b; box-shadow: 0 3px 10px rgba(0,0,0,.5); }
+.rt-pin.dropoff .rt-mark { background: #ef3e42; }
+.rt-pin.pickup .rt-mark::after, .rt-pin.dropoff .rt-mark::after { content: ""; position: absolute; inset: 9px; border-radius: 50%; background: #fff; }
+.rt-card { position: absolute; left: 24px; top: 50%; transform: translateY(-50%); background: rgba(14,18,26,.86); color: #fff; padding: 8px 12px; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,.35); white-space: nowrap; font-family: var(--font); backdrop-filter: blur(4px); }
+.rt-pin.pickup .rt-card, .rt-pin.dropoff .rt-card { top: -12px; }
+.rt-pin.flip .rt-card { left: auto; right: 24px; }
+.rt-card b { display: block; font-size: 14px; font-weight: 600; }
+.rt-card em { display: block; font-style: normal; font-size: 12px; color: #b9c2d3; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.rt-eta { position: absolute; transform: translate(-50%, -50%); display: flex; gap: 8px; align-items: center; padding: 8px 12px; border-radius: 10px; background: rgba(14,18,26,.86); color: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.35); white-space: nowrap; font: 500 12px/1.3 var(--font); }
+.rt-eta svg { width: 22px; height: 22px; }
+.rt-eta b { display: block; font-size: 15px; font-weight: 600; }
 
-/* Infotafel zur ausgewählten Fahrt */
-.route-card { position: absolute; top: 16px; left: 16px; z-index: 500; width: 330px; max-width: calc(100% - 32px); background: rgba(38,41,50,.94); color: #fff; border-radius: 16px; padding: 18px 20px; box-shadow: 0 12px 32px rgba(0,0,0,.4); backdrop-filter: blur(6px); }
-.route-card header { display: flex; gap: 10px; align-items: flex-start; }
+/* Infotafel zur ausgewählten Fahrt, unten über der Karte */
+.route-card { position: absolute; left: 14px; right: 70px; bottom: 26px; max-width: 760px; z-index: 500; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "who time" "stops time" "progress progress" "order order"; gap: 0 24px; background: rgba(14,18,26,.9); color: #fff; border-radius: 14px; padding: 14px 18px; box-shadow: 0 12px 32px rgba(0,0,0,.4); backdrop-filter: blur(8px); }
+.route-card header { grid-area: who; display: flex; gap: 10px; align-items: flex-start; }
 .route-card header .dot { margin-top: 5px; }
 .route-card strong { font-weight: 700; }
 .rc-muted { color: #aab2c3; }
-.rc-state { display: block; font-size: 13px; color: #c9d0dd; margin-top: 2px; }
-.rc-stops { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 10px; position: relative; }
-.rc-stops li { display: flex; gap: 12px; align-items: center; }
-.rc-stops li > span { flex: 1; min-width: 0; border: 1px solid #4a4f5c; border-radius: 22px; padding: 7px 14px; font-weight: 600; font-size: 14px; }
+.rc-state { display: inline-block; margin-left: 8px; padding: 2px 9px; border-radius: 10px; font-size: 12px; font-weight: 600; background: color-mix(in srgb, var(--pin, #2f80ff) 85%, #000); color: #fff; }
+.rc-stops { grid-area: stops; list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 28px; }
+.rc-stops li { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.rc-stops li > span { min-width: 0; font-weight: 600; font-size: 15px; }
 .rc-stops small { display: block; font-size: 11px; font-weight: 400; color: #aab2c3; }
-.rc-stops em { display: block; font-style: normal; font-weight: 400; font-size: 12px; color: #aab2c3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rc-stops i { flex: none; width: 24px; height: 24px; border-radius: 50%; background: #5a5f6b; position: relative; }
-.rc-stops i::after { content: ""; position: absolute; inset: 8px; border-radius: 50%; background: #fff; }
-.rc-stops .end i { background: #2f7bff; }
-.rc-stops .start::after { content: ""; position: absolute; left: 11px; top: 34px; height: 14px; border-left: 2px dotted #8a90a0; }
-.rc-eta { margin: 18px 0 2px; font-size: 26px; font-weight: 600; letter-spacing: -.01em; }
-.rc-sub { margin: 0; font-size: 13px; color: #aab2c3; }
-.rc-progress { position: relative; height: 6px; margin: 44px 4px 8px; border-radius: 3px; background: #555a66; }
-.rc-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: linear-gradient(90deg, #8b5cf6, #3d8bff); }
-.rc-knob { position: absolute; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: #3a3e49; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
-.rc-knob::after { content: ""; position: absolute; left: 10px; top: 8px; border: 7px solid transparent; border-right: 0; border-left: 12px solid #fff; }
-.rc-knob b { position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: #2f7bff; color: #fff; font-size: 13px; padding: 5px 9px; border-radius: 8px; }
-.rc-order { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid #4a4f5c; font-size: 13px; }
-.route-card a { color: #8fb8ff; }
+.rc-stops em { display: block; font-style: normal; font-weight: 400; font-size: 12px; color: #aab2c3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
+.rc-stops i { flex: none; width: 14px; height: 14px; border-radius: 50%; background: #1fae5b; box-shadow: 0 0 0 3px #fff; }
+.rc-stops .pickup i, .rc-stops .dropoff i { width: 16px; height: 16px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: none; background: #f5b31b; }
+.rc-stops .dropoff i { background: #ef3e42; }
+.rc-stops li + li::before { content: "→"; color: #8a93a6; margin: 0 4px 0 -18px; }
+.rc-time { grid-area: time; text-align: right; align-self: center; }
+.rc-eta { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -.01em; }
+.rc-sub { margin: 2px 0 0; font-size: 12px; color: #aab2c3; }
+.rc-progress { grid-area: progress; position: relative; height: 6px; margin: 40px 4px 2px; border-radius: 3px; background: #3c4352; }
+.rc-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: linear-gradient(90deg, #1fae5b, #2f80ff); }
+.rc-knob { position: absolute; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%; background: #2f80ff; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+.rc-knob b { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: #2f80ff; color: #fff; font-size: 12px; padding: 3px 8px; border-radius: 8px; }
+.rc-order { grid-area: order; margin: 10px 0 0; padding-top: 8px; border-top: 1px solid #343b49; font-size: 13px; }
+.route-card a { color: #8fc0ff; }
 .live-list { overflow-y: auto; max-height: min(70vh, 680px); }
 .live-meta { font-size: 13px; padding: 12px 16px; margin: 0; border-bottom: 1px solid var(--rule); }
 .live-list .empty { padding: 16px; border: 0; }
@@ -368,16 +389,12 @@ main.legal { max-width: 800px; margin: 0 auto; padding: 32px var(--margin) 64px;
 .live-body { display: grid; gap: 2px; min-width: 0; }
 .live-line { display: block; font-size: 14px; }
 .dot { display: inline-block; flex: none; width: 12px; height: 12px; border-radius: 50%; margin-top: 5px; background: var(--neutral); }
-.s-free { --pin: #1b8a46; }
-.s-next { --pin: #12827a; }
-.s-to-pickup { --pin: #e07f00; }
-.s-on-board { --pin: #1f2b4d; }
+.s-free { --pin: #1fae5b; }
+.s-next { --pin: #14a3a3; }
+.s-to-pickup { --pin: #f08c00; }
+.s-on-board { --pin: #2f80ff; }
 .s-stale, .s-none { --pin: #8a94a3; }
-@media (prefers-color-scheme: dark) { .s-on-board { --pin: #6f8fd8; } }
 .dot[class*="s-"] { background: var(--pin); }
-.map-legend { display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 14px; color: var(--muted); margin: 0 0 28px; }
-.map-legend span { display: inline-flex; align-items: center; gap: 8px; }
-.map-legend .dot { margin: 0; }
 .leaflet-container { font-family: var(--font); }
 .leaflet-container button, .leaflet-container a { min-height: 0; }
 .alert-link { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; background: var(--accent); color: var(--accent-ink); font-weight: 600; text-decoration: none; }
@@ -495,7 +512,11 @@ label.check input { width: 20px; height: 20px; margin-top: 2px; flex: none; }
 
   .live { grid-template-columns: 1fr; margin-left: calc(-1 * var(--margin)); margin-right: calc(-1 * var(--margin)); }
   .live-map { height: 56vh; min-height: 300px; }
-  .route-card { position: static; width: auto; max-width: none; border-radius: 0; }
+  .route-card { position: static; grid-template-columns: 1fr; grid-template-areas: "who" "stops" "time" "progress" "order"; border-radius: 0; }
+  .rc-time { text-align: left; margin-top: 12px; }
+  .rc-stops { flex-direction: column; }
+  .rc-stops li + li::before { content: none; }
+  .map-key { display: none; }
   .live-list { max-height: none; }
 
   .trip { margin-left: calc(-1 * var(--margin)); margin-right: calc(-1 * var(--margin)); }
