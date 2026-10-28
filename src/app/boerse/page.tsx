@@ -18,6 +18,7 @@ import { listMarketCapacity } from "@/server/services/fleet";
 import {
   listBookings,
   listIncomingQuotes,
+  listInvitations,
   listOwnQuotes,
   listOwnRequests,
   referenceOf,
@@ -32,6 +33,7 @@ type View = { id: string; label: string; allowed: (a: OrgActor) => boolean };
 
 const VIEWS: View[] = [
   { id: "markt", label: "Passende Aufträge", allowed: (a) => actorCan(a, "jobs.accept") },
+  { id: "anfragen", label: "Direktanfragen", allowed: (a) => actorCan(a, "jobs.accept") },
   { id: "neu", label: "Neue Aufträge", allowed: (a) => actorCan(a, "jobs.accept") },
   { id: "kapazitaeten", label: "Freie Kapazitäten", allowed: (a) => actorCan(a, "transfers.request") || actorCan(a, "jobs.accept") },
   { id: "rueckfahrten", label: "Passende Rückfahrten", allowed: (a) => actorCan(a, "capacity.publish") },
@@ -81,6 +83,7 @@ export default async function BoersePage({ searchParams }: { searchParams: SP })
       </nav>
       {view.id === "markt" && <MarketView actor={actor} sp={sp} />}
       {view.id === "neu" && <MarketView actor={actor} sp={{ ...sp, newOnly: "1" }} />}
+      {view.id === "anfragen" && <InvitationsView actor={actor} />}
       {view.id === "kapazitaeten" && <CapacityMarketView actor={actor} />}
       {view.id === "rueckfahrten" && <ReturnTripsView actor={actor} />}
       {view.id === "meine" && <OwnRequestsView actor={actor} />}
@@ -163,7 +166,7 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
                       <td data-label={t("Fahrzeug")}>{r.vehicleCategory ? t(VEHICLE_LABEL[r.vehicleCategory]) : <span className="muted">{t("beliebig")}</span>}</td>
                       <td data-label={t("Auftraggeber")}>{r.requesterOrg.name}<span className="price-note">{r.requesterOrg.city} · {t("geprüft")}</span></td>
                       <td className="num"><PriceCell mode={r.priceMode} cents={r.priceCents} /></td>
-                      <td className="nowrap">{mine ? <Badge status={mine.status}>{t("Ihr Angebot")} {f.money(mine.amountCents)}</Badge> : <Link href={`/boerse/auftrag/${r.id}`}>{r.priceMode === "FIXED" ? t("Übernehmen") : t("Angebot abgeben")}</Link>}</td>
+                      <td className="nowrap">{r.invitations[0]?.status === "PENDING" && <span className="badge warn">{t("Direktanfrage")}</span>}{mine ? <Badge status={mine.status}>{t("Ihr Angebot")} {f.money(mine.amountCents)}</Badge> : <Link href={`/boerse/auftrag/${r.id}`}>{r.priceMode === "FIXED" ? t("Übernehmen") : t("Angebot abgeben")}</Link>}</td>
                     </tr>
                   );
                 })}
@@ -173,6 +176,39 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
         )}
       </section>
     </>
+  );
+}
+
+async function InvitationsView({ actor }: { actor: OrgActor }) {
+  const { t, f } = await getI18n();
+  const rows = await listInvitations(actor);
+  return (
+    <section className="card">
+      <h2>{t("Direktanfragen an Ihr Unternehmen")}</h2>
+      <p className="muted">{t("Auftraggeber haben Sie gezielt um ein Angebot gebeten. Bitte geben Sie ein Angebot ab oder lehnen Sie ab.")}</p>
+      {rows.length === 0 ? <Empty>{t("Keine offenen Direktanfragen.")}</Empty> : (
+        <div className="table-wrap">
+          <table className="responsive">
+            <thead><tr><th>{t("Abholung")}</th><th>{t("Strecke")}</th><th>{t("Fahrgäste")}</th><th>{t("Auftraggeber")}</th><th className="num">{t("Preis")}</th><th>{t("Ihr Stand")}</th></tr></thead>
+            <tbody>
+              {rows.map(({ request: r, createdAt }) => {
+                const mine = r.quotes[0];
+                return (
+                  <tr key={r.id}>
+                    <td className="nowrap">{f.dateTime(r.pickupAt)}{r.quoteDeadline && <span className="price-note">{t("Angebote bis")} {f.dateTime(r.quoteDeadline)}</span>}</td>
+                    <td><Route from={r.pickupPlaceId} to={r.dropoffPlaceId} href={`/boerse/auftrag/${r.id}`} /><span className="price-note">{t("angefragt {date}", { date: f.dateTime(createdAt) })}{r.visibility === "INVITED" ? ` · ${t("nur für ausgewählte Unternehmen")}` : ""}</span></td>
+                    <td data-label={t("Fahrgäste")}><Load passengers={r.passengers} luggage={r.luggage} ski={r.skiEquipment} /></td>
+                    <td data-label={t("Auftraggeber")}>{r.requesterOrg.name}<span className="price-note">{r.requesterOrg.city}</span></td>
+                    <td className="num"><PriceCell mode={r.priceMode} cents={r.priceCents} /></td>
+                    <td className="nowrap">{mine ? <Badge status={mine.status}>{t("Ihr Angebot")} {f.money(mine.amountCents)}</Badge> : <Link href={`/boerse/auftrag/${r.id}`}>{r.priceMode === "FIXED" ? t("Übernehmen oder ablehnen") : t("Angebot abgeben oder ablehnen")}</Link>}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   );
 }
 

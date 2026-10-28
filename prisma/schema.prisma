@@ -169,6 +169,7 @@ model Organization {
   vehicles          Vehicle[]
   requests          TransferRequest[] @relation("RequesterRequests")
   quotes            Quote[]           @relation("ProviderQuotes")
+  quoteInvitations  QuoteInvitation[] @relation("ProviderInvitations")
   requesterBookings Booking[]         @relation("RequesterBookings")
   providerBookings  Booking[]         @relation("ProviderBookings")
   capacityOffers    CapacityOffer[]
@@ -293,6 +294,21 @@ enum TransferStatus {
   DISPUTED
 }
 
+/// Wer einen Auftrag sieht: alle geprüften Unternehmen in der Börse oder nur die eingeladenen.
+enum RequestVisibility {
+  MARKET
+  INVITED
+}
+
+enum InvitationStatus {
+  /// Eingeladen, noch keine Reaktion
+  PENDING
+  /// Angebot abgegeben bzw. Auftrag übernommen
+  RESPONDED
+  /// Eingeladenes Unternehmen hat abgelehnt
+  DECLINED
+}
+
 enum QuoteStatus {
   SUBMITTED
   WITHDRAWN
@@ -372,6 +388,8 @@ model TransferRequest {
   bookingTerms      String?
   cancellationTerms String?
   clientReference   String?
+  /// MARKET: in der Börse; INVITED: nur für die Unternehmen in QuoteInvitation sichtbar
+  visibility        RequestVisibility @default(MARKET)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -380,6 +398,7 @@ model TransferRequest {
   quotes            Quote[]
   booking           Booking?
   events            TransferEvent[]
+  invitations       QuoteInvitation[]
 
   @@index([status, pickupAt])
   @@index([requesterOrgId])
@@ -414,6 +433,23 @@ model Quote {
 
   /// Ein Angebot je Unternehmen und Auftrag (neu abgeben ersetzt das alte)
   @@unique([requestId, providerOrgId])
+}
+
+/// Gezielte Angebotsanfrage an ein bestimmtes Beförderungsunternehmen (Szenario B).
+model QuoteInvitation {
+  id            String           @id @default(cuid())
+  requestId     String
+  request       TransferRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  providerOrgId String
+  providerOrg   Organization     @relation("ProviderInvitations", fields: [providerOrgId], references: [id], onDelete: Cascade)
+  invitedById   String
+  status        InvitationStatus @default(PENDING)
+  declineNote   String?
+  createdAt     DateTime         @default(now())
+  respondedAt   DateTime?
+
+  @@unique([requestId, providerOrgId])
+  @@index([providerOrgId, status])
 }
 
 /// Verbindliche Vereinbarung. requestId ist eindeutig: ein Auftrag kann nur einmal vergeben werden.
