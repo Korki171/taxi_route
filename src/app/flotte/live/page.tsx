@@ -68,15 +68,14 @@ export default async function LiveFleetPage({ searchParams }: { searchParams: SP
           estimate: t("geschätzt"),
           driven: t("{km} km gefahren"),
           order: t("Auftrag {ref}"),
+          streets: t("Karte"),
+          satellite: t("Satellit"),
+          legend: t("Legende"),
+          pickupPoint: t("Abholpunkt"),
+          dropoffPoint: t("Zielpunkt"),
+          route: t("Route"),
         }}
       />
-      <p className="map-legend">
-        <span><i className="dot s-free" /> {t("Frei")}</span>
-        <span><i className="dot s-next" /> {t("Nächster Auftrag geplant")}</span>
-        <span><i className="dot s-to-pickup" /> {t("Auf dem Weg zur Abholung")}</span>
-        <span><i className="dot s-on-board" /> {t("Fahrgast an Bord")}</span>
-        <span><i className="dot s-stale" /> {t("Kein Signal")}</span>
-      </p>
 
       <section className="card" id="disposition">
         <h2>{t("Disposition")}</h2>
