@@ -269,9 +269,9 @@ export function LiveMap({ initial, text, locale }: { initial: LiveData; text: Li
             mod.marker(start, { icon: mod.divIcon({ className: "", html: pin(startRole, start, leg.start.name, leg.start.address), iconSize: [0, 0] }), interactive: false, zIndexOffset: 500 }).addTo(g);
           }
           mod.marker(end, { icon: mod.divIcon({ className: "", html: pin(endRole, end, leg.end.name, leg.end.address), iconSize: [0, 0] }), interactive: false, zIndexOffset: 500 }).addTo(g);
-          // Restzeit und -strecke als Blase in der Mitte des Restwegs
+          // Restzeit und -strecke als Blase in der Mitte des Restwegs (nur wenn genug Platz ist)
           const mid: [number, number] = [(from[0] + end[0]) / 2, (from[1] + end[1]) / 2];
-          mod.marker(mid, {
+          if (m.latLngToContainerPoint(from).distanceTo(m.latLngToContainerPoint(end)) > 160) mod.marker(mid, {
             icon: mod.divIcon({ className: "", html: `<div class="rt-eta">${CAR_SVG}<span><b>${duration(leg.etaMinutes)}</b>${Math.round(leg.remainingKm)} km</span></div>`, iconSize: [0, 0] }),
             interactive: false,
             zIndexOffset: 400,
