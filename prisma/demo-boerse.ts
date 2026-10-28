@@ -22,6 +22,7 @@ import {
   cancelBooking,
   completeTrip,
   createTransferRequest,
+  declineInvitation,
   startTrip,
   submitQuote,
   takeFixedPriceRequest,
@@ -88,6 +89,8 @@ async function main() {
     pickupAt: at(1, "14:30"), pickupWindowMinutes: 15, passengers: 4, luggage: 6, skiEquipment: 4, vehicleCategory: "MINIVAN",
     flightNumber: "LH 2154", flightArrivalAt: at(1, "14:05"), pickupNotes: "Namensschild „Familie Berger“", priceMode: "NEGOTIABLE", priceCents: 29000,
     clientReference: "RB-2026-118", passengerName: "Familie Berger", passengerPhone: "+43 660 111 2233", ...terms,
+    // Börse und zusätzlich Direktanfrage an das Stammunternehmen
+    invitedOrgIds: [alpen.org.id],
   });
   await submitQuote(ziller, r1.id, { amountCents: 31000, vehicleCategory: "VAN", message: "Sprinter mit Skibox, Fahrer spricht Englisch" });
   await submitQuote(kitzLimo, r1.id, { amountCents: 28500, vehicleCategory: "MINIVAN", message: "V-Klasse, Kindersitz auf Wunsch kostenlos" });
@@ -105,6 +108,15 @@ async function main() {
     flightNumber: "EW 7015", priceMode: "NEGOTIABLE", priceCents: 19000, passengerName: "Hr. Lindner", ...terms,
   });
   await submitQuote(ziller, r4.id, { amountCents: 21000, vehicleCategory: "SEDAN" });
+
+  // Gezielte Anfrage (Phase 4): nur an zwei Stammpartner, einer lehnt ab
+  const r5 = await createTransferRequest(reise, {
+    pickupPlaceId: "kitzbuehel", dropoffPlaceId: "muc", pickupAddress: "Hotel Zur Tenne, Vorderstadt 8", pickupAt: at(5, "07:30"),
+    passengers: 5, luggage: 7, skiEquipment: 5, vehicleCategory: "MINIVAN", flightNumber: "LH 1795", priceMode: "NEGOTIABLE", priceCents: 33000,
+    quoteDeadline: at(3, "18:00"), clientReference: "RB-2026-130", passengerName: "Familie Achleitner", passengerPhone: "+43 664 222 3344",
+    visibility: "INVITED", invitedOrgIds: [alpen.org.id, kitzLimo.org.id], ...terms,
+  });
+  await declineInvitation(kitzLimo, r5.id, "An diesem Tag ausgebucht");
 
   await createTransferRequest(oetztal, {
     pickupPlaceId: "muc", dropoffPlaceId: "soelden", pickupAt: at(1, "16:00"), passengers: 3, luggage: 5, skiEquipment: 3,

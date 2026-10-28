@@ -11,11 +11,16 @@ import {
   notificationFailed,
   notifyBooked,
   notifyBookingStatus,
+  notifyInvited,
   notifyNewRequest,
   notifyQuoteSubmitted,
   notifyRequestCancelled,
 } from "../notifications";
 import { transferEvent } from "./transfer-events";
+import { VISIBLE_TO } from "./visibility";
+
+/** Höchstzahl gezielt angefragter Unternehmen je Auftrag */
+export const MAX_INVITATIONS = 20;
 
 // ---------------------------------------------------------------------------
 // Validierung
@@ -53,10 +58,14 @@ export const transferRequestSchema = z
     clientReference: optText(60),
     passengerName: optText(120),
     passengerPhone: optText(40),
+    visibility: z.preprocess((v) => (v === "" || v == null ? "MARKET" : v), z.enum(["MARKET", "INVITED"])),
+    /** Gezielt angefragte Beförderungsunternehmen (bei INVITED Pflicht, bei MARKET zusätzlich benachrichtigt) */
+    invitedOrgIds: z.preprocess((v) => (v == null ? [] : Array.isArray(v) ? v : [v]), z.array(z.string().min(1).max(40)).max(MAX_INVITATIONS)),
   })
   .refine((d) => d.pickupPlaceId !== d.dropoffPlaceId, { message: "Abhol- und Zielort müssen sich unterscheiden", path: ["dropoffPlaceId"] })
   .refine((d) => d.priceMode !== "FIXED" || d.priceCents != null, { message: "Für einen Festpreis bitte einen Betrag angeben", path: ["priceCents"] })
-  .refine((d) => !d.quoteDeadline || d.quoteDeadline < d.pickupAt, { message: "Die Angebotsfrist muss vor der Abholung liegen", path: ["quoteDeadline"] });
+  .refine((d) => !d.quoteDeadline || d.quoteDeadline < d.pickupAt, { message: "Die Angebotsfrist muss vor der Abholung liegen", path: ["quoteDeadline"] })
+  .refine((d) => d.visibility !== "INVITED" || d.invitedOrgIds.length > 0, { message: "Bitte mindestens ein Unternehmen auswählen", path: ["invitedOrgIds"] });
 
 const quoteSchema = z.object({
   amountCents: z.coerce.number().int().min(100).max(10_000_00),
@@ -94,6 +103,7 @@ const marketSelect = {
   quoteDeadline: true,
   bookingTerms: true,
   cancellationTerms: true,
+  visibility: true,
   createdAt: true,
   requesterOrg: { select: { id: true, name: true, city: true, type: true } },
 } satisfies Prisma.TransferRequestSelect;
@@ -115,6 +125,29 @@ const OPEN_FOR_MARKET = (now: Date): Prisma.TransferRequestWhereInput => ({
   OR: [{ quoteDeadline: null }, { quoteDeadline: { gt: now } }],
 });
 
+
+/** Prüft, dass alle Einzuladenden aktive, verifizierte Beförderungsunternehmen sind (nicht die eigene Organisation). */
+async function checkInvitees(actor: OrgActor, orgIds: string[]) {
+  const ids = [...new Set(orgIds)].filter((id) => id !== actor.org.id);
+  if (ids.length === 0) return [];
+  const ok = await db.organization.findMany({
+    where: { id: { in: ids }, status: "ACTIVE", capabilities: { some: { capability: "TRANSPORT_PROVIDER", status: "VERIFIED" } } },
+    select: { id: true },
+  });
+  if (ok.length !== ids.length) throw invalid("Mindestens ein ausgewähltes Unternehmen ist nicht freigeschaltet.");
+  return ids;
+}
+
+type Tx = Prisma.TransactionClient;
+
+/** Markiert die Einladung eines Anbieters als beantwortet (Angebot oder Übernahme). */
+async function markInvitationResponded(tx: Tx, requestId: string, providerOrgId: string) {
+  await tx.quoteInvitation.updateMany({
+    where: { requestId, providerOrgId, status: "PENDING" },
+    data: { status: "RESPONDED", respondedAt: new Date() },
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Aufträge einstellen
 // ---------------------------------------------------------------------------
@@ -123,6 +156,8 @@ export async function createTransferRequest(actor: Actor | null, input: unknown)
   requirePermission(actor, "transfers.request");
   const d = parse(transferRequestSchema, input);
   if (d.pickupAt <= new Date()) throw invalid("Die Abholzeit liegt in der Vergangenheit.");
+  const invitees = await checkInvitees(actor, d.invitedOrgIds);
+  if (d.visibility === "INVITED" && invitees.length === 0) throw invalid("Bitte mindestens ein Unternehmen auswählen");
 
   const created = await db.$transaction(async (tx) => {
     const req = await tx.transferRequest.create({
@@ -152,17 +187,110 @@ export async function createTransferRequest(actor: Actor | null, input: unknown)
         bookingTerms: d.bookingTerms,
         cancellationTerms: d.cancellationTerms,
         clientReference: d.clientReference,
+        visibility: d.visibility,
+        invitations: invitees.length
+          ? { create: invitees.map((providerOrgId) => ({ providerOrgId, invitedById: actor.userId })) }
+          : undefined,
         passengersContact: d.passengerName ? { create: { name: d.passengerName, phone: d.passengerPhone } } : undefined,
       },
     });
     await transferEvent(tx, req.id, "request.created", { userId: actor.userId, orgId: actor.org.id }, {
       priceMode: d.priceMode,
       priceCents: d.priceCents ?? null,
+      visibility: d.visibility,
     });
+    if (invitees.length) {
+      await transferEvent(tx, req.id, "request.invited", { userId: actor.userId, orgId: actor.org.id }, { orgIds: invitees, count: invitees.length });
+    }
     return req;
   });
   await notifyNewRequest(created.id).catch(notificationFailed);
   return created;
+}
+
+/** Weitere Unternehmen gezielt um ein Angebot bitten (nur offene, eigene Aufträge). */
+export async function inviteProviders(actor: Actor | null, requestId: string, orgIds: string[]) {
+  requirePermission(actor, "transfers.request");
+  const req = await db.transferRequest.findFirst({
+    where: { id: requestId, requesterOrgId: actor.org.id, status: "OPEN" },
+    include: { invitations: { select: { providerOrgId: true } } },
+  });
+  if (!req) throw notFound("Auftrag nicht gefunden oder bereits vergeben.");
+  const already = new Set(req.invitations.map((i) => i.providerOrgId));
+  const fresh = (await checkInvitees(actor, orgIds)).filter((id) => !already.has(id));
+  if (fresh.length === 0) throw invalid("Bitte mindestens ein weiteres Unternehmen auswählen.");
+  if (already.size + fresh.length > MAX_INVITATIONS) throw invalid("Höchstens 20 Unternehmen je Auftrag anfragen.");
+  await db.$transaction(async (tx) => {
+    await tx.quoteInvitation.createMany({ data: fresh.map((providerOrgId) => ({ requestId, providerOrgId, invitedById: actor.userId })) });
+    await transferEvent(tx, requestId, "request.invited", { userId: actor.userId, orgId: actor.org.id }, { orgIds: fresh, count: fresh.length });
+  });
+  await notifyInvited(requestId, fresh).catch(notificationFailed);
+  return fresh.length;
+}
+
+/** Gezielte Anfrage für alle geprüften Unternehmen in der Börse freigeben. */
+export async function openRequestToMarket(actor: Actor | null, requestId: string) {
+  requirePermission(actor, "transfers.request");
+  await db.$transaction(async (tx) => {
+    const res = await tx.transferRequest.updateMany({
+      where: { id: requestId, requesterOrgId: actor.org.id, status: "OPEN", visibility: "INVITED" },
+      data: { visibility: "MARKET" },
+    });
+    if (res.count === 0) throw notFound("Auftrag nicht gefunden oder bereits in der Börse.");
+    await transferEvent(tx, requestId, "request.opened_to_market", { userId: actor.userId, orgId: actor.org.id });
+  });
+  await notifyNewRequest(requestId).catch(notificationFailed);
+}
+
+/** Eingeladenes Unternehmen lehnt die Anfrage ab; der Auftraggeber sieht das sofort. */
+export async function declineInvitation(actor: Actor | null, requestId: string, note?: string) {
+  requireMarketAccess(actor);
+  const n = note?.trim().slice(0, 300) || null;
+  await db.$transaction(async (tx) => {
+    const res = await tx.quoteInvitation.updateMany({
+      where: { requestId, providerOrgId: actor.org.id, status: "PENDING", request: { status: "OPEN" } },
+      data: { status: "DECLINED", respondedAt: new Date(), declineNote: n },
+    });
+    if (res.count === 0) throw notFound("Anfrage nicht gefunden oder bereits beantwortet.");
+    await transferEvent(tx, requestId, "invitation.declined", { userId: actor.userId, orgId: actor.org.id }, n ? { note: n } : undefined);
+  });
+}
+
+/** Offene Direktanfragen an das eigene Unternehmen. */
+export async function listInvitations(actor: Actor | null) {
+  requireMarketAccess(actor);
+  const now = new Date();
+  return db.quoteInvitation.findMany({
+    where: { providerOrgId: actor.org.id, status: "PENDING", request: { ...OPEN_FOR_MARKET(now), requesterOrg: { status: "ACTIVE" } } },
+    orderBy: { request: { pickupAt: "asc" } },
+    take: 100,
+    include: { request: { select: { ...marketSelect, quotes: { where: { providerOrgId: actor.org.id }, select: { id: true, status: true, amountCents: true } } } } },
+  });
+}
+
+/**
+ * Geprüfte Beförderungsunternehmen, die ein Auftraggeber gezielt anfragen kann. Bisherige Partner
+ * (mit Buchungen für die eigene Organisation) stehen oben.
+ */
+export async function listProviderDirectory(actor: Actor | null) {
+  requirePermission(actor, "transfers.request");
+  const [orgs, history] = await Promise.all([
+    db.organization.findMany({
+      where: { id: { not: actor.org.id }, status: "ACTIVE", capabilities: { some: { capability: "TRANSPORT_PROVIDER", status: "VERIFIED" } } },
+      select: { id: true, name: true, city: true, country: true, transportProfile: { select: { vehicleCategories: true, fleetSize: true, declaredRegions: true } } },
+      orderBy: { name: "asc" },
+      take: 300,
+    }),
+    db.booking.groupBy({
+      by: ["providerOrgId"],
+      where: { requesterOrgId: actor.org.id, status: { in: ["CONFIRMED", "IN_PROGRESS", "COMPLETED"] } },
+      _count: { _all: true },
+    }),
+  ]);
+  const trips = new Map(history.map((h) => [h.providerOrgId, h._count._all]));
+  return orgs
+    .map((o) => ({ ...o, trips: trips.get(o.id) ?? 0 }))
+    .sort((a, b) => b.trips - a.trips || a.name.localeCompare(b.name));
 }
 
 export async function cancelTransferRequest(actor: Actor | null, requestId: string) {
@@ -208,7 +336,7 @@ export async function searchBoard(actor: Actor | null, rawFilter: unknown = {}) 
   requireMarketAccess(actor);
   const f = parse(boardFilterSchema, rawFilter);
   const now = new Date();
-  const and: Prisma.TransferRequestWhereInput[] = [OPEN_FOR_MARKET(now), { requesterOrgId: { not: actor.org.id } }];
+  const and: Prisma.TransferRequestWhereInput[] = [OPEN_FOR_MARKET(now), VISIBLE_TO(actor.org.id), { requesterOrgId: { not: actor.org.id } }];
 
   if (f.from) and.push({ pickupPlaceId: f.from });
   if (f.to) and.push({ dropoffPlaceId: f.to });
@@ -243,6 +371,7 @@ export async function searchBoard(actor: Actor | null, rawFilter: unknown = {}) 
     select: {
       ...marketSelect,
       quotes: { where: { providerOrgId: actor.org.id }, select: { id: true, status: true, amountCents: true } },
+      invitations: { where: { providerOrgId: actor.org.id }, select: { status: true } },
     },
   });
   return rows;
@@ -268,12 +397,16 @@ export async function getTransferRequest(actor: Actor | null, requestId: string)
   let role: RequestRole;
   if (req.requesterOrgId === actor.org.id) role = "requester";
   else if (req.booking?.providerOrgId === actor.org.id) role = "provider";
-  else if (req.status === "OPEN" && actorCan(actor, "jobs.accept")) role = "market";
+  else if (
+    req.status === "OPEN" &&
+    actorCan(actor, "jobs.accept") &&
+    (await db.transferRequest.count({ where: { id: req.id, ...VISIBLE_TO(actor.org.id) } })) === 1
+  ) role = "market";
   // Vergebene oder fremde Aufträge ohne Beteiligung: so tun, als gäbe es sie nicht.
   else throw notFound();
 
   const involved = role !== "market";
-  const [contacts, quotes, events] = await Promise.all([
+  const [contacts, quotes, events, invitations] = await Promise.all([
     involved ? db.passengerContact.findMany({ where: { requestId } }) : Promise.resolve([]),
     db.quote.findMany({
       where: role === "requester" ? { requestId } : { requestId, providerOrgId: actor.org.id },
@@ -285,12 +418,18 @@ export async function getTransferRequest(actor: Actor | null, requestId: string)
       },
     }),
     involved ? db.transferEvent.findMany({ where: { requestId }, orderBy: { createdAt: "asc" } }) : Promise.resolve([]),
+    // Der Auftraggeber sieht alle Einladungen, ein Anbieter nur die eigene.
+    db.quoteInvitation.findMany({
+      where: role === "requester" ? { requestId } : { requestId, providerOrgId: actor.org.id },
+      orderBy: { createdAt: "asc" },
+      include: { providerOrg: { select: { id: true, name: true, city: true } } },
+    }),
   ]);
 
   // Das ausführende Unternehmen sieht nicht, wer sonst mit welchem Preis angeboten hat.
   const visibleEvents =
     role === "provider"
-      ? events.filter((e) => !e.type.startsWith("quote.") || e.type === "quote.accepted" || e.actorOrgId === actor.org.id)
+      ? events.filter((e) => !(e.type.startsWith("quote.") || e.type.startsWith("invitation.") || e.type === "request.invited") || e.type === "quote.accepted" || e.actorOrgId === actor.org.id)
       : events;
 
   return {
@@ -308,6 +447,7 @@ export async function getTransferRequest(actor: Actor | null, requestId: string)
     },
     contacts,
     quotes,
+    invitations,
     events: visibleEvents,
   };
 }
@@ -343,7 +483,7 @@ function scopeSnapshot(r: {
  */
 export async function takeFixedPriceRequest(actor: Actor | null, requestId: string, input: { vehicleId?: string } = {}) {
   requireMarketAccess(actor);
-  const req = await db.transferRequest.findUnique({ where: { id: requestId } });
+  const req = await db.transferRequest.findFirst({ where: { id: requestId, ...VISIBLE_TO(actor.org.id) } });
   if (!req || req.status !== "OPEN") throw notFound("Auftrag nicht mehr verfügbar.");
   if (req.requesterOrgId === actor.org.id) throw forbidden("Eigene Aufträge können nicht übernommen werden.");
   if (req.priceMode !== "FIXED" || req.priceCents == null) throw invalid("Dieser Auftrag ist verhandelbar. Bitte ein Angebot abgeben.");
@@ -369,6 +509,7 @@ export async function takeFixedPriceRequest(actor: Actor | null, requestId: stri
         },
       });
       await tx.quote.updateMany({ where: { requestId, status: "SUBMITTED" }, data: { status: "REJECTED" } });
+      await markInvitationResponded(tx, requestId, actor.org.id);
       await transferEvent(tx, requestId, "booking.fixed_price_taken", { userId: actor.userId, orgId: actor.org.id }, {
         bookingId: booking.id,
         agreedPriceCents: booking.agreedPriceCents,
@@ -400,7 +541,7 @@ export async function submitQuote(actor: Actor | null, requestId: string, input:
   requirePermission(actor, "quotes.submit");
   const d = parse(quoteSchema, input);
   const now = new Date();
-  const req = await db.transferRequest.findFirst({ where: { id: requestId, ...OPEN_FOR_MARKET(now) } });
+  const req = await db.transferRequest.findFirst({ where: { AND: [{ id: requestId }, OPEN_FOR_MARKET(now), VISIBLE_TO(actor.org.id)] } });
   if (!req) throw notFound("Auftrag nicht mehr verfügbar oder Angebotsfrist abgelaufen.");
   if (req.requesterOrgId === actor.org.id) throw forbidden("Auf eigene Aufträge kann kein Angebot abgegeben werden.");
   if (d.validUntil && d.validUntil <= now) throw invalid("Die Gültigkeit des Angebots liegt in der Vergangenheit.");
@@ -415,6 +556,7 @@ export async function submitQuote(actor: Actor | null, requestId: string, input:
       create: { requestId, providerOrgId: actor.org.id, createdById: actor.userId, ...d },
       update: { ...d, createdById: actor.userId, status: "SUBMITTED", message: d.message ?? null, validUntil: d.validUntil ?? null },
     });
+    await markInvitationResponded(tx, requestId, actor.org.id);
     await transferEvent(tx, requestId, "quote.submitted", { userId: actor.userId, orgId: actor.org.id }, {
       quoteId: quote.id,
       amountCents: quote.amountCents,

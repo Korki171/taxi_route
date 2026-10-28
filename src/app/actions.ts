@@ -26,7 +26,10 @@ import {
   cancelTransferRequest,
   completeTrip,
   createTransferRequest,
+  declineInvitation,
   disputeBooking,
+  inviteProviders,
+  openRequestToMarket,
   rejectQuote,
   startTrip,
   submitQuote,
@@ -272,8 +275,10 @@ export async function createTransferRequestAction(fd: FormData) {
       flightArrivalAt: localDate(fd, "flightArrivalAt"),
       quoteDeadline: localDate(fd, "quoteDeadline"),
       priceCents: cents(fd, "price"),
+      visibility: str(fd, "visibility"),
+      invitedOrgIds: fd.getAll("invitedOrgIds").map(String),
     });
-    return withParam(`/boerse/auftrag/${req.id}`, "ok", "Auftrag veröffentlicht.");
+    return withParam(`/boerse/auftrag/${req.id}`, "ok", req.visibility === "INVITED" ? "Anfrage an die ausgewählten Unternehmen geschickt." : "Auftrag veröffentlicht.");
   });
 }
 
@@ -402,5 +407,31 @@ export async function publishCapacityAction(fd: FormData) {
 export async function setCapacityStatusAction(fd: FormData) {
   await runAction("/boerse?view=rueckfahrten", async () => {
     await setCapacityStatus(await getActor(), str(fd, "offerId"), str(fd, "status") === "CONFIRMED" ? "CONFIRMED" : "WITHDRAWN");
+  });
+}
+
+// ---------- Gezielte Anfragen ----------
+
+export async function inviteProvidersAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await inviteProviders(await getActor(), id, fd.getAll("invitedOrgIds").map(String));
+    return withParam(`/boerse/auftrag/${id}`, "ok", "Weitere Unternehmen angefragt.");
+  });
+}
+
+export async function openToMarketAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await openRequestToMarket(await getActor(), id);
+    return withParam(`/boerse/auftrag/${id}`, "ok", "Auftrag für die ganze Börse freigegeben.");
+  });
+}
+
+export async function declineInvitationAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await declineInvitation(await getActor(), id, str(fd, "note"));
+    return withParam("/boerse?view=anfragen", "ok", "Anfrage abgelehnt.");
   });
 }

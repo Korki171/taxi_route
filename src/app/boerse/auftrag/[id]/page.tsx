@@ -3,11 +3,12 @@ import { Fragment } from "react";
 import { notFound } from "next/navigation";
 import type { VehicleCategory } from "@prisma/client";
 import { AppShell } from "@/components/AppShell";
-import { Load, Route, VehicleSelect } from "@/components/market";
+import { Load, ProviderPicker, Route, VehicleSelect } from "@/components/market";
 import { Badge, Flash, type SP } from "@/components/ui";
 import { fmtDateTime, fmtMinutes, fmtTime } from "@/lib/format";
 import {
   BOOKING_STATUS_LABEL,
+  INVITATION_STATUS_LABEL,
   TRIP_STAGE_LABEL,
   QUOTE_STATUS_LABEL,
   TRANSFER_STATUS_LABEL,
@@ -19,7 +20,7 @@ import { placeName } from "@/lib/places";
 import { actorCan } from "@/server/authz/context";
 import { AppError } from "@/server/errors";
 import { listVehicles } from "@/server/services/fleet";
-import { getTransferRequest, referenceOf } from "@/server/services/marketplace";
+import { getTransferRequest, listProviderDirectory, MAX_INVITATIONS, referenceOf } from "@/server/services/marketplace";
 import { EVENT_LABEL } from "@/server/services/transfer-events";
 import { requireOrgActor } from "@/server/web";
 import { getI18n } from "@/server/i18n";
@@ -27,6 +28,9 @@ import {
   acceptQuoteAction,
   bookingTransitionAction,
   cancelTransferRequestAction,
+  declineInvitationAction,
+  inviteProvidersAction,
+  openToMarketAction,
   rejectQuoteAction,
   submitQuoteAction,
   takeFixedPriceAction,
@@ -54,7 +58,11 @@ export default async function RequestDetailPage({ params, searchParams }: { para
     if (e instanceof AppError && e.code === "NOT_FOUND") notFound();
     throw e;
   });
-  const { role, request: r, contacts, quotes, events } = data;
+  const { role, request: r, contacts, quotes, events, invitations } = data;
+  const myInvitation = role === "market" ? invitations[0] : undefined;
+  const canInvite = role === "requester" && r.status === "OPEN" && actorCan(actor, "transfers.request") && invitations.length < MAX_INVITATIONS;
+  const invitedIds = new Set(invitations.map((i) => i.providerOrgId));
+  const moreProviders = canInvite ? (await listProviderDirectory(actor)).filter((p) => !invitedIds.has(p.id)) : [];
   const booking = r.booking;
   const myQuote = role === "market" ? quotes[0] : undefined;
   const openQuotes = quotes.filter((q) => q.status === "SUBMITTED");
@@ -64,7 +72,8 @@ export default async function RequestDetailPage({ params, searchParams }: { para
     orgId === actor.org.id ? t("Ihr Unternehmen")
       : orgId === r.requesterOrg.id ? r.requesterOrg.name
       : orgId && orgId === booking?.providerOrgId ? booking.providerOrg.name
-      : quotes.find((q) => q.providerOrgId === orgId)?.providerOrg.name ?? t("Anbieter");
+      : quotes.find((q) => q.providerOrgId === orgId)?.providerOrg.name
+        ?? invitations.find((i) => i.providerOrgId === orgId)?.providerOrg.name ?? t("Anbieter");
   const scope = booking?.scope as { vehicleCategory?: VehicleCategory | null } | undefined;
 
   return (
@@ -79,9 +88,24 @@ export default async function RequestDetailPage({ params, searchParams }: { para
             {referenceOf(r.number)} · {t("Abholung")} {f.dateTime(r.pickupAt)}{r.pickupWindowMinutes ? ` ± ${r.pickupWindowMinutes} min` : ""} · {t("Fahrzeit ca. {n}", { n: f.minutes(r.estimatedMinutes) })}
           </p>
         </div>
-        <Badge status={r.status}>{t(TRANSFER_STATUS_LABEL[r.status])}</Badge>
+        <div className="inline">
+          {r.visibility === "INVITED" && <span className="badge neutral">{t("Gezielte Anfrage")}</span>}
+          <Badge status={r.status}>{t(TRANSFER_STATUS_LABEL[r.status])}</Badge>
+        </div>
       </div>
       <Flash searchParams={sp} />
+
+      {myInvitation?.status === "PENDING" && r.status === "OPEN" && (
+        <section className="card">
+          <h2>{t("Direktanfrage von {org}", { org: r.requesterOrg.name })}</h2>
+          <p className="muted">{t("{org} bittet Ihr Unternehmen gezielt um ein Angebot. Geben Sie unten ein Angebot ab oder lehnen Sie ab, damit der Auftraggeber rechtzeitig weitersuchen kann.", { org: r.requesterOrg.name })}</p>
+          <form action={declineInvitationAction} className="inline decline">
+            <input type="hidden" name="requestId" value={r.id} />
+            <input name="note" maxLength={300} placeholder={t("Grund, optional (z. B. kein Fahrzeug frei)")} aria-label={t("Grund der Ablehnung")} />
+            <button type="submit" className="secondary">{t("Anfrage ablehnen")}</button>
+          </form>
+        </section>
+      )}
 
       {stage >= 0 ? (
         <div className="state-strip" aria-label={t("Fortschritt")}>
@@ -240,6 +264,47 @@ export default async function RequestDetailPage({ params, searchParams }: { para
         </section>
       )}
 
+      {role === "requester" && (invitations.length > 0 || r.status === "OPEN") && (
+        <section className="card">
+          <div className="head-row">
+            <h2>{t("Angefragte Unternehmen")}</h2>
+            <span className="muted">{t(r.visibility === "INVITED" ? "Nur diese Unternehmen sehen den Auftrag." : "Der Auftrag steht zusätzlich in der ganzen Börse.")}</span>
+          </div>
+          {invitations.length === 0 ? <p className="empty">{t("Noch keine Unternehmen gezielt angefragt.")}</p> : (
+            <table className="responsive">
+              <tbody>
+                {invitations.map((i) => (
+                  <tr key={i.id}>
+                    <td>{i.providerOrg.name}<span className="price-note">{i.providerOrg.city}</span></td>
+                    <td data-label={t("Angefragt")}>{f.dateTime(i.createdAt)}</td>
+                    <td>
+                      <Badge status={i.status}>{t(INVITATION_STATUS_LABEL[i.status])}</Badge>
+                      {i.declineNote && <span className="price-note">„{i.declineNote}“</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {r.visibility === "INVITED" && r.status === "OPEN" && (
+            <form action={openToMarketAction} className="gap-top">
+              <input type="hidden" name="requestId" value={r.id} />
+              <button type="submit" className="secondary">{t("Für die ganze Börse freigeben")}</button>
+            </form>
+          )}
+          {canInvite && moreProviders.length > 0 && (
+            <details className="more-actions gap-top">
+              <summary>{t("Weitere Unternehmen anfragen")}</summary>
+              <form action={inviteProvidersAction} className="stack gap-top">
+                <input type="hidden" name="requestId" value={r.id} />
+                <ProviderPicker providers={moreProviders} />
+                <div><button type="submit">{t("Ausgewählte anfragen")}</button></div>
+              </form>
+            </details>
+          )}
+        </section>
+      )}
+
       {booking && (
         <section className="card">
           <div className="head-row">
@@ -262,6 +327,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
           </dl>
           <p className="price-note">{t("Der Leistungsumfang ist zum Zeitpunkt der Vereinbarung festgehalten und ändert sich nicht mehr.")}</p>
           <div className="actions-row gap-top">
+            <a href={`/api/bookings/${booking.id}/confirmation`} className="btn secondary" target="_blank" rel="noopener">{t("Auftragsbestätigung (PDF)")}</a>
             {role === "provider" && booking.status === "CONFIRMED" && (
               <form action={bookingTransitionAction}>
                 <input type="hidden" name="requestId" value={r.id} />

@@ -91,7 +91,7 @@ bestätigter Preis (`Booking`). Doppelte Annahme verhindert ein Unique-Constrain
 1. ✅ **Phase 1** – Analyse, Architektur (dieses Dokument)
 2. ✅ **Phase 2** – Organisationen, Nutzer, Rollen, Auth, Profile, Verifizierung, Admin-Prüfung
 3. ✅ **Phase 3** – Fahrzeuge, Transferaufträge in der Börse, Filter, Preisangebote, Übernahme (Szenario A), freie Kapazitäten/Rückfahrten mit Matching (Szenario C)
-4. **Phase 4** – Reisebüro-Dashboard, gezielte Angebotsanfragen, Angebotsvergleich, Buchungsbestätigung, Referenzen, Buchungsbestätigung als PDF (Szenario B)
+4. ✅ **Phase 4** – Reisebüro-Dashboard, gezielte Angebotsanfragen, Angebotsvergleich, Buchungsbestätigung, Referenzen, Buchungsbestätigung als PDF (Szenario B)
 5. **Phase 5** – Statusmaschine, Buchungsereignisse, auftragsbezogene Nachrichten, E-Mail-Benachrichtigungen, Partnernetzwerk
 6. **Phase 6** – End-to-End-Tests aller Szenarien, Sicherheitsprüfung, Rate-Limiting, Deployment
 
@@ -169,3 +169,25 @@ ist. Für Hintergrund-Tracking braucht es später eine native App, die dieselbe 
 - **Login-Schutz:** Rate-Limiting und Passwort-Zurücksetzen fehlen noch (Phase 6 bzw. mit E-Mail-Versand).
 - **Rechtliches:** Vertragspartner, Zahlungsempfänger, Haftung und Umsatzsteuer müssen vor Produktivbetrieb geklärt werden. Bis dahin werden Preise und Gebühren nur dokumentiert, keine Zahlungen abgewickelt.
 - **Hosting:** Noch offen; empfohlen EU-Hosting wegen DSGVO.
+
+
+## Phase 4: Reisebüros (Szenario B)
+
+**Gezielte Anfragen.** `TransferRequest.visibility` ist `MARKET` (ganze Börse) oder `INVITED` (nur eingeladene
+Unternehmen). Einladungen stehen in `QuoteInvitation` (Status `PENDING` → `RESPONDED` beim Angebot bzw. der
+Übernahme, oder `DECLINED` mit optionalem Grund). Sichtbarkeit regelt `VISIBLE_TO(orgId)` in
+`src/server/services/visibility.ts`; Börsensuche, Detailansicht, Angebot, Festpreis-Übernahme und Rückfahrt-Matching
+nutzen denselben Filter. Wer abgelehnt hat, sieht eine gezielte Anfrage nicht mehr. Der Auftraggeber kann weitere
+Unternehmen anfragen (höchstens 20) oder die Anfrage später für die ganze Börse freigeben. Auch bei Börsenaufträgen
+lassen sich Unternehmen zusätzlich direkt anfragen; sie erhalten eine eigene E-Mail und sehen den Auftrag unter
+„Direktanfragen“. Eingeladen werden können nur aktive Organisationen mit geprüftem `TRANSPORT_PROVIDER`.
+
+**Reisebüro-Dashboard.** Reine Auftraggeber (`transfers.request` ohne `jobs.accept`) sehen auf `/dashboard` ihre
+Transfers der nächsten 14 Tage mit Stand, eine Suche nach Kundenreferenz, TR-Nummer oder Fahrgast, was Aufmerksamkeit
+braucht (bald fällig und nicht vergeben, Frist ohne Angebot abgelaufen), Kennzahlen des Monats und die häufigsten
+Partner mit Link zur gezielten Anfrage (`src/server/services/agency.ts`).
+
+**Auftragsbestätigung als PDF.** `GET /api/bookings/{id}/confirmation` erzeugt mit pdf-lib (Standardschrift, keine
+externen Dateien) eine A4-Bestätigung in der Sprache des Nutzers: beide Parteien, Leistung, Adressen, Fahrgast,
+vereinbarter Preis, Bedingungen. Nur Auftraggeber und ausführendes Unternehmen erhalten sie, Fahrer nicht; die interne
+Kundenreferenz steht nur im Exemplar des Auftraggebers.
