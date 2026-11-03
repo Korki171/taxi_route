@@ -18,6 +18,9 @@ export async function transferEvent(
 export const EVENT_LABEL: Record<string, string> = {
   "request.created": "Auftrag veröffentlicht",
   "request.cancelled": "Auftrag zurückgezogen",
+  "request.invited": "Unternehmen gezielt angefragt",
+  "request.opened_to_market": "Für die ganze Börse freigegeben",
+  "invitation.declined": "Anfrage abgelehnt",
   "quote.submitted": "Angebot abgegeben",
   "quote.withdrawn": "Angebot zurückgezogen",
   "quote.rejected": "Angebot abgelehnt",

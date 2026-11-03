@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { estimateMinutes } from "@/lib/places";
 import { requirePermission, type Actor } from "../authz/context";
 import { notFound } from "../errors";
+import { VISIBLE_TO } from "./visibility";
 
 /** Größere Fahrzeuge können Aufträge für kleinere Kategorien übernehmen; Sonderfahrzeuge nur ihre eigene. */
 const SIZE_ORDER: VehicleCategory[] = ["SEDAN", "ESTATE", "MINIVAN", "VAN", "MINIBUS", "BUS"];
@@ -75,7 +76,7 @@ export async function findMatchesForCapacity(actor: Actor | null, offerId: strin
       pickupAt: { gte: new Date(offer.availableFrom.getTime() - 4 * 3600_000), lte: offer.availableUntil, gt: now },
       passengers: { lte: offer.seats },
       luggage: { lte: offer.luggage },
-      OR: [{ quoteDeadline: null }, { quoteDeadline: { gt: now } }],
+      AND: [{ OR: [{ quoteDeadline: null }, { quoteDeadline: { gt: now } }] }, VISIBLE_TO(actor.org.id)],
     },
     orderBy: { pickupAt: "asc" },
     take: 200,

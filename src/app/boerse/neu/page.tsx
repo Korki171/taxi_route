@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
-import { PlaceSelect, VehicleSelect } from "@/components/market";
+import { PlaceSelect, ProviderPicker, VehicleSelect } from "@/components/market";
 import { Flash, type SP } from "@/components/ui";
 import { actorCan } from "@/server/authz/context";
+import { listProviderDirectory } from "@/server/services/marketplace";
 import { requireOrgActor } from "@/server/web";
 import { createTransferRequestAction } from "../../actions";
 import { getI18n } from "@/server/i18n";
@@ -13,6 +14,10 @@ export default async function NewRequestPage({ searchParams }: { searchParams: S
   const sp = await searchParams;
   const actor = await requireOrgActor();
   if (!actorCan(actor, "transfers.request")) redirect("/boerse?error=" + encodeURIComponent("Ihr Unternehmen ist noch nicht als Auftraggeber freigegeben."));
+  const providers = await listProviderDirectory(actor);
+  // ?partner=<id> (aus dem Dashboard) wählt ein Unternehmen vor und stellt auf gezielte Anfrage.
+  const preselected = sp.partner ? [sp.partner] : [];
+  const targeted = !!sp.partner || sp.gezielt === "1";
 
   return (
     <AppShell actor={actor}>
@@ -66,6 +71,19 @@ export default async function NewRequestPage({ searchParams }: { searchParams: S
           <label>{t("Buchungsbedingungen")}<textarea name="bookingTerms" rows={2} maxLength={1000} placeholder={t("Wartezeit am Flughafen inklusive bis 60 Minuten nach Landung")} /></label>
           <label>{t("Stornobedingungen")}<textarea name="cancellationTerms" rows={2} maxLength={500} placeholder={t("Kostenlos bis 24 Stunden vor Abholung")} /></label>
           <p className="price-note">{t("Die Plattform wickelt keine Zahlungen ab. Der bestätigte Preis wird in der Buchung festgehalten, die Abrechnung erfolgt direkt zwischen den Unternehmen.")}</p>
+        </section>
+
+        <section className="card stack" id="anbieter">
+          <h2>{t("Wer soll anbieten?")}</h2>
+          <fieldset>
+            <legend className="sr-only">{t("Sichtbarkeit")}</legend>
+            <div className="choice">
+              <label><input type="radio" name="visibility" value="MARKET" defaultChecked={!targeted} />{t("Ganze Börse: alle geprüften Unternehmen")}</label>
+              <label><input type="radio" name="visibility" value="INVITED" defaultChecked={targeted} />{t("Gezielt: nur die ausgewählten Unternehmen")}</label>
+            </div>
+          </fieldset>
+          <ProviderPicker providers={providers} selected={preselected} />
+          <p className="price-note">{t("Ausgewählte Unternehmen erhalten eine Direktanfrage per E-Mail und können annehmen oder ablehnen. Bei „Ganze Börse“ sehen alle anderen den Auftrag zusätzlich in der Börse. Eine gezielte Anfrage können Sie später für die ganze Börse freigeben.")}</p>
         </section>
 
         <section className="card stack">

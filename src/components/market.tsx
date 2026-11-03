@@ -55,3 +55,39 @@ export async function Load({ passengers, luggage, ski }: { passengers: number; l
 export function Empty({ children }: { children: React.ReactNode }) {
   return <p className="empty">{children}</p>;
 }
+
+type DirectoryEntry = {
+  id: string;
+  name: string;
+  city: string;
+  trips: number;
+  transportProfile: { vehicleCategories: VehicleCategory[]; fleetSize: number | null } | null;
+};
+
+/** Auswahl geprüfter Beförderungsunternehmen für gezielte Anfragen. Bisherige Partner stehen oben. */
+export async function ProviderPicker({ providers, selected = [], name = "invitedOrgIds" }: { providers: DirectoryEntry[]; selected?: string[]; name?: string }) {
+  const { t } = await getI18n();
+  if (providers.length === 0) return <p className="picker-empty">{t("Derzeit keine weiteren geprüften Unternehmen.")}</p>;
+  return (
+    <div className="picker">
+      {providers.map((p) => {
+        const cats = p.transportProfile?.vehicleCategories ?? [];
+        const details = [
+          p.city,
+          p.transportProfile?.fleetSize ? t("{n} Fahrzeuge", { n: p.transportProfile.fleetSize }) : null,
+          cats.length ? cats.slice(0, 3).map((c) => t(VEHICLE_LABEL[c])).join(", ") : null,
+        ].filter(Boolean).join(" · ");
+        return (
+          <label key={p.id}>
+            <input type="checkbox" name={name} value={p.id} defaultChecked={selected.includes(p.id)} />
+            <span>
+              {p.name}
+              <span className="price-note">{details}</span>
+              {p.trips > 0 && <span className="price-note">{t(p.trips === 1 ? "1 Fahrt mit Ihnen" : "{n} Fahrten mit Ihnen", { n: p.trips })}</span>}
+            </span>
+          </label>
+        );
+      })}
+    </div>
+  );
+}

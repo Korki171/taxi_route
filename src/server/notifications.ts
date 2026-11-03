@@ -45,12 +45,20 @@ function mail(org: Org, req: Req, subject: string, lines: string[], vars: Record
 
 const orgSelect = { email: true, name: true, country: true } as const;
 
-/** Neuer Auftrag: an alle geprüften, aktiven Beförderungsunternehmen außer dem Auftraggeber. */
+/**
+ * Neuer Auftrag: eingeladene Unternehmen erhalten eine Direktanfrage. Börsenaufträge gehen zusätzlich
+ * an alle übrigen geprüften, aktiven Beförderungsunternehmen außer dem Auftraggeber.
+ */
 export async function notifyNewRequest(requestId: string) {
-  const req = await db.transferRequest.findUniqueOrThrow({ where: { id: requestId }, include: { requesterOrg: { select: orgSelect } } });
+  const req = await db.transferRequest.findUniqueOrThrow({
+    where: { id: requestId },
+    include: { requesterOrg: { select: orgSelect }, invitations: { select: { providerOrgId: true } } },
+  });
+  const invited = req.invitations.map((i) => i.providerOrgId);
+  if (req.visibility === "INVITED") return notifyInvited(requestId, invited);
   const providers = await db.organization.findMany({
     where: {
-      id: { not: req.requesterOrgId },
+      id: { notIn: [req.requesterOrgId, ...invited] },
       status: "ACTIVE",
       capabilities: { some: { capability: "TRANSPORT_PROVIDER", status: "VERIFIED" } },
     },
@@ -63,6 +71,24 @@ export async function notifyNewRequest(requestId: string) {
         "Neuer Auftrag in der Börse: {route}, Abholung {pickup}.",
         req.priceMode === "FIXED" ? "Festpreis: {price}. Das erste Unternehmen, das übernimmt, erhält den Auftrag." : "Richtpreis: {price}. Angebote sind möglich.",
         "{pax} Personen, Auftraggeber: {requester}.",
+      ], { price, pax: req.passengers, requester: req.requesterOrg.name }),
+    ),
+  );
+  if (invited.length) await notifyInvited(requestId, invited);
+}
+
+/** Gezielte Angebotsanfrage: an die eingeladenen Unternehmen. */
+export async function notifyInvited(requestId: string, orgIds: string[]) {
+  if (orgIds.length === 0) return;
+  const req = await db.transferRequest.findUniqueOrThrow({ where: { id: requestId }, include: { requesterOrg: { select: orgSelect } } });
+  const orgs = await db.organization.findMany({ where: { id: { in: orgIds }, status: "ACTIVE" }, select: orgSelect });
+  const price = req.priceCents ? formatCents(req.priceCents) : "–";
+  await sendAll(
+    orgs.map((p) =>
+      mail(p, req, "Direktanfrage von {requester}: {route}", [
+        "{requester} bittet Sie gezielt um ein Angebot: {route}, Abholung {pickup}.",
+        req.priceMode === "FIXED" ? "Festpreis: {price}. Das erste Unternehmen, das übernimmt, erhält den Auftrag." : "Richtpreis: {price}. Angebote sind möglich.",
+        "{pax} Personen. Sie können die Anfrage in Transferborsa annehmen oder ablehnen.",
       ], { price, pax: req.passengers, requester: req.requesterOrg.name }),
     ),
   );

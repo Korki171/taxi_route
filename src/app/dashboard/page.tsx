@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { AgencyOverview } from "@/components/AgencyOverview";
 import { AppShell } from "@/components/AppShell";
 import { Route } from "@/components/market";
 import { Badge, Flash, type SP } from "@/components/ui";
@@ -16,7 +17,7 @@ import { actorCan } from "@/server/authz/context";
 import { decide, type Permission } from "@/server/authz/permissions";
 import { authzInput } from "@/server/authz/context";
 import { getI18n } from "@/server/i18n";
-import { listBookings, listIncomingQuotes, listOwnRequests, searchBoard } from "@/server/services/marketplace";
+import { listBookings, listIncomingQuotes, listInvitations, listOwnRequests, searchBoard } from "@/server/services/marketplace";
 import { requireOrgActor } from "@/server/web";
 
 const FEATURES: { permission: Permission; label: string }[] = [
@@ -48,9 +49,12 @@ export default async function Dashboard({ searchParams }: { searchParams: SP }) 
   const input = authzInput(actor);
   const canMarket = actorCan(actor, "jobs.accept");
   const canRequest = actorCan(actor, "transfers.request");
+  // Reine Auftraggeber (Reisebüros) bekommen die Transferübersicht statt der Börsenansicht.
+  const agencyMode = canRequest && !canMarket;
 
-  const [market, incoming, ownOpen, upcoming] = await Promise.all([
+  const [market, invitations, incoming, ownOpen, upcoming] = await Promise.all([
     canMarket ? searchBoard(actor, {}) : null,
+    canMarket ? listInvitations(actor) : null,
     actorCan(actor, "bookings.manage") ? listIncomingQuotes(actor) : null,
     canRequest ? listOwnRequests(actor, ["OPEN"]) : null,
     actorCan(actor, "org.read") ? listBookings(actor, "both", ["CONFIRMED", "IN_PROGRESS"]) : [],
@@ -58,6 +62,7 @@ export default async function Dashboard({ searchParams }: { searchParams: SP }) 
 
   // Zahlen im Navy-Feld: jede führt zur Ansicht, in der man sie abarbeitet.
   const figures: Figure[] = [];
+  if (invitations) figures.push({ n: invitations.length, label: t("Direktanfragen an Ihr Unternehmen"), href: "/boerse?view=anfragen", hot: invitations.length > 0 });
   if (incoming) figures.push({ n: incoming.length, label: t("Angebote warten auf Ihre Entscheidung"), href: "/boerse?view=angebote", hot: incoming.length > 0 });
   if (market) figures.push({ n: market.length, label: t("offene Aufträge anderer Unternehmen in der Börse"), href: "/boerse" });
   if (ownOpen) figures.push({ n: ownOpen.length, label: t("eigene Aufträge noch nicht vergeben"), href: "/boerse?view=meine" });
@@ -88,6 +93,7 @@ export default async function Dashboard({ searchParams }: { searchParams: SP }) 
           </ul>
           <div className="band-actions">
             {canRequest && <Link href="/boerse/neu" className="btn accent">{t("Auftrag einstellen")}</Link>}
+            {agencyMode && <Link href="/boerse/neu?gezielt=1#anbieter" className="btn secondary">{t("Unternehmen gezielt anfragen")}</Link>}
             <Link href="/boerse" className={canRequest ? "btn secondary" : "btn accent"}>{t("Zur Börse")}</Link>
             {actorCan(actor, "capacity.publish") && <Link href="/flotte#fahrt" className="btn secondary">{t("Rückfahrt anbieten")}</Link>}
           </div>
@@ -109,9 +115,11 @@ export default async function Dashboard({ searchParams }: { searchParams: SP }) 
         </section>
       )}
 
+      {agencyMode && <AgencyOverview actor={actor} q={sp.q} />}
+
       <div className="split">
         <div className="col">
-          {(canMarket || canRequest) && (
+          {canMarket && (
             <section className="card">
               <div className="head-row">
                 <h2>{t("Nächste Fahrten")}</h2>
