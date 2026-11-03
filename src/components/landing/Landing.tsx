@@ -7,7 +7,19 @@ import { RouteDemo } from "./RouteDemo";
 import { LangSwitch } from "../LangSwitch";
 import { getI18n } from "@/server/i18n";
 
-const PLACES = ["Innsbruck", "Hall", "Schwaz", "Kufstein", "Kitzbühel", "Seefeld", "Mayrhofen", "Sölden", "St. Anton"];
+// Das Motiv der Seite ist der Wendepunkt am Flughafen: ein Viertelkreis. Er sitzt als Ecke an Bildern,
+// Kacheln und Mappen, als Rundung der Knöpfe und als Kerbe in Bordkarte und Ticket.
+
+/** Strecken als Abflugtafel: Zeile, Vorschaubild. Jedes Bild zeigt den Ort, nie das Unternehmen. */
+const ROUTES: { name: string; image: string; alt: string; w: number; h: number }[] = [
+  { name: "Flughafen München", image: "flughafen", alt: "Check-in-Halle am Flughafen München, ein Fahrgast trägt einen Skisack", w: 1600, h: 975 },
+  { name: "Innsbruck", image: "innsbruck", alt: "Die Nordkette über dem Inn bei Innsbruck", w: 1600, h: 1068 },
+  { name: "Hall", image: "hall", alt: "Blick über Hall in Tirol mit Stiftskirche, dahinter das Karwendel", w: 1600, h: 1200 },
+  { name: "Kufstein", image: "kufstein", alt: "Die beleuchtete Festung Kufstein bei Nacht", w: 1600, h: 1185 },
+  { name: "Kitzbühel", image: "kitzbuehel", alt: "Blick vom Hahnenkamm über das Tal bei Kitzbühel", w: 1600, h: 1200 },
+  { name: "Seefeld", image: "seefeld", alt: "Seefeld in Tirol von oben, dahinter das Karwendel", w: 1600, h: 533 },
+];
+const MORE_PLACES = "Schwaz, Mayrhofen, Sölden, St. Anton";
 
 const RIGHTS: { group: string; rows: [string, string, string][] }[] = [
   {
@@ -35,11 +47,12 @@ const RIGHTS: { group: string; rows: [string, string, string][] }[] = [
   },
 ];
 
-const STAGES = [
-  { grow: 1, colour: "a", time: "Zwei Minuten", text: "Zuerst beschreibt der Auftraggeber die Fahrt: Abholung, Flug, Gepäck, Ski." },
-  { grow: 6, colour: "b", time: "Bis zur Angebotsfrist", text: "Dann geben geprüfte Unternehmen Festpreise oder eigene Angebote ab." },
-  { grow: 1, colour: "c", time: "Ein Klick", text: "Danach wird ein Angebot angenommen. Ab hier ist der Preis verbindlich." },
-  { grow: 3, colour: "d", time: "Rund 1 h 50 min", text: "Zuletzt fährt das Unternehmen, und der Abschluss wird dokumentiert." },
+/** Die vier Stationen einer Fahrt, von dunkel nach hell. Das Bild zeigt die Welt der Station. */
+const STAGES: { tone: string; time: string; text: string; image: string; alt: string; w: number; h: number }[] = [
+  { tone: "a", time: "Zwei Minuten", text: "Zuerst beschreibt der Auftraggeber die Fahrt: Abholung, Flug, Gepäck, Ski.", image: "flughafen", alt: "Check-in-Halle am Flughafen München, ein Fahrgast trägt einen Skisack", w: 1600, h: 975 },
+  { tone: "b", time: "Bis zur Angebotsfrist", text: "Dann geben geprüfte Unternehmen Festpreise oder eigene Angebote ab.", image: "hall", alt: "Blick über Hall in Tirol mit Stiftskirche, dahinter das Karwendel", w: 1600, h: 1200 },
+  { tone: "c", time: "Ein Klick", text: "Danach wird ein Angebot angenommen. Ab hier ist der Preis verbindlich.", image: "kufstein", alt: "Die beleuchtete Festung Kufstein bei Nacht", w: 1600, h: 1185 },
+  { tone: "d", time: "Rund 1 h 50 min", text: "Zuletzt fährt das Unternehmen, und der Abschluss wird dokumentiert.", image: "innsbruck", alt: "Die Nordkette über dem Inn bei Innsbruck", w: 1600, h: 1068 },
 ];
 
 const FAQ: [string, string][] = [
@@ -69,58 +82,76 @@ const FAQ: [string, string][] = [
   ],
 ];
 
+/** Die Marke im Fuß, Buchstabe für Buchstabe aus eigenen Blöcken: Höhe in Prozent, Farbe aus der Palette. */
+const MARK: [string, number, string][] = [
+  ["T", 82, "accent"], ["R", 100, "paper"], ["A", 68, "sky"], ["N", 92, "stone"], ["S", 76, "accent"],
+  ["F", 100, "paper"], ["E", 64, "sky"], ["R", 88, "stone"], ["B", 100, "accent"], ["O", 72, "paper"],
+  ["R", 94, "sky"], ["S", 60, "stone"], ["A", 86, "accent"],
+];
+
 export async function Landing() {
   const { t, locale } = await getI18n();
+  const img = (name: string) => `/landing/${name}.jpg`;
   return (
     <div className="lp">
       <Motion />
-      <header className="lp-header" data-ink="paper">
-        <Link href="/" className="lp-wordmark">Transferborsa</Link>
-        <nav aria-label={t("Hauptnavigation")}>
-          <a href="#boerse">{t("Börse")}</a>
-          <a href="#ablauf">{t("Ablauf")}</a>
-          <a href="#preise">{t("Preise")}</a>
-          <Link href="/login">{t("Anmelden")}</Link>
-          <LangSwitch path="/" className="lp-lang" />
-        </nav>
-        <Link href="/register" className="lp-btn lp-btn-accent">{t("Registrieren")}</Link>
-      </header>
 
       <main>
-        <section className="lp-hero" data-ink="paper" aria-labelledby="lp-title">
-          <h1 id="lp-title" className="lp-hero-title">
-            <span className="lp-hero-copy lp-hero-top">{t("Hin voll.")}</span>{" "}
-            <span className="lp-hero-copy lp-hero-bottom">{t("Retour voll.")}</span>
-          </h1>
-          <div className="lp-hero-low" data-ink="navy">
-            <p className="lp-hero-lead">
-              {t("Transferborsa ist die Auftragsbörse für Taxiunternehmen und Reisebüros in Tirol: Transfers zum Flughafen München vergeben, Angebote vergleichen und leere Rückfahrten füllen.")}
-            </p>
+        <section className="lp-hero" aria-labelledby="lp-title">
+          <div className="lp-top">
+            <LangSwitch path="/" className="lp-toplink" />
+            <Link href="/" className="lp-wordmark">Transferborsa</Link>
+            <Link href="/login" className="lp-toplink lp-toplink-end">{t("Anmelden")}</Link>
           </div>
+
+          <h1 id="lp-title" className="lp-hero-title">
+            <span>{t("Hin voll.")}</span>{" "}
+            <span>{t("Retour voll.")}</span>
+          </h1>
+          <p className="lp-hero-lead">
+            {t("Transferborsa ist die Auftragsbörse für Taxiunternehmen und Reisebüros in Tirol: Transfers zum Flughafen München vergeben, Angebote vergleichen und leere Rückfahrten füllen.")}
+          </p>
+
+          <nav className="lp-folders" aria-label={t("Abschnitte")}>
+            <div className="lp-folder" data-f="1"><a className="lp-tab" href="#boerse">{t("Börse")}</a></div>
+            <div className="lp-folder" data-f="2"><a className="lp-tab" href="#ablauf">{t("Ablauf")}</a></div>
+            <div className="lp-folder" data-f="3"><a className="lp-tab" href="#rechte">{t("Rechte")}</a></div>
+            <div className="lp-folder" data-f="4"><a className="lp-tab" href="#strecken">{t("Strecken")}</a></div>
+            <div className="lp-folder" data-f="5">
+              <a className="lp-tab" href="#preis">{t("Preis")}</a>
+              <Link href="/register" className="lp-btn lp-btn-ink">{t("Unternehmen registrieren")}</Link>
+            </div>
+          </nav>
         </section>
 
-        <section id="boerse" className="lp-chapter lp-showcase" data-ink="paper" aria-labelledby="lp-boerse">
-          <h2 id="lp-boerse" className="lp-sr">{t("Die Börse ausprobieren")}</h2>
+        <section id="boerse" className="lp-chapter lp-boerse" aria-labelledby="lp-boerse-h">
+          <h2 id="lp-boerse-h" className="lp-h2" data-reveal>{t("Die Börse ausprobieren")}</h2>
           <div data-reveal>
             <RouteDemo locale={locale} />
           </div>
         </section>
 
-        <section id="ablauf" className="lp-chapter lp-stages-wrap" data-ink="stone" aria-labelledby="lp-ablauf">
-          <h2 id="lp-ablauf" className="lp-h2" data-reveal>{t("Von der Anfrage zur Fahrt")}</h2>
-          <ol className="lp-stages" data-ui data-reveal>
-            {STAGES.map((s) => (
-              <li key={s.time} style={{ flexGrow: s.grow }} className={`lp-stage lp-stage-${s.colour}`}>
-                <span className="lp-stage-bar"><span className="lp-stage-time">{t(s.time)}</span></span>
-                <span className="lp-stage-text">{t(s.text)}</span>
-              </li>
+        <section id="ablauf" className="lp-chapter lp-ablauf" aria-labelledby="lp-ablauf-h">
+          <div className="lp-intro">
+            <h2 id="lp-ablauf-h" className="lp-h2" data-reveal>{t("Von der Anfrage zur Fahrt")}</h2>
+          </div>
+          <div className="lp-panels" role="radiogroup" aria-label={t("Von der Anfrage zur Fahrt")} data-reveal>
+            {STAGES.map((s, i) => (
+              <div key={s.time} className="lp-panel" data-tone={s.tone}>
+                <input type="radio" name="lp-stage" id={`lp-st-${s.tone}`} className="lp-sr" defaultChecked={i === 0} />
+                <label htmlFor={`lp-st-${s.tone}`} className="lp-panel-name">{t(s.time)}</label>
+                <div className="lp-panel-body">
+                  <p>{t(s.text)}</p>
+                  <img src={img(s.image)} width={s.w} height={s.h} alt={t(s.alt)} loading="lazy" decoding="async" />
+                </div>
+              </div>
             ))}
-          </ol>
+          </div>
         </section>
 
-        <section className="lp-chapter lp-rights" data-ink="paper" aria-labelledby="lp-rechte">
-          <h2 id="lp-rechte" className="lp-h2 lp-indent" data-reveal>{t("Jeder sieht nur, was er braucht")}</h2>
-          <div className="lp-rights-grid">
+        <section id="rechte" className="lp-chapter lp-rechte" aria-labelledby="lp-rechte-h">
+          <h2 id="lp-rechte-h" className="lp-h2" data-reveal>{t("Jeder sieht nur, was er braucht")}</h2>
+          <div className="lp-rechte-grid">
             <figure className="lp-confirm" data-ui data-reveal>
               <p className="lp-confirm-head">{t("Buchungsbestätigung")}</p>
               <p className="lp-confirm-ref">TR-2611-0415</p>
@@ -136,62 +167,79 @@ export async function Landing() {
               <p className="lp-confirm-price"><span>{t("Bestätigter Preis")}</span><strong>205 €</strong></p>
               <figcaption className="lp-sr">{t("Beispiel einer Buchungsbestätigung")}</figcaption>
             </figure>
-            <div className="lp-table" data-reveal>
-              <p className="lp-table-name">{t("Rechte")}</p>
+            <div className="lp-rights" data-reveal>
               {RIGHTS.map((g) => (
-                <ul key={g.group} className="lp-table-group">
-                  {g.rows.map(([kind, what, value]) => (
-                    <li key={what}>
-                      <span className="lp-t-kind">{t(kind)}</span>
-                      <span className="lp-t-what">{t(what)}</span>
-                      <span className="lp-t-value">{t(value)}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div key={g.group} className="lp-rights-group">
+                  <h3>{t(g.group)}</h3>
+                  <ul>
+                    {g.rows.map(([kind, what, value]) => (
+                      <li key={what}>
+                        <span className="lp-t-what">{t(what)}</span>
+                        <span className="lp-t-value">{t(value)}</span>
+                        <span className="lp-sr">{t(kind)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="lp-chapter lp-places-wrap" data-ink="navy" aria-labelledby="lp-strecken">
-          <div className="lp-places" data-reveal>
-            <h2 id="lp-strecken">{t("Wir starten auf diesen Strecken:")}</h2>{" "}
-            <p>
-              {PLACES.map((p, i) => (
-                <span key={p}>
-                  <b className={i === 0 ? "is-lit" : undefined}>{p}</b>
-                  {i < PLACES.length - 2 ? ", " : i === PLACES.length - 2 ? ` ${t("und")} ` : ""}
-                </span>
+        <section id="strecken" className="lp-chapter lp-strecken" aria-labelledby="lp-strecken-h">
+          <h2 id="lp-strecken-h" className="lp-h2" data-reveal>{t("Wir starten auf diesen Strecken:")}</h2>
+          <div className="lp-idx" data-reveal>
+            <ul className="lp-idx-rows">
+              {ROUTES.map((r, i) => (
+                <li key={r.name} className="lp-idx-row" data-idx={i}>
+                  <span className="lp-idx-name">{t(r.name)}</span>
+                  <img className="lp-idx-inline" src={img(r.image)} width={r.w} height={r.h} alt={t(r.alt)} loading="lazy" decoding="async" />
+                </li>
               ))}
-              .
-            </p>
+              <li className="lp-idx-row" data-idx={ROUTES.length}>
+                <span className="lp-idx-name">{MORE_PLACES}</span>
+                <video className="lp-idx-inline" controls muted loop playsInline preload="none" poster="/landing/innsbruck-poster.jpg" aria-label={t("Das Inntal bei Innsbruck, von oben")}>
+                  <source src="/landing/innsbruck.webm" type="video/webm" />
+                </video>
+              </li>
+            </ul>
+            <div className="lp-idx-frame" aria-hidden="true">
+              {ROUTES.map((r, i) => (
+                <img key={r.name} data-for={i} className={i === 0 ? "is-on" : undefined} src={img(r.image)} width={r.w} height={r.h} alt="" loading="lazy" decoding="async" />
+              ))}
+              {/* Der Film läuft nur, solange der Zeiger auf seiner Zeile liegt; sonst lädt er nicht einmal. */}
+              <video data-for={ROUTES.length} muted loop playsInline preload="none" poster="/landing/innsbruck-poster.jpg">
+                <source src="/landing/innsbruck.webm" type="video/webm" />
+              </video>
+            </div>
           </div>
-          <p className="lp-places-more" data-reveal>
+          <p className="lp-strecken-more" data-reveal>
             {t("Jeweils von und zum Flughafen München. Salzburg, Zürich, Südtirol und Norditalien folgen, sobald auf diesen Strecken regelmäßig vermittelt wird.")}
           </p>
         </section>
 
-        <section id="preise" className="lp-chapter lp-price" data-ink="stone" aria-labelledby="lp-preis">
-          <h2 id="lp-preis" className="lp-price-line" data-reveal>
-            {t("Im Pilot")}{" "}<span className="lp-price-block">0 €</span>
-            <br />{t("pro Vermittlung.")}
-          </h2>
-          <div className="lp-price-foot" data-reveal>
-            <p>
-              {t("Registrierung, Börse und Buchungen sind während des Pilotbetriebs in Tirol kostenlos. Gebühren führen wir erst ein, wenn regelmäßig Fahrten vermittelt werden, und kündigen sie vorher an.")}
-            </p>
-            <div className="lp-price-actions">
-              <Link href="/register" className="lp-btn lp-btn-accent">{t("Unternehmen registrieren")}</Link>
+        <section id="preis" className="lp-chapter lp-preis" aria-labelledby="lp-preis-h">
+          <div className="lp-ticket" data-reveal>
+            <div className="lp-ticket-main">
+              <h2 id="lp-preis-h" className="lp-ticket-price">
+                <span>{t("Im Pilot")}</span> <strong>0 €</strong> <span>{t("pro Vermittlung.")}</span>
+              </h2>
+              <p>
+                {t("Registrierung, Börse und Buchungen sind während des Pilotbetriebs in Tirol kostenlos. Gebühren führen wir erst ein, wenn regelmäßig Fahrten vermittelt werden, und kündigen sie vorher an.")}
+              </p>
+            </div>
+            <div className="lp-ticket-stub">
+              <Link href="/register" className="lp-btn lp-btn-ink">{t("Unternehmen registrieren")}</Link>
               <Link href="/login" className="lp-textlink">{t("Bereits registriert? Anmelden")}</Link>
             </div>
           </div>
         </section>
 
-        <section id="fragen" className="lp-chapter lp-faq" data-ink="paper" aria-labelledby="lp-fragen">
-          <h2 id="lp-fragen" className="lp-h2" data-reveal>{t("Was Sie wissen sollten")}</h2>
+        <section id="fragen" className="lp-chapter lp-faq" aria-labelledby="lp-fragen-h">
+          <h2 id="lp-fragen-h" className="lp-h2" data-reveal>{t("Was Sie wissen sollten")}</h2>
           <div className="lp-faq-list" data-reveal>
             {FAQ.map(([q, a]) => (
-              <details key={q}>
+              <details key={q} name="lp-faq">
                 <summary>{t(q)}</summary>
                 <p>{t(a)}</p>
               </details>
@@ -199,38 +247,50 @@ export async function Landing() {
           </div>
         </section>
 
-        <section className="lp-cta" data-ink="night" aria-labelledby="lp-wer">
-          <h2 id="lp-wer" className="lp-cta-q">
+        <section className="lp-cta" aria-labelledby="lp-wer">
+          <h2 id="lp-wer" className="lp-cta-q" data-reveal>
             <span>{t("Taxi")}</span>
             <span>{t("oder Reisebüro?")}</span>
           </h2>
-          <div className="lp-cta-mid">
-            <div className="lp-cta-row">
-              <Link href="/register?type=TRANSPORT_COMPANY" className="lp-btn lp-btn-accent">{t("Als Taxiunternehmen")}</Link>
-              <span className="lp-cta-or">{t("oder")}</span>
-              <Link href="/register?type=TRAVEL_AGENCY" className="lp-btn lp-btn-paper">{t("Als Reisebüro")}</Link>
-            </div>
+          <div className="lp-cta-row" data-reveal>
+            <Link href="/register?type=TRANSPORT_COMPANY" className="lp-btn lp-btn-accent">{t("Als Taxiunternehmen")}</Link>
+            <Link href="/register?type=TRAVEL_AGENCY" className="lp-btn lp-btn-paper">{t("Als Reisebüro")}</Link>
             <p>{t("Beide Wege führen zur kostenlosen Registrierung. Danach prüfen wir Ihr Unternehmen und schalten die passenden Funktionen frei.")}</p>
           </div>
         </section>
       </main>
 
-      <footer className="lp-footer" data-ink="navy">
-        <div className="lp-footer-top">
-          <p><strong>Transferborsa</strong>, {t("die Auftragsbörse für Personenbeförderung in Tirol und Bayern.")}</p>
-          <p>{t("Pilotbetrieb ab Innsbruck.")}</p>
-          <a href="#lp-title" className="lp-textlink">{t("Nach oben")}</a>
+      <footer className="lp-footer">
+        <p id="lp-mark" className="lp-mark" aria-label="Transferborsa">
+          {MARK.map(([ch, h, tone], i) => (
+            <span key={i} aria-hidden="true" data-tone={tone} style={{ height: `${h}%` }}>{ch}</span>
+          ))}
+        </p>
+        <div className="lp-footer-grid">
+          <p className="lp-footer-about">
+            <strong>Transferborsa</strong>, {t("die Auftragsbörse für Personenbeförderung in Tirol und Bayern.")} {t("Pilotbetrieb ab Innsbruck.")}
+          </p>
+          <ul className="lp-footer-links">
+            <li><Link href="/login">{t("Anmelden")}</Link></li>
+            <li><Link href="/register">{t("Registrieren")}</Link></li>
+            <li><Link href="/impressum">{t("Impressum")}</Link></li>
+            <li><Link href="/datenschutz">{t("Datenschutz")}</Link></li>
+            <li><Link href="/nutzungsbedingungen">{t("Nutzungsbedingungen")}</Link></li>
+            <li><a href="#lp-title">{t("Nach oben")}</a></li>
+          </ul>
+          <a className="lp-contact" href="mailto:hallo@taxiroute.at?subject=Transferborsa%20Pilotbetrieb">hallo@taxiroute.at</a>
         </div>
-        <h2 className="lp-sr">{t("Kontakt")}</h2>
-        <a className="lp-contact" href="mailto:hallo@taxiroute.at?subject=Transferborsa%20Pilotbetrieb">
-          hallo<wbr />@taxiroute.at
-        </a>
-        <div className="lp-footer-meta">
-          <span><Link href="/login">{t("Anmelden")}</Link> · <Link href="/register">{t("Registrieren")}</Link></span>
-          <span><Link href="/impressum">{t("Impressum")}</Link> · <Link href="/datenschutz">{t("Datenschutz")}</Link> · <Link href="/nutzungsbedingungen">{t("Nutzungsbedingungen")}</Link></span>
-          <span>{t("Schriften: Imbue und Albert Sans, SIL Open Font License")}</span>
-          <span>Innsbruck 2026</span>
-        </div>
+        <p className="lp-credits">
+          {t("Bilder und Film:")}{" "}
+          <a href="https://commons.wikimedia.org/w/index.php?curid=1817444">“Innsbruck Nordkette”</a> Túrelio, <a href="https://creativecommons.org/licenses/by-sa/2.5/">CC BY-SA 2.5</a>;{" "}
+          <a href="https://commons.wikimedia.org/w/index.php?curid=120699836">“AUT Hall in Tirol 02”</a> -wuppertaler, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>;{" "}
+          <a href="https://commons.wikimedia.org/w/index.php?curid=97105107">“Kitzbühel Hahnenkamm”</a> Lada89, CC BY-SA 4.0;{" "}
+          <a href="https://commons.wikimedia.org/w/index.php?curid=163989">“Festung kufstein”</a> Mb-tirol, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>;{" "}
+          <a href="https://commons.wikimedia.org/w/index.php?curid=47356981">“Seefeld in Tirol Austria from ESE on 2014-10-18”</a> Robert F. Tobler, CC BY-SA 4.0;{" "}
+          <a href="https://commons.wikimedia.org/w/index.php?curid=14386656">“Flughafen-Munich Check in Terminal 2”</a> Usien, CC BY-SA 3.0;{" "}
+          <a href="https://commons.wikimedia.org/wiki/File:Innsbruck_panoramic_by_TheTokl.webm">“Innsbruck panoramic by TheTokl”</a> TheTokl, CC BY-SA 4.0. Wikimedia Commons.{" "}
+          {t("Schriften: Imbue und Albert Sans, SIL Open Font License")}. Innsbruck 2026.
+        </p>
       </footer>
     </div>
   );

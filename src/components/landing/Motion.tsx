@@ -3,8 +3,8 @@
 import { useEffect } from "react";
 
 /**
- * Bewegungsschicht der Landing Page: Einblenden der Abschnittsteile, Kopfzeile in der Farbe
- * des aktuellen Kapitels, wechselnd hervorgehobener Ortsname. Ohne Skript bleibt alles sichtbar.
+ * Bewegungsschicht der Landing Page: Einblenden der Abschnittsteile, Mappen, die beim Scrollen
+ * auffächern, und die Vorschau der Abflugtafel. Ohne Skript bleibt alles sichtbar und bedienbar.
  */
 export function Motion() {
   useEffect(() => {
@@ -26,33 +26,45 @@ export function Motion() {
     );
     root.querySelectorAll("[data-reveal]").forEach((el) => io.observe(el));
 
-    // Kopfzeile nimmt die Tinte des Kapitels darunter an.
-    const header = root.querySelector<HTMLElement>(".lp-header");
-    const chapters = [...root.querySelectorAll<HTMLElement>("[data-ink]")];
+    // Mappenstapel: beim Scrollen durch den Hero fächern die Mappen auf.
+    const hero = root.querySelector<HTMLElement>(".lp-hero");
+    let frame = 0;
     const onScroll = () => {
-      if (!header) return;
-      const y = header.getBoundingClientRect().height / 2;
-      const under = chapters.find((c) => {
-        const r = c.getBoundingClientRect();
-        return r.top <= y && r.bottom > y;
+      if (!hero || reduce) return;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const p = Math.min(1, Math.max(0, window.scrollY / hero.offsetHeight));
+        hero.style.setProperty("--spread", (p * 1.6).toFixed(3));
       });
-      header.dataset.ink = under?.dataset.ink ?? "paper";
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
 
-    // Ortsnamen nacheinander hervorheben.
-    const names = [...root.querySelectorAll<HTMLElement>(".lp-places b")];
-    let i = 0;
-    const timer = reduce || names.length === 0 ? null : window.setInterval(() => {
-      names.forEach((n, k) => n.classList.toggle("is-lit", k === i));
-      i = (i + 1) % names.length;
-    }, 2000);
+    // Abflugtafel: die Zeile unter dem Zeiger bringt ihr Bild in den festen Rahmen.
+    const rows = [...root.querySelectorAll<HTMLElement>(".lp-idx-row")];
+    const shots = [...root.querySelectorAll<HTMLElement>(".lp-idx-frame [data-for]")];
+    const show = (idx: string) => {
+      for (const s of shots) {
+        s.classList.toggle("is-on", s.dataset.for === idx);
+        if (s instanceof HTMLVideoElement) {
+          if (s.dataset.for === idx && !reduce) void s.play().catch(() => {});
+          else s.pause();
+        }
+      }
+    };
+    const enter = (e: Event) => show((e.currentTarget as HTMLElement).dataset.idx ?? "");
+    // Verlässt der Zeiger die Tafel, bleibt das Bild stehen, aber kein Film läuft weiter.
+    const leave = () => shots.forEach((s) => s instanceof HTMLVideoElement && s.pause());
+    const list = root.querySelector<HTMLElement>(".lp-idx-rows");
+    rows.forEach((r) => r.addEventListener("pointerenter", enter));
+    list?.addEventListener("pointerleave", leave);
 
     return () => {
       io.disconnect();
+      cancelAnimationFrame(frame);
       window.removeEventListener("scroll", onScroll);
-      if (timer) window.clearInterval(timer);
+      rows.forEach((r) => r.removeEventListener("pointerenter", enter));
+      list?.removeEventListener("pointerleave", leave);
     };
   }, []);
   return null;
