@@ -53,24 +53,18 @@ export function Motion() {
       }
     };
     const enter = (e: Event) => show((e.currentTarget as HTMLElement).dataset.idx ?? "");
+    // Verlässt der Zeiger die Tafel, bleibt das Bild stehen, aber kein Film läuft weiter.
+    const leave = () => shots.forEach((s) => s instanceof HTMLVideoElement && s.pause());
+    const list = root.querySelector<HTMLElement>(".lp-idx-rows");
     rows.forEach((r) => r.addEventListener("pointerenter", enter));
-    if (reduce) shots.forEach((s) => s instanceof HTMLVideoElement && s.pause());
-
-    // Auf Touch-Geräten steht das Bild in der Zeile; der Film darin läuft nur, solange er zu sehen ist.
-    const inline = root.querySelector<HTMLVideoElement>("video.lp-idx-inline");
-    const vio = new IntersectionObserver(([e]) => {
-      if (!inline || reduce || getComputedStyle(inline).display === "none") return;
-      if (e.isIntersecting) void inline.play().catch(() => {});
-      else inline.pause();
-    });
-    if (inline) vio.observe(inline);
+    list?.addEventListener("pointerleave", leave);
 
     return () => {
       io.disconnect();
-      vio.disconnect();
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", onScroll);
       rows.forEach((r) => r.removeEventListener("pointerenter", enter));
+      list?.removeEventListener("pointerleave", leave);
     };
   }, []);
   return null;

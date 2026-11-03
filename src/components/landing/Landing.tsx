@@ -198,16 +198,17 @@ export async function Landing() {
               ))}
               <li className="lp-idx-row" data-idx={ROUTES.length}>
                 <span className="lp-idx-name">{MORE_PLACES}</span>
-                <video className="lp-idx-inline" muted loop playsInline preload="none" poster="/landing/innsbruck-poster.jpg" aria-label={t("Das Inntal bei Innsbruck, von oben")}>
+                <video className="lp-idx-inline" controls muted loop playsInline preload="none" poster="/landing/innsbruck-poster.jpg" aria-label={t("Das Inntal bei Innsbruck, von oben")}>
                   <source src="/landing/innsbruck.webm" type="video/webm" />
                 </video>
               </li>
             </ul>
             <div className="lp-idx-frame" aria-hidden="true">
               {ROUTES.map((r, i) => (
-                <img key={r.name} data-for={i} src={img(r.image)} width={r.w} height={r.h} alt="" loading="lazy" decoding="async" />
+                <img key={r.name} data-for={i} className={i === 0 ? "is-on" : undefined} src={img(r.image)} width={r.w} height={r.h} alt="" loading="lazy" decoding="async" />
               ))}
-              <video data-for={ROUTES.length} className="is-on" muted loop playsInline autoPlay poster="/landing/innsbruck-poster.jpg">
+              {/* Der Film läuft nur, solange der Zeiger auf seiner Zeile liegt; sonst lädt er nicht einmal. */}
+              <video data-for={ROUTES.length} muted loop playsInline preload="none" poster="/landing/innsbruck-poster.jpg">
                 <source src="/landing/innsbruck.webm" type="video/webm" />
               </video>
             </div>
