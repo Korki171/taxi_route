@@ -10,7 +10,7 @@ describe("Tarife", () => {
     expect(PLANS.map((p) => [p.id, p.priceCents, p.vehicleLimit])).toEqual([
       ["BASIS", 3999, 3],
       ["PRO", 7999, 10],
-      ["FLOTTE", 16999, null],
+      ["FLOTTE", 17999, null],
     ]);
     const texts = PLANS.flatMap((p) => [p.summary, ...p.features]);
     expect(texts.filter((x) => !(x in EN))).toEqual([]);

@@ -43,7 +43,7 @@ export const PLANS: {
   {
     id: "FLOTTE",
     name: "Flotte",
-    priceCents: 16999,
+    priceCents: 17999,
     vehicleLimit: null,
     summary: "Für große Flotten und Transferunternehmen.",
     features: [
