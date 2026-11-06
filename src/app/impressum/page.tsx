@@ -9,7 +9,7 @@ export default function Impressum() {
       <dl className="kv">
         <dt>Betreiber</dt><dd>[Firmenname bzw. Vor- und Nachname]</dd>
         <dt>Anschrift</dt><dd>[Straße Nr., PLZ Ort, Österreich]</dd>
-        <dt>E-Mail</dt><dd>[hallo@taxiroute.at]</dd>
+        <dt>E-Mail</dt><dd>transferborsatirol@gmail.com</dd>
         <dt>Telefon</dt><dd>[+43 …]</dd>
         <dt>Rechtsform</dt><dd>[z. B. Einzelunternehmen oder GmbH]</dd>
         <dt>Firmenbuch</dt><dd>[Firmenbuchnummer, Firmenbuchgericht, falls eingetragen]</dd>
