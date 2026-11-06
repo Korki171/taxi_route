@@ -16,13 +16,14 @@ import { PLANS } from "@/lib/plans";
 /** Strecken als Abflugtafel: Zeile, Vorschaubild. Jedes Bild zeigt den Ort, nie das Unternehmen. */
 const ROUTES: { name: string; image: string; alt: string; w: number; h: number }[] = [
   { name: "Flughafen München", image: "flughafen", alt: "Check-in-Halle am Flughafen München, ein Fahrgast trägt einen Skisack", w: 1600, h: 975 },
-  { name: "Innsbruck", image: "innsbruck", alt: "Die Nordkette über dem Inn bei Innsbruck", w: 1600, h: 1068 },
+  { name: "Innsbruck", image: "innsbruck", alt: "Innsbruck mit den roten Dächern der Stadt, dahinter die verschneite Nordkette", w: 1280, h: 720 },
   { name: "Hall", image: "hall", alt: "Blick über Hall in Tirol mit Stiftskirche, dahinter das Karwendel", w: 1600, h: 1200 },
   { name: "Kufstein", image: "kufstein", alt: "Die beleuchtete Festung Kufstein bei Nacht", w: 1600, h: 1185 },
   { name: "Kitzbühel", image: "kitzbuehel", alt: "Die Vorderstadt von Kitzbühel im Schnee, hinter den bunten Giebeln die Kirche", w: 1600, h: 1067 },
   { name: "Seefeld", image: "seefeld", alt: "Seefeld in Tirol von oben, dahinter das Karwendel", w: 1600, h: 533 },
 ];
 const MORE_PLACES = "Schwaz, Mayrhofen, Sölden, St. Anton";
+const MORE_ALT = "Grüne Almberge in den Tiroler Alpen, die Gipfel in Wolken";
 
 const RIGHTS: { group: string; rows: [string, string, string][] }[] = [
   {
@@ -55,7 +56,7 @@ const STAGES: { tone: string; time: string; text: string; image: string; alt: st
   { tone: "a", time: "Zwei Minuten", text: "Zuerst beschreibt der Auftraggeber die Fahrt: Abholung, Flug, Gepäck, Ski.", image: "flughafen", alt: "Check-in-Halle am Flughafen München, ein Fahrgast trägt einen Skisack", w: 1600, h: 975 },
   { tone: "b", time: "Bis zur Angebotsfrist", text: "Dann geben geprüfte Unternehmen Festpreise oder eigene Angebote ab.", image: "hall", alt: "Blick über Hall in Tirol mit Stiftskirche, dahinter das Karwendel", w: 1600, h: 1200 },
   { tone: "c", time: "Ein Klick", text: "Danach wird ein Angebot angenommen. Ab hier ist der Preis verbindlich.", image: "kufstein", alt: "Die beleuchtete Festung Kufstein bei Nacht", w: 1600, h: 1185 },
-  { tone: "d", time: "Rund 1 h 50 min", text: "Zuletzt fährt das Unternehmen, und der Abschluss wird dokumentiert.", image: "innsbruck", alt: "Die Nordkette über dem Inn bei Innsbruck", w: 1600, h: 1068 },
+  { tone: "d", time: "Rund 1 h 50 min", text: "Zuletzt fährt das Unternehmen, und der Abschluss wird dokumentiert.", image: "innsbruck", alt: "Innsbruck mit den roten Dächern der Stadt, dahinter die verschneite Nordkette", w: 1280, h: 720 },
 ];
 
 const FAQ: [string, string][] = [
@@ -206,19 +207,14 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
               ))}
               <li className="lp-idx-row" data-idx={ROUTES.length}>
                 <span className="lp-idx-name">{MORE_PLACES}</span>
-                <video className="lp-idx-inline" controls muted loop playsInline preload="none" poster="/landing/innsbruck-poster.jpg" aria-label={t("Das Inntal bei Innsbruck, von oben")}>
-                  <source src="/landing/innsbruck.webm" type="video/webm" />
-                </video>
+                <img className="lp-idx-inline" src={img("alpen")} width={1600} height={1067} alt={t(MORE_ALT)} loading="lazy" decoding="async" />
               </li>
             </ul>
             <div className="lp-idx-frame" aria-hidden="true">
               {ROUTES.map((r, i) => (
                 <img key={r.name} data-for={i} className={i === 0 ? "is-on" : undefined} src={img(r.image)} width={r.w} height={r.h} alt="" loading="lazy" decoding="async" />
               ))}
-              {/* Der Film läuft nur, solange der Zeiger auf seiner Zeile liegt; sonst lädt er nicht einmal. */}
-              <video data-for={ROUTES.length} muted loop playsInline preload="none" poster="/landing/innsbruck-poster.jpg">
-                <source src="/landing/innsbruck.webm" type="video/webm" />
-              </video>
+              <img data-for={ROUTES.length} src={img("alpen")} width={1600} height={1067} alt="" loading="lazy" decoding="async" />
             </div>
           </div>
           <p className="lp-strecken-more" data-reveal>
@@ -290,14 +286,14 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           <a className="lp-contact" href="mailto:hallo@taxiroute.at?subject=Transferborsa%20Pilotbetrieb">hallo@taxiroute.at</a>
         </div>
         <p className="lp-credits">
-          {t("Bilder und Film:")}{" "}
-          <a href="https://commons.wikimedia.org/w/index.php?curid=1817444">“Innsbruck Nordkette”</a> Túrelio, <a href="https://creativecommons.org/licenses/by-sa/2.5/">CC BY-SA 2.5</a>;{" "}
+          {t("Bilder:")}{" "}
           <a href="https://commons.wikimedia.org/w/index.php?curid=120699836">“AUT Hall in Tirol 02”</a> -wuppertaler, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>;{" "}
           <a href="https://unsplash.com/photos/VT6fiS_Msfg">Kitzbühel</a> Shpetim Ujkani, <a href="https://unsplash.com/license">Unsplash-Lizenz</a>;{" "}
           <a href="https://commons.wikimedia.org/w/index.php?curid=163989">“Festung kufstein”</a> Mb-tirol, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>;{" "}
           <a href="https://commons.wikimedia.org/w/index.php?curid=47356981">“Seefeld in Tirol Austria from ESE on 2014-10-18”</a> Robert F. Tobler, CC BY-SA 4.0;{" "}
           <a href="https://commons.wikimedia.org/w/index.php?curid=14386656">“Flughafen-Munich Check in Terminal 2”</a> Usien, CC BY-SA 3.0;{" "}
-          <a href="https://commons.wikimedia.org/wiki/File:Innsbruck_panoramic_by_TheTokl.webm">“Innsbruck panoramic by TheTokl”</a> TheTokl, CC BY-SA 4.0. Wikimedia Commons.{" "}
+          <a href="https://unsplash.com/photos/SE_eVebrPbM">Tiroler Alpen</a> Jonas Tebbe, <a href="https://unsplash.com/license">Unsplash-Lizenz</a>;{" "}
+          <a href="https://commons.wikimedia.org/wiki/File:Innsbruck_panoramic_by_TheTokl.webm">“Innsbruck panoramic by TheTokl” (Standbild)</a> TheTokl, CC BY-SA 4.0. Wikimedia Commons.{" "}
           {t("Schriften: Imbue und Albert Sans, SIL Open Font License")}. Innsbruck 2026.
         </p>
       </footer>
