@@ -11,7 +11,12 @@ export async function getOwnOrganization(actor: Actor | null) {
   requirePermission(actor, "org.read");
   const org = await db.organization.findUnique({
     where: { id: actor.org.id },
-    include: { capabilities: { orderBy: { capability: "asc" } }, transportProfile: true },
+    include: {
+      capabilities: { orderBy: { capability: "asc" } },
+      transportProfile: true,
+      _count: { select: { vehicles: { where: { active: true } } } },
+    },
+    omit: { planNote: true },
   });
   if (!org) throw notFound();
   return org;

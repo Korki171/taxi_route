@@ -7,6 +7,8 @@ import { Motion } from "./Motion";
 import { RouteDemo } from "./RouteDemo";
 import { LangSwitch } from "../LangSwitch";
 import { getI18n } from "@/server/i18n";
+import { formatCents } from "@/lib/money";
+import { PLANS } from "@/lib/plans";
 
 // Das Motiv der Seite ist der Wendepunkt am Flughafen: ein Viertelkreis. Er sitzt als Ecke an Bildern,
 // Kacheln und Mappen, als Rundung der Knöpfe und als Kerbe in Bordkarte und Ticket.
@@ -75,7 +77,7 @@ const FAQ: [string, string][] = [
   ],
   [
     "Wie wird bezahlt?",
-    "Im Pilotbetrieb wickelt Transferborsa keine Zahlungen ab. Vereinbarter Preis, Gebühr und Rechnungsreferenz werden mit der Buchung gespeichert, abgerechnet wird direkt zwischen den beteiligten Unternehmen.",
+    "Fahrpreise rechnen die beteiligten Unternehmen direkt miteinander ab; vereinbarter Preis und Rechnungsreferenz werden mit der Buchung gespeichert. Taxiunternehmen zahlen für Transferborsa einen festen Monatspreis per Rechnung, ohne Provision pro Fahrt. Für Reisebüros und Hotels ist die Nutzung kostenlos.",
   ],
   [
     "Was gilt bei Storno oder Verspätung?",
@@ -100,7 +102,10 @@ export async function Landing() {
       <main>
         <section className="lp-hero" aria-labelledby="lp-title">
           <div className="lp-top">
-            <LangSwitch path="/" className="lp-toplink" />
+            <div className="lp-topstart">
+              <LangSwitch path="/" className="lp-toplink" />
+              <Link href="/preise" className="lp-toplink">{t("Preise")}</Link>
+            </div>
             <Link href="/" className="lp-wordmark" aria-label="Transferborsa"><Logo /></Link>
             <Link href="/login" className="lp-toplink lp-toplink-end">{t("Anmelden")}</Link>
           </div>
@@ -223,14 +228,14 @@ export async function Landing() {
           <div className="lp-ticket" data-reveal>
             <div className="lp-ticket-main">
               <h2 id="lp-preis-h" className="lp-ticket-price">
-                <span>{t("Im Pilot")}</span> <strong>0 €</strong> <span>{t("pro Vermittlung.")}</span>
+                <span>{t("Ab")}</span> <strong className="lp-ticket-amount">{formatCents(PLANS[0].priceCents, locale)}</strong> <span>{t("im Monat, ohne Provision.")}</span>
               </h2>
               <p>
-                {t("Registrierung, Börse und Buchungen sind während des Pilotbetriebs in Tirol kostenlos. Gebühren führen wir erst ein, wenn regelmäßig Fahrten vermittelt werden, und kündigen sie vorher an.")}
+                {t("Taxi- und Transferunternehmen zahlen einen festen Monatspreis, je nach Größe der Flotte. Für Reisebüros und Hotels ist Transferborsa kostenlos.")}
               </p>
             </div>
             <div className="lp-ticket-stub">
-              <Link href="/register" className="lp-btn lp-btn-ink">{t("Unternehmen registrieren")}</Link>
+              <Link href="/preise" className="lp-btn lp-btn-ink">{t("Alle Tarife ansehen")}</Link>
               <Link href="/login" className="lp-textlink">{t("Bereits registriert? Anmelden")}</Link>
             </div>
           </div>
@@ -256,7 +261,7 @@ export async function Landing() {
           <div className="lp-cta-row" data-reveal>
             <Link href="/register?type=TRANSPORT_COMPANY" className="lp-btn lp-btn-accent">{t("Als Taxiunternehmen")}</Link>
             <Link href="/register?type=TRAVEL_AGENCY" className="lp-btn lp-btn-paper">{t("Als Reisebüro")}</Link>
-            <p>{t("Beide Wege führen zur kostenlosen Registrierung. Danach prüfen wir Ihr Unternehmen und schalten die passenden Funktionen frei.")}</p>
+            <p>{t("Beide Wege führen zur Registrierung. Danach prüfen wir Ihr Unternehmen und schalten die passenden Funktionen frei.")}</p>
           </div>
         </section>
       </main>
@@ -274,6 +279,7 @@ export async function Landing() {
           <ul className="lp-footer-links">
             <li><Link href="/login">{t("Anmelden")}</Link></li>
             <li><Link href="/register">{t("Registrieren")}</Link></li>
+            <li><Link href="/preise">{t("Preise")}</Link></li>
             <li><Link href="/impressum">{t("Impressum")}</Link></li>
             <li><Link href="/datenschutz">{t("Datenschutz")}</Link></li>
             <li><Link href="/nutzungsbedingungen">{t("Nutzungsbedingungen")}</Link></li>

@@ -1,6 +1,8 @@
 import type { Capability, OrganizationStatus, OrganizationType, VerificationStatus } from "@prisma/client";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { fromLocalInput } from "@/lib/format";
+import { isPayingType } from "@/lib/plans";
 import { requirePlatformAdmin, type Actor } from "../authz/context";
 import { invalid, notFound } from "../errors";
 import { parse } from "../validation";
@@ -38,6 +40,7 @@ export async function adminGetOrganization(actor: Actor | null, orgId: string) {
         select: { id: true, role: true, user: { select: { id: true, name: true, email: true, status: true } } },
       },
       auditEvents: { orderBy: { createdAt: "desc" }, take: 50 },
+      _count: { select: { vehicles: { where: { active: true } } } },
     },
   });
   if (!org) throw notFound();
@@ -132,6 +135,47 @@ export async function adminSetOrganizationStatus(
       organizationId: orgId,
       action: "organization.status_changed",
       data: { from: org.status, to: parsed, note: note ?? null },
+    });
+    return updated;
+  });
+}
+
+const planSchema = z.object({
+  plan: z.enum(["", "BASIS", "PRO", "FLOTTE"]).transform((v) => (v === "" ? null : v)),
+  freeUntil: z
+    .string()
+    .trim()
+    .regex(/^(\d{4}-\d{2}-\d{2})?$/, "Ungültiges Datum.")
+    .transform((v) => (v ? fromLocalInput(`${v}T23:59`) : null)),
+  note: z.string().trim().max(500).optional().transform((v) => v || null),
+});
+
+/**
+ * Tarif manuell zuweisen (Abrechnung vorerst per Rechnung). Mit „kostenlos bis“ lassen sich
+ * Pilotunternehmen privat freischalten; danach gilt der zugewiesene Tarif.
+ */
+export async function adminSetOrganizationPlan(actor: Actor | null, orgId: string, input: unknown) {
+  requirePlatformAdmin(actor);
+  const { plan, freeUntil, note } = parse(planSchema, input);
+  const org = await db.organization.findUnique({
+    where: { id: orgId },
+    select: { type: true, plan: true, planFreeUntil: true },
+  });
+  if (!org) throw notFound();
+  if (!isPayingType(org.type)) throw invalid("Tarife gelten nur für Taxi-/Transferunternehmen. Auftraggeber nutzen die Plattform kostenlos.");
+  return db.$transaction(async (tx) => {
+    const updated = await tx.organization.update({
+      where: { id: orgId },
+      data: { plan, planFreeUntil: freeUntil, planNote: note, planUpdatedAt: new Date() },
+    });
+    await audit(tx, {
+      actorUserId: actor.userId,
+      organizationId: orgId,
+      action: "organization.plan_changed",
+      data: {
+        from: { plan: org.plan, freeUntil: org.planFreeUntil?.toISOString() ?? null },
+        to: { plan, freeUntil: freeUntil?.toISOString() ?? null },
+      },
     });
     return updated;
   });

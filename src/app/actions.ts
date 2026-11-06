@@ -4,7 +4,7 @@ import type { Capability } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { createSession, invalidateSession } from "@/server/auth/session";
 import { AppError, invalid } from "@/server/errors";
-import { adminReviewCapability, adminReviewDocument, adminSetOrganizationStatus } from "@/server/services/admin";
+import { adminReviewCapability, adminReviewDocument, adminSetOrganizationPlan, adminSetOrganizationStatus } from "@/server/services/admin";
 import { login, switchActiveOrganization } from "@/server/services/auth";
 import { deleteDocument, uploadDocument } from "@/server/services/documents";
 import {
@@ -245,6 +245,18 @@ export async function adminSetOrgStatusAction(fd: FormData) {
   const orgId = str(fd, "orgId");
   await runAction(`/admin/organizations/${orgId}`, async () => {
     await adminSetOrganizationStatus(await getActor(), orgId, str(fd, "status") as never, str(fd, "note") || undefined);
+  });
+}
+
+export async function adminSetOrgPlanAction(fd: FormData) {
+  const orgId = str(fd, "orgId");
+  await runAction(`/admin/organizations/${orgId}`, async () => {
+    await adminSetOrganizationPlan(await getActor(), orgId, {
+      plan: str(fd, "plan"),
+      freeUntil: str(fd, "freeUntil"),
+      note: str(fd, "note"),
+    });
+    return withParam(`/admin/organizations/${orgId}`, "ok", "Tarif gespeichert.");
   });
 }
 

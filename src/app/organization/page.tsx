@@ -8,6 +8,8 @@ import { requireOrgActor } from "@/server/web";
 import type { Capability, VehicleCategory } from "@prisma/client";
 import { requestCapabilityAction, updateProfileAction, updateTransportProfileAction } from "../actions";
 import { getI18n } from "@/server/i18n";
+import Link from "next/link";
+import { PLAN_BY_ID, planStatus } from "@/lib/plans";
 
 const ALL_CAPS: Capability[] = ["TRANSFER_BOOKER", "TRANSPORT_PROVIDER"];
 
@@ -20,12 +22,51 @@ export default async function OrganizationPage({ searchParams }: { searchParams:
   const canRequest = actorCan(actor, "capabilities.request");
   const capByType = new Map(org.capabilities.map((c) => [c.capability, c]));
   const tp = org.transportProfile;
+  const ps = planStatus(org);
+  const plan = org.plan ? PLAN_BY_ID[org.plan] : null;
+  const vehicles = org._count.vehicles;
 
   return (
     <AppShell actor={actor}>
       <h1>{t("Unternehmen")}</h1>
       <p className="sub">{t("Stammdaten, Beförderungsdaten und Verifizierung")}</p>
       <Flash searchParams={sp} />
+
+      <section className="card">
+        <h2>{t("Tarif")}</h2>
+        {ps.kind === "FREE_ROLE" ? (
+          <p>
+            <Badge status="ACTIVE">{t("Kostenlos")}</Badge>{" "}
+            {t("Für Reisebüros, Hotels und Reiseveranstalter ist Transferborsa kostenlos.")}
+          </p>
+        ) : (
+          <>
+            <dl className="kv">
+              <dt>{t("Tarif")}</dt>
+              <dd>
+                {plan ? `${plan.name} · ${f.money(plan.priceCents)} ${t("netto/Monat")}` : t("Noch kein Tarif")}{" "}
+                {ps.kind === "TRIAL" && <Badge status="ACTIVE">{t("Kostenlos bis {date}", { date: f.date(ps.until) })}</Badge>}
+                {ps.kind === "ACTIVE" && <Badge status="ACTIVE">{t("Aktiv")}</Badge>}
+                {ps.kind === "NONE" && <Badge status="PENDING">{t("Nicht freigeschaltet")}</Badge>}
+              </dd>
+              <dt>{t("Fahrzeuge")}</dt>
+              <dd>
+                {plan?.vehicleLimit != null
+                  ? t("{n} von {max} aktiv", { n: vehicles, max: plan.vehicleLimit })
+                  : t("{n} aktiv", { n: vehicles })}
+              </dd>
+              <dt>{t("Abrechnung")}</dt>
+              <dd>{ps.kind === "TRIAL" ? t("Danach monatlich per Rechnung") : t("Monatlich per Rechnung")}</dd>
+            </dl>
+            <p className="muted">
+              {ps.kind === "NONE"
+                ? t("Ihr Tarif wird nach der Prüfung von uns freigeschaltet.")
+                : t("Für einen Tarifwechsel melden Sie sich bitte bei uns.")}{" "}
+              <Link href="/preise">{t("Alle Tarife ansehen")}</Link>
+            </p>
+          </>
+        )}
+      </section>
 
       <section className="card">
         <h2>{t("Geschäftsfunktionen und Prüfstatus")}</h2>

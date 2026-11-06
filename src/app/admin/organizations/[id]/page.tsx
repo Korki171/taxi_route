@@ -10,6 +10,9 @@ import {
   VEHICLE_LABEL,
   VERIFICATION_LABEL,
 } from "@/lib/labels";
+import { fmtDate } from "@/lib/format";
+import { formatCents } from "@/lib/money";
+import { PLANS, PLAN_BY_ID, isPayingType, planStatus } from "@/lib/plans";
 import { AppError } from "@/server/errors";
 import { adminGetOrganization } from "@/server/services/admin";
 import { DOCUMENT_LABELS } from "@/server/services/verification-rules";
@@ -17,6 +20,7 @@ import { requireActor } from "@/server/web";
 import {
   adminReviewCapabilityAction,
   adminReviewDocumentAction,
+  adminSetOrgPlanAction,
   adminSetOrgStatusAction,
 } from "../../../actions";
 
@@ -30,6 +34,14 @@ export default async function AdminOrgPage({ params, searchParams }: { params: P
     throw e;
   });
   const now = new Date();
+  const ps = planStatus(org, now);
+  const plan = org.plan ? PLAN_BY_ID[org.plan] : null;
+  const vehicles = org._count.vehicles;
+  const overLimit = plan?.vehicleLimit != null && vehicles > plan.vehicleLimit;
+  // Datum für <input type="date"> in Wiener Zeit
+  const freeUntilValue = org.planFreeUntil
+    ? new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Vienna" }).format(org.planFreeUntil)
+    : "";
 
   return (
     <AppShell actor={actor}>
@@ -75,6 +87,53 @@ export default async function AdminOrgPage({ params, searchParams }: { params: P
           </form>
         </section>
       </div>
+
+      {isPayingType(org.type) && (
+        <section className="card">
+          <h2>Tarif</h2>
+          <dl className="kv">
+            <dt>Aktuell</dt>
+            <dd>
+              {plan ? `${plan.name} · ${formatCents(plan.priceCents)} netto/Monat` : "Kein Tarif"}{" "}
+              {ps.kind === "TRIAL" && <Badge status="ACTIVE">Kostenlos bis {fmtDate(ps.until)}</Badge>}
+              {ps.kind === "ACTIVE" && <Badge status="ACTIVE">Aktiv, Rechnung</Badge>}
+              {ps.kind === "NONE" && <Badge status="PENDING">Nicht freigeschaltet</Badge>}
+            </dd>
+            <dt>Fahrzeuge</dt>
+            <dd>
+              {vehicles} aktiv{plan && ` · Tarifgrenze ${plan.vehicleLimit ?? "unbegrenzt"}`}{" "}
+              {overLimit && <Badge status="PENDING">Über der Grenze</Badge>}
+            </dd>
+            {org.planUpdatedAt && <><dt>Geändert</dt><dd>{org.planUpdatedAt.toLocaleString("de-AT")}</dd></>}
+          </dl>
+          <form action={adminSetOrgPlanAction} className="stack">
+            <input type="hidden" name="orgId" value={org.id} />
+            <div className="fields">
+              <label>
+                Tarif
+                <select name="plan" defaultValue={org.plan ?? ""}>
+                  <option value="">Kein Tarif</option>
+                  {PLANS.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name} ({formatCents(p.priceCents)} netto/Monat)</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Kostenlos bis <small>leer = sofort kostenpflichtig</small>
+                <input type="date" name="freeUntil" defaultValue={freeUntilValue} />
+              </label>
+            </div>
+            <label>
+              Interne Notiz <small>z. B. Pilotvereinbarung, Rabatt; nur für Admins sichtbar</small>
+              <input name="note" defaultValue={org.planNote ?? ""} maxLength={500} />
+            </label>
+            <p className="muted">
+              Abrechnung vorerst per Rechnung. Nach dem Gratis-Zeitraum gilt der gewählte Tarif; das Unternehmen sieht Tarif und Datum unter „Unternehmen“.
+            </p>
+            <div><button type="submit">Tarif speichern</button></div>
+          </form>
+        </section>
+      )}
 
       <section className="card">
         <h2>Geschäftsfunktionen</h2>
