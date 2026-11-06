@@ -88,7 +88,8 @@
   display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
   padding: 22px var(--margin);
 }
-.lp-wordmark { font-family: var(--display); font-size: 24px; line-height: 1; text-transform: uppercase; text-decoration: none; letter-spacing: 0.01em; }
+.lp-wordmark { display: flex; align-items: center; text-decoration: none; color: inherit; }
+.lp-wordmark svg { display: block; height: 38px; width: auto; }
 .lp-toplink { font-size: var(--s-small); font-weight: 500; text-decoration: none; justify-self: start; padding: 10px 0; }
 .lp-toplink-end { justify-self: end; }
 .lp-toplink:hover { text-decoration: underline; text-underline-offset: 4px; }
@@ -405,7 +406,8 @@
   .lp-hero { --off: 52px; --tab: 34px; }
   .lp-folders { margin-top: 40px; flex-basis: calc(var(--tab) + 4 * var(--off) + 150px); }
   .lp-top { grid-template-columns: auto 1fr auto; }
-  .lp-wordmark { font-size: 19px; justify-self: center; }
+  .lp-wordmark { justify-self: center; }
+  .lp-wordmark svg { height: 32px; }
   .lp-hero-title { margin-top: 48px; font-size: clamp(44px, 14.5vw, 72px); }
   .lp-hero-lead { margin-top: 24px; font-size: 17px; }
   .lp-folder { left: 0; right: 0; }

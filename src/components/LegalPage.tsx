@@ -1,3 +1,4 @@
+import { Logo } from "@/components/Logo";
 import Link from "next/link";
 import { getI18n } from "@/server/i18n";
 import { LangSwitch } from "./LangSwitch";
@@ -8,7 +9,7 @@ export async function LegalPage({ title, path, children }: { title: string; path
   return (
     <main className="legal">
       <div className="legal-top">
-        <Link href="/" className="wordmark">Transferborsa</Link>
+        <Link href="/" className="wordmark" aria-label="Transferborsa"><Logo /></Link>
         <LangSwitch path={path} />
       </div>
       <h1>{t(title)}</h1>
