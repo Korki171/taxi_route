@@ -64,7 +64,15 @@ export async function AppShell({ actor, children, narrow, path }: { actor: Actor
           </ShellNav>
         </div>
       </header>
-      <main id="main" className={narrow ? "app narrow" : "app"}>{children}</main>
+      <main id="main" className={narrow ? "app narrow" : "app"}>
+        {children}
+        <nav className="footer-links app-foot" aria-label={t("Website und Rechtliches")}>
+          <Link href="/">{t("Zur Website")}</Link>
+          <Link href="/impressum">{t("Impressum")}</Link>
+          <Link href="/datenschutz">{t("Datenschutz")}</Link>
+          <Link href="/nutzungsbedingungen">{t("Nutzungsbedingungen")}</Link>
+        </nav>
+      </main>
     </>
   );
 }

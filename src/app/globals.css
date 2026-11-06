@@ -542,3 +542,7 @@ label.check input { width: 20px; height: 20px; margin-top: 2px; flex: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .head-row form[role="search"] input { min-width: min(260px, 60vw); }
 .decline input { min-width: min(340px, 100%); }
+
+/* ---------- Wege zurück zur Website (Fußzeile der App) ---------- */
+.app-foot { margin-top: 64px; }
+.auth-body .back { margin-bottom: 20px; }

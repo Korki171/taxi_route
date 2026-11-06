@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getI18n } from "@/server/i18n";
+import { BackLink } from "./BackLink";
 import { LangSwitch } from "./LangSwitch";
 
 /** Rahmen für Impressum, Datenschutz und Nutzungsbedingungen. Der Text ist deutsch (maßgebliche Fassung). */
@@ -11,6 +12,7 @@ export async function LegalPage({ title, path, children }: { title: string; path
         <Link href="/" className="wordmark">Transferborsa</Link>
         <LangSwitch path={path} />
       </div>
+      <p className="back"><BackLink fallback="/">{t("← Zurück")}</BackLink></p>
       <h1>{t(title)}</h1>
       <p className="draft">
         {t("Entwurf: Dieser Text ist eine Vorlage und muss vor dem Livebetrieb rechtlich geprüft und mit den Angaben in eckigen Klammern ergänzt werden.")}
@@ -18,6 +20,7 @@ export async function LegalPage({ title, path, children }: { title: string; path
       {locale === "en" && <p className="muted">{t("Dieser Text liegt derzeit nur auf Deutsch vor. Die deutsche Fassung ist maßgeblich.")}</p>}
       <div lang="de">{children}</div>
       <nav className="footer-links">
+        <Link href="/">{t("Startseite")}</Link>
         <Link href="/impressum">{t("Impressum")}</Link>
         <Link href="/datenschutz">{t("Datenschutz")}</Link>
         <Link href="/nutzungsbedingungen">{t("Nutzungsbedingungen")}</Link>
