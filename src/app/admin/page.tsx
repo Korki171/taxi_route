@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { Badge, type SP } from "@/components/ui";
+import { fmtDate } from "@/lib/format";
+import { PLAN_BY_ID, planStatus } from "@/lib/plans";
 import { CAPABILITY_LABEL, ORG_STATUS_LABEL, ORG_TYPE_LABEL, VERIFICATION_LABEL } from "@/lib/labels";
 import { adminListOrganizations } from "@/server/services/admin";
 import { requireActor } from "@/server/web";
@@ -36,7 +38,7 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
       </form>
       <div className="card table-wrap">
         <table>
-          <thead><tr><th>Unternehmen</th><th>Typ</th><th>Ort</th><th>Konto</th><th>Funktionen</th><th>Mitgl./Dok.</th><th>Registriert</th></tr></thead>
+          <thead><tr><th>Unternehmen</th><th>Typ</th><th>Ort</th><th>Konto</th><th>Funktionen</th><th>Tarif</th><th>Mitgl./Dok.</th><th>Registriert</th></tr></thead>
           <tbody>
             {orgs.map((o) => (
               <tr key={o.id}>
@@ -52,14 +54,24 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
                     </div>
                   ))}
                 </td>
+                <td><PlanCell org={o} /></td>
                 <td>{o._count.memberships} / {o._count.documents}</td>
                 <td>{o.createdAt.toLocaleDateString("de-AT")}</td>
               </tr>
             ))}
-            {orgs.length === 0 && <tr><td colSpan={7} className="muted">Keine Unternehmen gefunden.</td></tr>}
+            {orgs.length === 0 && <tr><td colSpan={8} className="muted">Keine Unternehmen gefunden.</td></tr>}
           </tbody>
         </table>
       </div>
     </AppShell>
   );
+}
+
+function PlanCell({ org }: { org: Parameters<typeof planStatus>[0] }) {
+  const ps = planStatus(org);
+  if (ps.kind === "FREE_ROLE") return <span className="muted">kostenlos</span>;
+  const name = org.plan ? PLAN_BY_ID[org.plan].name : null;
+  if (ps.kind === "TRIAL") return <>{name ?? "–"} <Badge status="ACTIVE">gratis bis {fmtDate(ps.until)}</Badge></>;
+  if (ps.kind === "ACTIVE") return <>{name}</>;
+  return <Badge status="PENDING">kein Tarif</Badge>;
 }

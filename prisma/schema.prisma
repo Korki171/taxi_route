@@ -27,6 +27,14 @@ enum OrganizationStatus {
   SUSPENDED
 }
 
+/// Abo-Tarif für Taxi-/Transferunternehmen (netto pro Monat, siehe src/lib/plans.ts).
+/// Reisebüros und Hotels nutzen die Plattform kostenlos und haben keinen Tarif.
+enum SubscriptionPlan {
+  BASIS
+  PRO
+  FLOTTE
+}
+
 /// Geschäftsfunktionen, die eine Organisation auf der Plattform nutzen darf.
 /// Jede Funktion wird separat verifiziert (Mischbetriebe!).
 enum Capability {
@@ -157,6 +165,14 @@ model Organization {
   contactPerson  String?
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
+
+  /// Vom Plattform-Admin manuell zugewiesener Tarif (vorerst Zahlung per Rechnung, kein Stripe).
+  plan          SubscriptionPlan?
+  /// Bis zu diesem Tag (einschließlich) kostenlos, z. B. für Pilotunternehmen. Danach gilt der Tarif.
+  planFreeUntil DateTime?
+  /// Interne Notiz zum Tarif, z. B. vereinbarter Rabatt. Nur für Admins sichtbar.
+  planNote      String?
+  planUpdatedAt DateTime?
 
   capabilities     OrganizationCapability[]
   memberships      Membership[]

@@ -43,7 +43,7 @@
 .lp img, .lp video { display: block; max-width: 100%; height: auto; }
 /* Fokusring mit mindestens 3:1 zur Fläche: Navy auf hellen Feldern, Orange auf dunklen. */
 .lp { --ring: var(--ink); }
-.lp-hero, .lp-folder[data-f="4"], .lp-strecken, .lp-cta, .lp-footer, .lp-panel { --ring: var(--accent); }
+.lp-hero, .lp-pr-hero, .lp-folder[data-f="4"], .lp-strecken, .lp-cta, .lp-footer, .lp-panel { --ring: var(--accent); }
 .lp-folder[data-f="1"], .lp-folder[data-f="2"], .lp-folder[data-f="3"], .lp-folder[data-f="5"], .lp-panel[data-tone="d"] { --ring: var(--ink); }
 .lp :focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
 .lp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -92,6 +92,7 @@
 .lp-wordmark svg { display: block; height: 38px; width: auto; }
 .lp-toplink { font-size: var(--s-small); font-weight: 500; text-decoration: none; justify-self: start; padding: 10px 0; }
 .lp-toplink-end { justify-self: end; }
+.lp-topstart { display: flex; align-items: center; gap: 24px; justify-self: start; }
 .lp-toplink:hover { text-decoration: underline; text-underline-offset: 4px; }
 
 .lp-hero-title {
@@ -315,6 +316,40 @@
 .lp-ticket-stub::before { top: calc(-1 * var(--notch)); }
 .lp-ticket-stub::after { bottom: calc(-1 * var(--notch)); }
 
+/* Auf der Startseite steht ein Monatspreis statt einer Null: kleinere Ziffern, damit er ins Ticket passt. */
+.lp-ticket-price strong.lp-ticket-amount { font-size: clamp(72px, 9vw, 150px); }
+
+/* ---------- Preisseite ---------- */
+.lp-pr-hero { background: var(--night); color: var(--paper); padding-bottom: clamp(64px, 9vw, 140px); border-bottom-right-radius: var(--turn); }
+.lp-pr-title {
+  margin: clamp(32px, 6svh, 80px) var(--margin) 0;
+  font-family: var(--display); font-weight: 450; font-size: var(--s-hero);
+  line-height: 0.9; letter-spacing: -0.02em; text-transform: uppercase; text-align: center;
+}
+.lp-pr-lead { width: min(46ch, calc(100% - 2 * var(--margin))); margin: 28px auto 0; text-align: center; font-size: var(--s-lead); line-height: 1.4; }
+.lp-pr-plans { background: var(--stone); padding: clamp(72px, 9vw, 140px) var(--margin); }
+.lp-pr-h { margin: 0 0 40px; font-family: var(--display); font-weight: 450; font-size: clamp(32px, 3.6vw, 56px); line-height: 1; text-transform: uppercase; }
+.lp-pr-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.lp-pr-card {
+  display: flex; flex-direction: column; gap: 18px;
+  padding: clamp(28px, 3vw, 44px); background: var(--paper); color: var(--ink);
+  border-top-right-radius: var(--turn);
+}
+.lp-pr-card[data-tone="ink"] { background: var(--ink); color: var(--paper); --ring: var(--accent); }
+.lp-pr-name { margin: 0; font-family: var(--display); font-weight: 450; font-size: clamp(36px, 3.4vw, 56px); line-height: 1; text-transform: uppercase; }
+.lp-pr-summary { margin: 0; min-height: 3.1em; }
+.lp-pr-price { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.lp-pr-price strong { font-family: var(--display); font-weight: 450; font-size: clamp(48px, 4.6vw, 76px); line-height: 0.95; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.lp-pr-price span { font-size: var(--s-small); }
+.lp-pr-features { list-style: none; margin: 0; padding: 18px 0 0; border-top: 1px solid currentColor; display: grid; gap: 10px; flex: 1; align-content: start; }
+.lp-pr-features li { position: relative; padding-left: 26px; }
+/* Der Viertelkreis als Aufzählungszeichen. */
+.lp-pr-features li::before { content: ""; position: absolute; left: 0; top: 0.42em; width: 12px; height: 12px; background: var(--accent); border-top-right-radius: 12px; }
+.lp-pr-card .lp-btn { align-self: flex-start; margin-top: 8px; }
+.lp-pr-notes { list-style: none; margin: 40px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 32px; font-size: var(--s-small); font-weight: 500; }
+.lp-pr-footer { padding-top: 56px; }
+.lp-pr-footer .lp-footer-grid { margin-top: 0; }
+
 /* ---------- Fragen: gefüllte Kacheln, Überschrift bleibt stehen ---------- */
 .lp-faq { background: var(--paper); display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 8px; align-items: start; }
 .lp-faq .lp-h2 { grid-column: 1 / 5; position: sticky; top: 96px; font-size: clamp(40px, 4vw, 64px); }
@@ -454,6 +489,13 @@
   .lp-ticket-stub::before { top: calc(-1 * var(--notch)); left: calc(-1 * var(--notch)); }
   .lp-ticket-stub::after { top: calc(-1 * var(--notch)); bottom: auto; left: auto; right: calc(-1 * var(--notch)); }
   .lp-ticket-stub .lp-btn { width: 100%; }
+
+  .lp-topstart .lp-toplink + .lp-toplink { display: none; } /* am Handy reicht der Reiter „Preis“ */
+  .lp-pr-grid { grid-template-columns: 1fr; }
+  .lp-pr-summary { min-height: 0; }
+  .lp-pr-card .lp-btn { align-self: stretch; }
+  .lp-pr-title { font-size: clamp(56px, 18vw, 96px); }
+  .lp-pr-lead { font-size: 18px; }
 
   .lp-cta { border-top-left-radius: 120px; min-height: 70svh; }
   .lp-cta-q { font-size: 13vw; }
