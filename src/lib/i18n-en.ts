@@ -659,7 +659,7 @@ export const EN: Record<string, string> = {
   "Schriften: Imbue und Albert Sans, SIL Open Font License": "Fonts: Imbue and Albert Sans, SIL Open Font License",
 
   // Routendemo
-  "Strecke eingeben": "Enter a route",
+  "Strecke wählen": "Choose a route",
   "auf dieser Strecke · Beispieldaten": "on this route · sample data",
   "Keine Aufträge in den Beispieldaten. Probieren Sie eine Strecke mit dem Flughafen München.": "No jobs in the sample data. Try a route with Munich Airport.",
   "{time} Uhr": "{time}",

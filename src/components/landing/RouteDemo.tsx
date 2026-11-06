@@ -15,16 +15,18 @@ export function RouteDemo({ locale }: { locale: Locale }) {
 
   return (
     <div className="lp-demo">
-      <label className="lp-sr" htmlFor="lp-route">{t("Strecke eingeben")}</label>
-      <div className="lp-typeline" data-ui>
-        <input
-          id="lp-route"
-          value={query}
-          onChange={(e) => { setQuery(e.target.value); setSelected(0); }}
-          spellCheck={false}
-          autoComplete="off"
-        />
+      <div className="lp-picker" role="group" aria-label={t("Strecke wählen")}>
+        {examples.map((q) => (
+          <button
+            key={q}
+            type="button"
+            className={q === query ? "is-active" : undefined}
+            aria-pressed={q === query}
+            onClick={() => { setQuery(q); setSelected(0); }}
+          >{q}</button>
+        ))}
       </div>
+      <p className="lp-typeline" data-ui aria-live="polite">{query}</p>
 
       <div className="lp-demo-grid">
         <div className="lp-results" data-ui aria-live="polite">
@@ -75,12 +77,6 @@ export function RouteDemo({ locale }: { locale: Locale }) {
             </p>
           </div>
         )}
-      </div>
-
-      <div className="lp-examples">
-        {examples.map((q) => (
-          <button key={q} type="button" onClick={() => { setQuery(q); setSelected(0); }}>{q}</button>
-        ))}
       </div>
     </div>
   );
