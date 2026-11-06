@@ -6,7 +6,7 @@ export default function Datenschutz() {
   return (
     <LegalPage title="Datenschutzerklärung" path="/datenschutz">
       <h2>1. Verantwortlicher</h2>
-      <p>[Firmenname, Anschrift, E-Mail]. Kontakt in Datenschutzfragen: [datenschutz@taxiroute.at].</p>
+      <p>[Firmenname, Anschrift, E-Mail]. Kontakt in Datenschutzfragen: transferborsatirol@gmail.com.</p>
 
       <h2>2. Welche Daten wir verarbeiten und wofür</h2>
       <ul>
@@ -68,7 +68,7 @@ export default function Datenschutz() {
       <h2>6. Ihre Rechte</h2>
       <p>
         Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und Widerspruch. Wenden
-        Sie sich dazu an [datenschutz@taxiroute.at]. Sie können sich außerdem bei der österreichischen Datenschutzbehörde
+        Sie sich dazu an transferborsatirol@gmail.com. Sie können sich außerdem bei der österreichischen Datenschutzbehörde
         (www.dsb.gv.at) beschweren.
       </p>
     </LegalPage>

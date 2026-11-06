@@ -283,7 +283,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
             <li><Link href="/nutzungsbedingungen">{t("Nutzungsbedingungen")}</Link></li>
             <li><a href="#lp-title">{t("Nach oben")}</a></li>
           </ul>
-          <a className="lp-contact" href="mailto:hallo@taxiroute.at?subject=Transferborsa%20Pilotbetrieb">hallo@taxiroute.at</a>
+          <a className="lp-contact" href="mailto:transferborsatirol@gmail.com?subject=Transferborsa%20Pilotbetrieb">transferborsatirol@gmail.com</a>
         </div>
         <p className="lp-credits">
           {t("Bilder:")}{" "}
