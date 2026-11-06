@@ -951,7 +951,6 @@ export const EN: Record<string, string> = {
   "Reisebüros und Hotels": "Travel agencies and hotels",
   "Transfers anfragen, Angebote vergleichen und buchen ist für Auftraggeber kostenlos. Bezahlt wird nur die Fahrt selbst, direkt an das ausführende Unternehmen.": "Requesting transfers, comparing offers and booking is free for clients. You only pay for the ride itself, directly to the company that drives it.",
   "Als Reisebüro registrieren": "Register as a travel agency",
-  "Startseite": "Home",
   "Ab": "From",
   "im Monat, ohne Provision.": "a month, no commission.",
   "Taxi- und Transferunternehmen zahlen einen festen Monatspreis, je nach Größe der Flotte. Für Reisebüros und Hotels ist Transferborsa kostenlos.": "Taxi and transfer companies pay a fixed monthly price depending on fleet size. Transferborsa is free for travel agencies and hotels.",
