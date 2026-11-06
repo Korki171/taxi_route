@@ -90,7 +90,7 @@ const MARK: [string, number, string][] = [
   ["R", 94, "sky"], ["S", 60, "stone"], ["A", 86, "accent"],
 ];
 
-export async function Landing() {
+export async function Landing({ appHref }: { appHref?: string } = {}) {
   const { t, locale } = await getI18n();
   const img = (name: string) => `/landing/${name}.jpg`;
   return (
@@ -102,7 +102,9 @@ export async function Landing() {
           <div className="lp-top">
             <LangSwitch path="/" className="lp-toplink" />
             <Link href="/" className="lp-wordmark" aria-label="Transferborsa"><Logo /></Link>
-            <Link href="/login" className="lp-toplink lp-toplink-end">{t("Anmelden")}</Link>
+            {appHref
+              ? <Link href={appHref} className="lp-toplink lp-toplink-end">{t("Zur App")}</Link>
+              : <Link href="/login" className="lp-toplink lp-toplink-end">{t("Anmelden")}</Link>}
           </div>
 
           <h1 id="lp-title" className="lp-hero-title">
@@ -272,7 +274,7 @@ export async function Landing() {
             <strong>Transferborsa</strong>, {t("die Auftragsbörse für Personenbeförderung in Tirol und Bayern.")} {t("Pilotbetrieb ab Innsbruck.")}
           </p>
           <ul className="lp-footer-links">
-            <li><Link href="/login">{t("Anmelden")}</Link></li>
+            <li>{appHref ? <Link href={appHref}>{t("Zur App")}</Link> : <Link href="/login">{t("Anmelden")}</Link>}</li>
             <li><Link href="/register">{t("Registrieren")}</Link></li>
             <li><Link href="/impressum">{t("Impressum")}</Link></li>
             <li><Link href="/datenschutz">{t("Datenschutz")}</Link></li>

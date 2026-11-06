@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { Badge, Flash, type SP } from "@/components/ui";
@@ -33,6 +34,7 @@ export default async function AdminOrgPage({ params, searchParams }: { params: P
 
   return (
     <AppShell actor={actor}>
+      <p className="back"><Link href="/admin">← Administration</Link></p>
       <h1>{org.name}</h1>
       <p className="sub">
         {ORG_TYPE_LABEL[org.type]} · <Badge status={org.status}>{ORG_STATUS_LABEL[org.status]}</Badge>

@@ -429,6 +429,15 @@ export const EN: Record<string, string> = {
 
   // Auftragsdetail
   "← Zur Börse": "← Back to the exchange",
+  "← Zur Startseite": "← Back to the website",
+  "← Zurück": "← Back",
+  "Zur App": "Open the app",
+  "Zur Website": "Website",
+  "Startseite": "Home",
+  "Website und Rechtliches": "Website and legal",
+  "Seite nicht gefunden": "Page not found",
+  "Diese Seite gibt es nicht oder nicht mehr. Vielleicht hat sich die Adresse geändert.": "This page does not exist or no longer exists. The address may have changed.",
+  "Zur Übersicht": "Go to the overview",
   "Fahrzeit ca. {n}": "Driving time approx. {n}",
   "Fortschritt": "Progress",
   "Anfrage": "Request",

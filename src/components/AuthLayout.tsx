@@ -25,7 +25,10 @@ export async function AuthLayout({ path, wide, children }: { path: string; wide?
       </aside>
       <main id="main" className="auth-main">
         <div className="auth-top"><LangSwitch path={path} /></div>
-        <div className={wide ? "auth-body wide" : "auth-body"}>{children}</div>
+        <div className={wide ? "auth-body wide" : "auth-body"}>
+          <p className="back"><Link href="/">{t("← Zur Startseite")}</Link></p>
+          {children}
+        </div>
       </main>
     </div>
   );
