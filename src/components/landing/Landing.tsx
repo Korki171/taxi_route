@@ -19,7 +19,7 @@ const ROUTES: { name: string; image: string; alt: string; w: number; h: number }
   { name: "Innsbruck", image: "innsbruck", alt: "Die Nordkette über dem Inn bei Innsbruck", w: 1600, h: 1068 },
   { name: "Hall", image: "hall", alt: "Blick über Hall in Tirol mit Stiftskirche, dahinter das Karwendel", w: 1600, h: 1200 },
   { name: "Kufstein", image: "kufstein", alt: "Die beleuchtete Festung Kufstein bei Nacht", w: 1600, h: 1185 },
-  { name: "Kitzbühel", image: "kitzbuehel", alt: "Blick vom Hahnenkamm über das Tal bei Kitzbühel", w: 1600, h: 1200 },
+  { name: "Kitzbühel", image: "kitzbuehel", alt: "Die Vorderstadt von Kitzbühel im Schnee, hinter den bunten Giebeln die Kirche", w: 1600, h: 1067 },
   { name: "Seefeld", image: "seefeld", alt: "Seefeld in Tirol von oben, dahinter das Karwendel", w: 1600, h: 533 },
 ];
 const MORE_PLACES = "Schwaz, Mayrhofen, Sölden, St. Anton";
@@ -94,7 +94,7 @@ const MARK: [string, number, string][] = [
 
 export async function Landing({ appHref }: { appHref?: string } = {}) {
   const { t, locale } = await getI18n();
-  const img = (name: string) => `/landing/${name}.jpg`;
+  const img = (name: string) => `/landing/${name}.webp`;
   return (
     <div className="lp">
       <Motion />
@@ -293,7 +293,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           {t("Bilder und Film:")}{" "}
           <a href="https://commons.wikimedia.org/w/index.php?curid=1817444">“Innsbruck Nordkette”</a> Túrelio, <a href="https://creativecommons.org/licenses/by-sa/2.5/">CC BY-SA 2.5</a>;{" "}
           <a href="https://commons.wikimedia.org/w/index.php?curid=120699836">“AUT Hall in Tirol 02”</a> -wuppertaler, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>;{" "}
-          <a href="https://commons.wikimedia.org/w/index.php?curid=97105107">“Kitzbühel Hahnenkamm”</a> Lada89, CC BY-SA 4.0;{" "}
+          <a href="https://unsplash.com/photos/VT6fiS_Msfg">Kitzbühel</a> Shpetim Ujkani, <a href="https://unsplash.com/license">Unsplash-Lizenz</a>;{" "}
           <a href="https://commons.wikimedia.org/w/index.php?curid=163989">“Festung kufstein”</a> Mb-tirol, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>;{" "}
           <a href="https://commons.wikimedia.org/w/index.php?curid=47356981">“Seefeld in Tirol Austria from ESE on 2014-10-18”</a> Robert F. Tobler, CC BY-SA 4.0;{" "}
           <a href="https://commons.wikimedia.org/w/index.php?curid=14386656">“Flughafen-Munich Check in Terminal 2”</a> Usien, CC BY-SA 3.0;{" "}
