@@ -1,3 +1,4 @@
+import { Logo } from "../Logo";
 import Link from "next/link";
 import "@fontsource-variable/imbue";
 import "@fontsource-variable/albert-sans";
@@ -100,7 +101,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
         <section className="lp-hero" aria-labelledby="lp-title">
           <div className="lp-top">
             <LangSwitch path="/" className="lp-toplink" />
-            <Link href="/" className="lp-wordmark">Transferborsa</Link>
+            <Link href="/" className="lp-wordmark" aria-label="Transferborsa"><Logo /></Link>
             {appHref
               ? <Link href={appHref} className="lp-toplink lp-toplink-end">{t("Zur App")}</Link>
               : <Link href="/login" className="lp-toplink lp-toplink-end">{t("Anmelden")}</Link>}

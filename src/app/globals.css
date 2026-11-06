@@ -66,13 +66,15 @@ body {
 a:where(:not(.lp *)) { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); text-underline-offset: 3px; }
 a:where(:not(.lp *)):hover { text-decoration-color: currentColor; }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-.skip { position: absolute; left: 8px; top: -60px; z-index: 50; background: var(--primary); color: var(--primary-ink); padding: 10px 14px; }
-.skip:focus { top: 8px; }
+.skip { position: absolute; left: 8px; top: 8px; z-index: 50; background: var(--primary); color: var(--primary-ink); padding: 10px 14px; transform: translateY(-200%); }
+/* Nur bei Tastaturbedienung zeigen, nicht nach einem Klick oder Seitenwechsel */
+.skip:focus-visible { transform: none; }
 
 /* ---------- Kopfzeile ---------- */
 header.shell { position: sticky; top: 0; z-index: 30; background: var(--ground); border-bottom: 1px solid var(--rule); }
 .shell-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0 28px; min-height: 64px; padding: 0 var(--margin); max-width: 1320px; margin: 0 auto; }
-.wordmark { font-family: var(--display); font-size: 24px; line-height: 1; letter-spacing: 0.01em; text-transform: uppercase; text-decoration: none; color: var(--text); flex: none; }
+.wordmark { display: flex; align-items: center; text-decoration: none; color: var(--text); flex: none; }
+.wordmark svg { display: block; height: 36px; width: auto; }
 .shell-nav { display: flex; gap: 22px; align-self: stretch; flex: 1; min-width: 0; }
 .shell-nav a { display: flex; align-items: center; text-decoration: none; color: var(--muted); font-weight: 500; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
 .shell-nav a:hover { color: var(--text); }

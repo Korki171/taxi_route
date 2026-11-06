@@ -1,3 +1,4 @@
+import { Logo } from "@/components/Logo";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { ORG_TYPE_LABEL, ROLE_LABEL } from "@/lib/labels";
@@ -30,7 +31,7 @@ export async function AppShell({ actor, children, narrow, path }: { actor: Actor
       <a href="#main" className="skip">{t("Zum Inhalt springen")}</a>
       <header className="shell">
         <div className="shell-bar">
-          <Link href={isDriver ? "/fahrer" : "/dashboard"} className="wordmark">Transferborsa</Link>
+          <Link href={isDriver ? "/fahrer" : "/dashboard"} className="wordmark" aria-label="Transferborsa"><Logo /></Link>
           <ShellNav
             items={items}
             name={actor.name}
