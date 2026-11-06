@@ -14,8 +14,8 @@ export async function AuthLayout({ path, wide, children }: { path: string; wide?
       <aside className="auth-side">
         <Link href="/" className="wordmark" aria-label="Transferborsa"><Logo /></Link>
         <div>
-          <p className="auth-claim" aria-hidden><span>{t("Hin voll.")}</span><span>{t("Retour voll.")}</span></p>
-          <p className="auth-lead">{t("Die Auftragsbörse für Taxiunternehmen und Reisebüros in Tirol.")}</p>
+          <p className="auth-claim" aria-hidden><span>{t("Abgeben.")}</span><span>{t("Übernehmen.")}</span></p>
+          <p className="auth-lead">{t("Die Börse, auf der Taxi- und Transferunternehmen in Tirol Fahrten und Leerfahrten austauschen.")}</p>
         </div>
         <nav className="auth-foot" aria-label={t("Rechtliches")}>
           <Link href="/impressum">{t("Impressum")}</Link>

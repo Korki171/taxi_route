@@ -53,10 +53,10 @@ const RIGHTS: { group: string; rows: [string, string, string][] }[] = [
 
 /** Die vier Stationen einer Fahrt, von dunkel nach hell. Das Bild zeigt die Welt der Station. */
 const STAGES: { tone: string; time: string; text: string; image: string; alt: string; w: number; h: number }[] = [
-  { tone: "a", time: "Zwei Minuten", text: "Zuerst beschreibt der Auftraggeber die Fahrt: Abholung, Flug, Gepäck, Ski.", image: "flughafen", alt: "Check-in-Halle am Flughafen München, ein Fahrgast trägt einen Skisack", w: 1600, h: 975 },
+  { tone: "a", time: "Zwei Minuten", text: "Zuerst stellt ein Unternehmen, Reisebüro oder Hotel die Fahrt ein: Abholung, Flug, Gepäck, Ski.", image: "flughafen", alt: "Check-in-Halle am Flughafen München, ein Fahrgast trägt einen Skisack", w: 1600, h: 975 },
   { tone: "b", time: "Bis zur Angebotsfrist", text: "Dann geben geprüfte Unternehmen Festpreise oder eigene Angebote ab.", image: "hall", alt: "Blick über Hall in Tirol mit Stiftskirche, dahinter das Karwendel", w: 1600, h: 1200 },
   { tone: "c", time: "Ein Klick", text: "Danach wird ein Angebot angenommen. Ab hier ist der Preis verbindlich.", image: "kufstein", alt: "Die beleuchtete Festung Kufstein bei Nacht", w: 1600, h: 1185 },
-  { tone: "d", time: "Rund 1 h 50 min", text: "Zuletzt fährt das Unternehmen, und der Abschluss wird dokumentiert.", image: "innsbruck", alt: "Innsbruck mit den roten Dächern der Stadt, dahinter die verschneite Nordkette", w: 1280, h: 720 },
+  { tone: "d", time: "Rund 1 h 50 min", text: "Zuletzt fährt das übernehmende Unternehmen, und der Abschluss wird dokumentiert.", image: "innsbruck", alt: "Innsbruck mit den roten Dächern der Stadt, dahinter die verschneite Nordkette", w: 1280, h: 720 },
 ];
 
 const FAQ: [string, string][] = [
@@ -114,11 +114,11 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           </div>
 
           <h1 id="lp-title" className="lp-hero-title">
-            <span>{t("Hin voll.")}</span>{" "}
-            <span>{t("Retour voll.")}</span>
+            <span>{t("Abgeben.")}</span>{" "}
+            <span>{t("Übernehmen.")}</span>
           </h1>
           <p className="lp-hero-lead">
-            {t("Transferborsa ist die Auftragsbörse für Taxiunternehmen und Reisebüros in Tirol: Transfers zum Flughafen München vergeben, Angebote vergleichen und leere Rückfahrten füllen.")}
+            {t("Die Börse für Taxi- und Transferunternehmen in Tirol: Fahrten weitergeben, die Sie selbst nicht schaffen, Aufträge übernehmen, wenn Wagen frei sind, und Leerfahrten füllen. Fester Monatspreis, keine Provision.")}
           </p>
 
           <nav className="lp-folders" aria-label={t("Abschnitte")}>
@@ -272,7 +272,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
         </p>
         <div className="lp-footer-grid">
           <p className="lp-footer-about">
-            <strong>Transferborsa</strong>, {t("die Auftragsbörse für Personenbeförderung in Tirol und Bayern.")} {t("Pilotbetrieb ab Innsbruck.")}
+            <strong>Transferborsa</strong>, {t("die Börse für Taxi- und Transferunternehmen in Tirol und Bayern.")} {t("Pilotbetrieb ab Innsbruck.")}
           </p>
           <ul className="lp-footer-links">
             <li>{appHref ? <Link href={appHref}>{t("Zur App")}</Link> : <Link href="/login">{t("Anmelden")}</Link>}</li>

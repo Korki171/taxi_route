@@ -78,7 +78,7 @@ export async function Pricing() {
       <footer className="lp-footer lp-pr-footer">
         <div className="lp-footer-grid">
           <p className="lp-footer-about">
-            <strong>Transferborsa</strong>, {t("die Auftragsbörse für Personenbeförderung in Tirol und Bayern.")}
+            <strong>Transferborsa</strong>, {t("die Börse für Taxi- und Transferunternehmen in Tirol und Bayern.")}
           </p>
           <ul className="lp-footer-links">
             <li><Link href="/">{t("Startseite")}</Link></li>
