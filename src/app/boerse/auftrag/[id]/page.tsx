@@ -15,6 +15,7 @@ import {
   VEHICLE_LABEL,
   priceStateLabel,
 } from "@/lib/labels";
+import { splitHandoff } from "@/lib/handoff";
 import { formatCents } from "@/lib/money";
 import { placeName } from "@/lib/places";
 import { actorCan } from "@/server/authz/context";
@@ -75,6 +76,9 @@ export default async function RequestDetailPage({ params, searchParams }: { para
       : quotes.find((q) => q.providerOrgId === orgId)?.providerOrg.name
         ?? invitations.find((i) => i.providerOrgId === orgId)?.providerOrg.name ?? t("Anbieter");
   const scope = booking?.scope as { vehicleCategory?: VehicleCategory | null } | undefined;
+  const share = r.handoffSharePercent;
+  const giver = role === "requester" ? t("Ihr Unternehmen") : r.requesterOrg.name;
+  const listedSplit = share > 0 && r.priceCents ? splitHandoff(r.priceCents, share) : null;
 
   return (
     <AppShell actor={actor}>
@@ -138,6 +142,12 @@ export default async function RequestDetailPage({ params, searchParams }: { para
             <>
               <p className="price-big">{f.money(booking.agreedPriceCents)}</p>
               <p className="price-note">{t("Bestätigter Preis, verbindlich vereinbart am {date}", { date: f.dateTime(booking.acceptedAt) })}</p>
+              {booking.handoffShareCents > 0 && (
+                <dl className="kv handoff-split">
+                  <dt>{t("Abgabe-Anteil ({p} %)", { p: booking.handoffSharePercent })}</dt><dd>{f.money(booking.handoffShareCents)} {t("für {org}", { org: giver })}</dd>
+                  <dt>{t("Ausführendes Unternehmen")}</dt><dd className="price-fixed">{f.money(booking.agreedPriceCents - booking.handoffShareCents)}</dd>
+                </dl>
+              )}
             </>
           ) : (
             <>
@@ -145,8 +155,15 @@ export default async function RequestDetailPage({ params, searchParams }: { para
                 {r.priceCents ? f.money(r.priceCents) : t("offen")}
               </p>
               <p className="price-note">{t(priceStateLabel(r.priceMode))}{r.quoteDeadline ? ` · ${t("Angebote bis")} ${f.dateTime(r.quoteDeadline)}` : ""}</p>
+              {share > 0 && (
+                <dl className="kv handoff-split">
+                  <dt>{t("Abgabe-Anteil")}</dt><dd>{t("{p} % für {org}", { p: share, org: giver })}{listedSplit ? `, ${f.money(listedSplit.shareCents)}` : ""}</dd>
+                  <dt>{t("Für den Übernehmer")}</dt><dd className="price-fixed">{listedSplit ? f.money(listedSplit.providerCents) : t("Preis minus {p} %", { p: share })}</dd>
+                </dl>
+              )}
             </>
           )}
+          {(share > 0 || (booking?.handoffShareCents ?? 0) > 0) && <p className="price-note">{t("Den Anteil rechnen die Unternehmen direkt miteinander ab. Transferborsa erhält davon nichts.")}</p>}
           <p className="price-note">{t("Keine Zahlungsabwicklung über die Plattform.")}</p>
         </section>
 
@@ -180,6 +197,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
             <>
               <h2>{t("Zum Festpreis übernehmen")}</h2>
               <p className="muted">{t("Mit der Übernahme ist der Auftrag verbindlich vergeben. Wer zuerst bestätigt, erhält ihn, eine doppelte Vergabe ist ausgeschlossen.")}</p>
+              {listedSplit && <p className="price-note price-share">{t("{org} behält {p} % ({share}). Sie fahren für {amount}.", { org: r.requesterOrg.name, p: share, share: f.money(listedSplit.shareCents), amount: f.money(listedSplit.providerCents) })}</p>}
               <form action={takeFixedPriceAction} className="inline">
                 <input type="hidden" name="requestId" value={r.id} />
                 {vehicles.length > 0 && (
@@ -195,7 +213,8 @@ export default async function RequestDetailPage({ params, searchParams }: { para
           {r.priceMode === "NEGOTIABLE" && actorCan(actor, "quotes.submit") && (
             <>
               <h2>{myQuote?.status === "SUBMITTED" ? t("Ihr Angebot ändern") : t("Angebot abgeben")}</h2>
-              {myQuote && <p><Badge status={myQuote.status}>{t(QUOTE_STATUS_LABEL[myQuote.status])}</Badge> {f.money(myQuote.amountCents)} · {t(VEHICLE_LABEL[myQuote.vehicleCategory])}</p>}
+              {myQuote && <p><Badge status={myQuote.status}>{t(QUOTE_STATUS_LABEL[myQuote.status])}</Badge> {f.money(myQuote.amountCents)} · {t(VEHICLE_LABEL[myQuote.vehicleCategory])}{share > 0 ? ` · ${t("Sie erhalten {amount}", { amount: f.money(splitHandoff(myQuote.amountCents, share).providerCents) })}` : ""}</p>}
+              {share > 0 && <p className="price-note price-share">{t("Ihr Preis ist der Fahrpreis. Davon behält {org} {p} % als Abgabe-Anteil.", { org: r.requesterOrg.name, p: share })}</p>}
               {(!myQuote || myQuote.status === "SUBMITTED" || myQuote.status === "WITHDRAWN") && (
                 <form action={submitQuoteAction} className="stack">
                   <input type="hidden" name="requestId" value={r.id} />
@@ -236,7 +255,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
                       <td>{q.providerOrg.name}<span className="price-note">{q.providerOrg.city}{q.providerOrg.transportProfile?.fleetSize ? ` · ${t("{n} Fahrzeuge", { n: q.providerOrg.transportProfile.fleetSize })}` : ""} · {t("geprüft")}</span></td>
                       <td data-label={t("Fahrzeug")}>{t(VEHICLE_LABEL[q.vehicleCategory])}</td>
                       <td data-label={t("Nachricht")}>{q.message ?? <span className="muted">–</span>}{q.validUntil && <span className="price-note">gültig bis {f.dateTime(q.validUntil)}</span>}</td>
-                      <td className="num price-fixed">{f.money(q.amountCents)}{r.priceCents ? <span className="price-note">{t("Richtpreis")} {f.money(r.priceCents)}</span> : null}</td>
+                      <td className="num price-fixed">{f.money(q.amountCents)}{share > 0 && <span className="price-note price-share">{t("Ihr Anteil {amount}", { amount: f.money(splitHandoff(q.amountCents, share).shareCents) })}</span>}{r.priceCents ? <span className="price-note">{t("Richtpreis")} {f.money(r.priceCents)}</span> : null}</td>
                       <td><Badge status={q.status}>{t(QUOTE_STATUS_LABEL[q.status])}</Badge></td>
                       <td>
                         {r.status === "OPEN" && q.status === "SUBMITTED" && actorCan(actor, "bookings.manage") && (
@@ -316,6 +335,12 @@ export default async function RequestDetailPage({ params, searchParams }: { para
             {role === "requester" && booking.providerOrg.phone && <><dt>{t("Telefon")}</dt><dd>{booking.providerOrg.phone}</dd></>}
             {role === "requester" && booking.providerOrg.email && <><dt>{t("E-Mail")}</dt><dd>{booking.providerOrg.email}</dd></>}
             <dt>{t("Bestätigter Preis")}</dt><dd className="price-fixed">{f.money(booking.agreedPriceCents)}</dd>
+            {booking.handoffShareCents > 0 && (
+              <>
+                <dt>{t("Abgabe-Anteil ({p} %)", { p: booking.handoffSharePercent })}</dt><dd>{f.money(booking.handoffShareCents)} {t("für {org}", { org: giver })}</dd>
+                <dt>{t("Ausführendes Unternehmen")}</dt><dd>{f.money(booking.agreedPriceCents - booking.handoffShareCents)}</dd>
+              </>
+            )}
             <dt>{t("Fahrzeug")}</dt><dd>{booking.vehicle ? `${booking.vehicle.label} (${t(VEHICLE_LABEL[booking.vehicle.category])})` : scope?.vehicleCategory ? t(VEHICLE_LABEL[scope.vehicleCategory]) : t("wird vom Unternehmen zugewiesen")}</dd>
             {role === "provider" && (
               <><dt>{t("Fahrer")}</dt><dd>{booking.driver?.name ?? <span className="muted">{t("noch nicht zugewiesen")}</span>}{actorCan(actor, "fleet.manage") && (booking.status === "CONFIRMED" || booking.status === "IN_PROGRESS") && <> · <Link href="/flotte/live#disposition">{t("Disposition")}</Link></>}</dd></>

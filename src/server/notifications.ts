@@ -70,8 +70,9 @@ export async function notifyNewRequest(requestId: string) {
       mail(p, req, "Neuer Auftrag {route}", [
         "Neuer Auftrag in der Börse: {route}, Abholung {pickup}.",
         req.priceMode === "FIXED" ? "Festpreis: {price}. Das erste Unternehmen, das übernimmt, erhält den Auftrag." : "Richtpreis: {price}. Angebote sind möglich.",
+        ...(req.handoffSharePercent > 0 ? ["{requester} behält {share} % vom Fahrpreis als Abgabe-Anteil."] : []),
         "{pax} Personen, Auftraggeber: {requester}.",
-      ], { price, pax: req.passengers, requester: req.requesterOrg.name }),
+      ], { price, pax: req.passengers, requester: req.requesterOrg.name, share: req.handoffSharePercent }),
     ),
   );
   if (invited.length) await notifyInvited(requestId, invited);
@@ -88,8 +89,9 @@ export async function notifyInvited(requestId: string, orgIds: string[]) {
       mail(p, req, "Direktanfrage von {requester}: {route}", [
         "{requester} bittet Sie gezielt um ein Angebot: {route}, Abholung {pickup}.",
         req.priceMode === "FIXED" ? "Festpreis: {price}. Das erste Unternehmen, das übernimmt, erhält den Auftrag." : "Richtpreis: {price}. Angebote sind möglich.",
+        ...(req.handoffSharePercent > 0 ? ["{requester} behält {share} % vom Fahrpreis als Abgabe-Anteil."] : []),
         "{pax} Personen. Sie können die Anfrage in Transferborsa annehmen oder ablehnen.",
-      ], { price, pax: req.passengers, requester: req.requesterOrg.name }),
+      ], { price, pax: req.passengers, requester: req.requesterOrg.name, share: req.handoffSharePercent }),
     ),
   );
 }
@@ -114,14 +116,20 @@ export async function notifyBooked(bookingId: string) {
     where: { id: bookingId },
     include: { request: true, providerOrg: { select: orgSelect }, requesterOrg: { select: orgSelect } },
   });
-  const vars = { amount: formatCents(b.agreedPriceCents), provider: b.providerOrg.name, requester: b.requesterOrg.name };
+  const vars = {
+    amount: formatCents(b.agreedPriceCents), provider: b.providerOrg.name, requester: b.requesterOrg.name,
+    share: b.handoffSharePercent, shareAmount: formatCents(b.handoffShareCents), net: formatCents(b.agreedPriceCents - b.handoffShareCents),
+  };
+  const hasShare = b.handoffShareCents > 0;
   await sendAll([
     mail(b.providerOrg, b.request, "Auftrag {ref} verbindlich vergeben", [
       "Sie fahren {route} am {pickup} für {amount}.",
+      ...(hasShare ? ["Davon behält {requester} {shareAmount} ({share} %) als Abgabe-Anteil, Sie erhalten {net}."] : []),
       "Auftraggeber: {requester}. Adressen und Fahrgastdaten finden Sie jetzt in der Buchung.",
     ], vars),
     mail(b.requesterOrg, b.request, "Buchung {ref} bestätigt", [
       "{provider} fährt {route} am {pickup} für {amount}. Der Preis ist verbindlich.",
+      ...(hasShare ? ["Ihr Abgabe-Anteil: {shareAmount} ({share} %). {provider} erhält {net}."] : []),
     ], vars),
   ]);
 }

@@ -82,7 +82,7 @@ export async function findMatchesForCapacity(actor: Actor | null, offerId: strin
     take: 200,
     select: {
       id: true, number: true, pickupPlaceId: true, dropoffPlaceId: true, pickupAt: true, pickupWindowMinutes: true,
-      passengers: true, luggage: true, skiEquipment: true, vehicleCategory: true, priceMode: true, priceCents: true,
+      passengers: true, luggage: true, skiEquipment: true, vehicleCategory: true, priceMode: true, priceCents: true, handoffSharePercent: true,
       requesterOrg: { select: { name: true } },
     },
   });
