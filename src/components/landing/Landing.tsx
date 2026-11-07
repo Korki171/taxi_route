@@ -5,6 +5,7 @@ import "@fontsource-variable/albert-sans";
 import "./landing.css";
 import { Motion } from "./Motion";
 import { RouteDemo } from "./RouteDemo";
+import { AppTour } from "./AppTour";
 import { LangSwitch } from "../LangSwitch";
 import { getI18n } from "@/server/i18n";
 import { formatCents } from "@/lib/money";
@@ -132,6 +133,8 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
             </div>
           </nav>
         </section>
+
+        <AppTour locale={locale} />
 
         <section id="boerse" className="lp-chapter lp-boerse" aria-labelledby="lp-boerse-h">
           <h2 id="lp-boerse-h" className="lp-h2" data-reveal>{t("Die Börse ausprobieren")}</h2>

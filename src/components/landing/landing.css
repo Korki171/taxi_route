@@ -411,6 +411,43 @@
 .lp-contact { grid-column: 9 / 13; justify-self: end; font-size: var(--s-lead); font-weight: 600; }
 .lp-credits { margin: 56px 0 0; max-width: 120ch; font-size: var(--s-small); line-height: 1.6; }
 
+/* ---------- Die App: vier Funktionen mit Bildschirmfotos ---------- */
+.lp-app { background: var(--paper); }
+.lp-app-kicker { margin: 0 0 18px; font-size: var(--s-small); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.lp-app .lp-h2 { margin-bottom: 96px; }
+.lp-app-row {
+  display: grid; grid-template-columns: 5fr 7fr; gap: clamp(32px, 5vw, 96px); align-items: center;
+  padding: 72px 0; border-top: 1px solid var(--stone);
+}
+.lp-app-row:nth-of-type(even) { grid-template-columns: 7fr 5fr; }
+.lp-app-row:nth-of-type(even) .lp-app-text { order: 2; }
+.lp-app-num { margin: 0; font-family: var(--display); font-size: 64px; line-height: 1; color: var(--accent); }
+.lp-app-text h3 {
+  margin: 12px 0 16px; font-family: var(--display); font-weight: 450;
+  font-size: clamp(32px, 3.2vw, 52px); line-height: 1; text-transform: uppercase;
+}
+.lp-app-text p { margin: 0; max-width: 40ch; }
+.lp .lp-app-who {
+  display: inline-block; margin-top: 20px; padding: 6px 18px 6px 14px; border-radius: 0 16px 16px 0;
+  background: var(--sky); font-size: var(--s-small); font-weight: 600;
+}
+.lp-app-pic { position: relative; padding: 48px; border-radius: 0 var(--turn) 0 0; background: var(--stone); }
+.lp-app-pic[data-tone="sky"] { background: var(--sky); }
+.lp-app-pic[data-tone="ink"] { background: var(--ink); }
+.lp-app-browser { overflow: hidden; background: var(--paper); box-shadow: 0 30px 60px -30px rgba(5, 7, 10, 0.45); }
+.lp-app-bar { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 16px; background: var(--ink); }
+.lp-app-pic[data-tone="ink"] .lp-app-bar { background: var(--deep); }
+.lp-app-bar i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255, 255, 255, 0.28); }
+.lp-app-bar span {
+  margin-left: 12px; padding: 2px 14px 2px 10px; border-radius: 0 12px 12px 0;
+  background: rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.85); font-size: 13px;
+}
+.lp-app-phone { width: 220px; padding: 8px; border-radius: 34px; background: var(--night); box-shadow: 0 30px 60px -30px rgba(5, 7, 10, 0.6); }
+.lp-app-phone img { border-radius: 26px; }
+.lp-app-float { position: absolute; right: 24px; bottom: -40px; }
+.lp-app-narrow { display: none; }
+.lp-app-paper { box-shadow: 0 30px 60px -30px rgba(5, 7, 10, 0.45); }
+
 /* ---------- Bewegung ---------- */
 .lp-js [data-reveal] > *, .lp-js .lp-h2[data-reveal], .lp-js .lp-cta-q[data-reveal] {
   opacity: 0; transform: translateY(24px);
@@ -473,6 +510,15 @@
   .lp-panel:has(input:checked) .lp-panel-body { display: grid; }
   .lp-panel-body p { font-size: 17px; }
   .lp-panel-body img { aspect-ratio: 4 / 3; height: auto; border-top-left-radius: 56px; }
+
+  .lp-app .lp-h2 { margin-bottom: 40px; }
+  .lp-app-row, .lp-app-row:nth-of-type(even) { grid-template-columns: 1fr; gap: 28px; padding: 48px 0; }
+  .lp-app-row:nth-of-type(even) .lp-app-text { order: 0; }
+  .lp-app-num { font-size: 48px; }
+  .lp-app-pic { padding: 24px; }
+  .lp-app-wide { display: none; }
+  .lp-app-narrow { display: block; }
+  .lp-app-phone, .lp-app-float { position: static; width: min(72%, 300px); margin: 0 auto; box-shadow: none; }
 
   .lp-rechte-grid, .lp-idx, .lp-faq { grid-template-columns: 1fr; }
   .lp-confirm, .lp-rights, .lp-idx-rows, .lp-faq .lp-h2, .lp-faq-list { grid-column: 1 / -1; }
