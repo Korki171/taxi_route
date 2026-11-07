@@ -2,6 +2,7 @@
 export const EN: Record<string, string> = {
   // Allgemein und Navigation
   "B2B-Auftragsbörse für Taxi-/Transferunternehmen und Reisebüros": "B2B transfer exchange for taxi and transfer companies and travel agencies",
+  "Die Börse für Taxi- und Transferunternehmen: Fahrten weitergeben, Aufträge übernehmen, Leerfahrten füllen. Ohne Provision.": "The exchange for taxi and transfer companies: hand off rides, take on jobs, fill empty runs. No commission.",
   "Übersicht": "Overview",
   "Börse": "Exchange",
   "Flotte": "Fleet",
@@ -577,20 +578,20 @@ export const EN: Record<string, string> = {
   "Hauptnavigation": "Main navigation",
   "Ablauf": "How it works",
   "Preise": "Pricing",
-  "Hin voll.": "Out full.",
-  "Retour voll.": "Back full.",
-  "Transferborsa ist die Auftragsbörse für Taxiunternehmen und Reisebüros in Tirol: Transfers zum Flughafen München vergeben, Angebote vergleichen und leere Rückfahrten füllen.":
-    "Transferborsa is the transfer exchange for taxi companies and travel agencies in Tyrol: hand over transfers to Munich Airport, compare quotes and fill empty return trips.",
+  "Abgeben.": "Hand off.",
+  "Übernehmen.": "Take on.",
+  "Die Börse für Taxi- und Transferunternehmen in Tirol: Fahrten weitergeben, die Sie selbst nicht schaffen, Aufträge übernehmen, wenn Wagen frei sind, und Leerfahrten füllen. Fester Monatspreis, keine Provision.":
+    "The exchange for taxi and transfer companies in Tyrol: hand off rides you can't cover yourself, take on jobs when you have cars free, and fill empty runs. One monthly price, no commission.",
   "Die Börse ausprobieren": "Try the exchange",
   "Von der Anfrage zur Fahrt": "From request to ride",
   "Zwei Minuten": "Two minutes",
-  "Zuerst beschreibt der Auftraggeber die Fahrt: Abholung, Flug, Gepäck, Ski.": "First the client describes the ride: pickup, flight, luggage, skis.",
+  "Zuerst stellt ein Unternehmen, Reisebüro oder Hotel die Fahrt ein: Abholung, Flug, Gepäck, Ski.": "First a company, travel agency or hotel posts the ride: pickup, flight, luggage, skis.",
   "Bis zur Angebotsfrist": "Until the quote deadline",
   "Dann geben geprüfte Unternehmen Festpreise oder eigene Angebote ab.": "Then verified companies take fixed prices or submit their own quotes.",
   "Ein Klick": "One click",
   "Danach wird ein Angebot angenommen. Ab hier ist der Preis verbindlich.": "Next a quote is accepted. From here the price is binding.",
   "Rund 1 h 50 min": "About 1 h 50 min",
-  "Zuletzt fährt das Unternehmen, und der Abschluss wird dokumentiert.": "Finally the company drives, and completion is recorded.",
+  "Zuletzt fährt das übernehmende Unternehmen, und der Abschluss wird dokumentiert.": "Finally the company that took the job drives, and completion is recorded.",
   "Jeder sieht nur, was er braucht": "Everyone sees only what they need",
   "Buchungsbestätigung": "Booking confirmation",
   "Reisebüro aus Kitzbühel": "Travel agency from Kitzbühel",
@@ -652,7 +653,7 @@ export const EN: Record<string, string> = {
   "Als Reisebüro": "As a travel agency",
   "Beide Wege führen zur kostenlosen Registrierung. Danach prüfen wir Ihr Unternehmen und schalten die passenden Funktionen frei.":
     "Both lead to free registration. We then verify your company and enable the right features.",
-  "die Auftragsbörse für Personenbeförderung in Tirol und Bayern.": "the transfer exchange for passenger transport in Tyrol and Bavaria.",
+  "die Börse für Taxi- und Transferunternehmen in Tirol und Bayern.": "the exchange for taxi and transfer companies in Tyrol and Bavaria.",
   "Pilotbetrieb ab Innsbruck.": "Pilot starting in Innsbruck.",
   "Nach oben": "Back to top",
   "Kontakt": "Contact",
@@ -815,7 +816,7 @@ export const EN: Record<string, string> = {
   "Menü": "Menu",
   "Schließen": "Close",
   "Konto und Organisation": "Account and organisation",
-  "Die Auftragsbörse für Taxiunternehmen und Reisebüros in Tirol.": "The transfer exchange for taxi companies and travel agencies in Tyrol.",
+  "Die Börse, auf der Taxi- und Transferunternehmen in Tirol Fahrten und Leerfahrten austauschen.": "The exchange where taxi and transfer companies in Tyrol trade rides and empty runs.",
   "Rechtliches": "Legal",
 
   // Phase 4: Reisebüro-Dashboard, gezielte Anfragen, Auftragsbestätigung
