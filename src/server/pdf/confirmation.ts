@@ -181,13 +181,30 @@ export async function renderConfirmationPdf(data: BookingConfirmation, locale: L
   w.y -= 8;
 
   // Preis
-  w.ensure(86);
-  const boxH = 72;
+  const hasShare = b.handoffShareCents > 0;
+  const boxH = hasShare ? 102 : 72;
+  w.ensure(boxH + 14);
   w.page.drawRectangle({ x: M, y: w.y - boxH + 14, width: W - 2 * M, height: boxH, color: SURFACE });
   w.page.drawRectangle({ x: M, y: w.y - boxH + 14, width: 4, height: boxH, color: ORANGE });
   w.text(t("Vereinbarter Preis").toUpperCase(), M + 18, w.y - 4, { font: w.bold, size: 8, color: MUTED });
   w.text(formatCents(b.agreedPriceCents, locale), M + 18, w.y - 30, { font: w.bold, size: 22 });
-  const note = w.wrap(t("Der Preis ist verbindlich vereinbart. Die Abrechnung erfolgt direkt zwischen den Unternehmen, Transferborsa wickelt keine Zahlungen ab."), w.regular, 8.5, 250);
+  if (hasShare) {
+    // Abgabe-Anteil: bleibt beim Auftraggeber, der Rest steht dem ausführenden Unternehmen zu
+    const splitRows: [string, string][] = [
+      [t("Abgabe-Anteil Auftraggeber ({p} %)", { p: b.handoffSharePercent }), formatCents(b.handoffShareCents, locale)],
+      [t("Ausführendes Unternehmen erhält"), formatCents(b.agreedPriceCents - b.handoffShareCents, locale)],
+    ];
+    splitRows.forEach(([k, v], i) => {
+      const y = w.y - 54 - i * 15;
+      w.text(k, M + 18, y, { size: 9.5, color: MUTED });
+      w.text(v, M + 200, y, { font: w.bold, size: 10 });
+    });
+  }
+  const note = w.wrap(
+    t("Der Preis ist verbindlich vereinbart. Die Abrechnung erfolgt direkt zwischen den Unternehmen, Transferborsa wickelt keine Zahlungen ab.")
+      + (hasShare ? ` ${t("Den Abgabe-Anteil rechnen die Unternehmen direkt miteinander ab, Transferborsa erhält davon nichts.")}` : ""),
+    w.regular, 8.5, 250,
+  );
   note.forEach((l, i) => w.text(l, W - M - 262, w.y - 8 - i * 11, { size: 8.5, color: MUTED }));
   w.y -= boxH + 12;
 

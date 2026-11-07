@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { PlaceSelect, ProviderPicker, VehicleSelect } from "@/components/market";
 import { Flash, type SP } from "@/components/ui";
+import { HANDOFF_SHARE_OPTIONS } from "@/lib/handoff";
 import { actorCan } from "@/server/authz/context";
 import { listProviderDirectory } from "@/server/services/marketplace";
 import { requireOrgActor } from "@/server/web";
@@ -65,11 +66,17 @@ export default async function NewRequestPage({ searchParams }: { searchParams: S
           </fieldset>
           <div className="fields">
             <label>{t("Preis in €")}{" "}<small>{t("beim Festpreis Pflicht, sonst unverbindlicher Richtpreis")}</small><input name="price" inputMode="decimal" placeholder="180,00" /></label>
+            <label>{t("Ihr Anteil")}{" "}<small>{t("optional, vom Fahrpreis")}</small>
+              <select name="handoffSharePercent" defaultValue="0">
+                {HANDOFF_SHARE_OPTIONS.map((p) => <option key={p} value={p}>{p === 0 ? t("Kein Anteil") : `${p} %`}</option>)}
+              </select>
+            </label>
             <label>{t("Angebote bis")}{" "}<small>{t("nur bei verhandelbarem Preis")}</small><input type="datetime-local" name="quoteDeadline" /></label>
             <label>{t("Ihre Referenz")}{" "}<small>{t("intern, nur für Sie sichtbar")}</small><input name="clientReference" maxLength={60} /></label>
           </div>
           <label>{t("Buchungsbedingungen")}<textarea name="bookingTerms" rows={2} maxLength={1000} placeholder={t("Wartezeit am Flughafen inklusive bis 60 Minuten nach Landung")} /></label>
           <label>{t("Stornobedingungen")}<textarea name="cancellationTerms" rows={2} maxLength={500} placeholder={t("Kostenlos bis 24 Stunden vor Abholung")} /></label>
+          <p className="price-note">{t("Ihr Anteil: Geben Sie eine eigene Kundenfahrt ab, behalten Sie diesen Prozentsatz vom Fahrpreis. Das übernehmende Unternehmen fährt für den Rest, beide sehen die Beträge vor der Übernahme und in der Auftragsbestätigung.")}</p>
           <p className="price-note">{t("Die Plattform wickelt keine Zahlungen ab. Der bestätigte Preis wird in der Buchung festgehalten, die Abrechnung erfolgt direkt zwischen den Unternehmen.")}</p>
         </section>
 

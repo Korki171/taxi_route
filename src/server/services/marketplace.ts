@@ -2,6 +2,7 @@ import type { Prisma, TransferStatus, VehicleCategory } from "@prisma/client";
 import { Prisma as P } from "@prisma/client";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { MAX_HANDOFF_SHARE_PERCENT, splitHandoff } from "@/lib/handoff";
 import { estimateMinutes, isPlaceId, PLACES, type Place } from "@/lib/places";
 import { actorCan, requirePermission, type Actor, type OrgActor } from "../authz/context";
 import { conflict, forbidden, invalid, notFound } from "../errors";
@@ -52,6 +53,11 @@ export const transferRequestSchema = z
     pickupNotes: optText(500),
     priceMode: z.enum(["FIXED", "NEGOTIABLE"]),
     priceCents: z.preprocess((v) => (v === "" || v == null ? undefined : v), z.coerce.number().int().min(100).max(10_000_00).optional()),
+    /** Anteil vom Fahrpreis, den der Abgeber behält (0 bis MAX_HANDOFF_SHARE_PERCENT) */
+    handoffSharePercent: z.preprocess(
+      (v) => (v === "" || v == null ? 0 : v),
+      z.coerce.number().int("Anteil bitte in ganzen Prozent angeben").min(0).max(MAX_HANDOFF_SHARE_PERCENT, "Der Anteil darf höchstens 15 % betragen"),
+    ),
     quoteDeadline: optDate,
     bookingTerms: optText(1000),
     cancellationTerms: optText(500),
@@ -99,6 +105,7 @@ const marketSelect = {
   flightArrivalAt: true,
   priceMode: true,
   priceCents: true,
+  handoffSharePercent: true,
   currency: true,
   quoteDeadline: true,
   bookingTerms: true,
@@ -183,6 +190,7 @@ export async function createTransferRequest(actor: Actor | null, input: unknown)
         pickupNotes: d.pickupNotes,
         priceMode: d.priceMode,
         priceCents: d.priceCents,
+        handoffSharePercent: d.handoffSharePercent,
         quoteDeadline: d.quoteDeadline,
         bookingTerms: d.bookingTerms,
         cancellationTerms: d.cancellationTerms,
@@ -197,6 +205,7 @@ export async function createTransferRequest(actor: Actor | null, input: unknown)
     await transferEvent(tx, req.id, "request.created", { userId: actor.userId, orgId: actor.org.id }, {
       priceMode: d.priceMode,
       priceCents: d.priceCents ?? null,
+      handoffSharePercent: d.handoffSharePercent,
       visibility: d.visibility,
     });
     if (invitees.length) {
@@ -495,13 +504,16 @@ export async function takeFixedPriceRequest(actor: Actor | null, requestId: stri
     booking = await db.$transaction(async (tx) => {
       const locked = await tx.transferRequest.updateMany({ where: { id: requestId, status: "OPEN" }, data: { status: "ASSIGNED" } });
       if (locked.count !== 1) throw conflict("Dieser Auftrag wurde soeben von einem anderen Unternehmen übernommen.");
+      const split = splitHandoff(req.priceCents!, req.handoffSharePercent);
       const booking = await tx.booking.create({
         data: {
           requestId,
           requesterOrgId: req.requesterOrgId,
           providerOrgId: actor.org.id,
           vehicleId,
-          agreedPriceCents: req.priceCents!,
+          agreedPriceCents: split.priceCents,
+          handoffSharePercent: split.percent,
+          handoffShareCents: split.shareCents,
           currency: req.currency,
           scope: scopeSnapshot(req),
           cancellationTerms: req.cancellationTerms,
@@ -513,6 +525,7 @@ export async function takeFixedPriceRequest(actor: Actor | null, requestId: stri
       await transferEvent(tx, requestId, "booking.fixed_price_taken", { userId: actor.userId, orgId: actor.org.id }, {
         bookingId: booking.id,
         agreedPriceCents: booking.agreedPriceCents,
+        handoffShareCents: booking.handoffShareCents,
       });
       return booking;
     });
@@ -612,13 +625,16 @@ export async function acceptQuote(actor: Actor | null, quoteId: string) {
     booking = await db.$transaction(async (tx) => {
       const locked = await tx.transferRequest.updateMany({ where: { id: req.id, status: "OPEN" }, data: { status: "ASSIGNED" } });
       if (locked.count !== 1) throw conflict("Dieser Auftrag ist bereits vergeben.");
+      const split = splitHandoff(q.amountCents, req.handoffSharePercent);
       const booking = await tx.booking.create({
         data: {
           requestId: req.id,
           quoteId: q.id,
           requesterOrgId: req.requesterOrgId,
           providerOrgId: q.providerOrgId,
-          agreedPriceCents: q.amountCents,
+          agreedPriceCents: split.priceCents,
+          handoffSharePercent: split.percent,
+          handoffShareCents: split.shareCents,
           currency: req.currency,
           scope: scopeSnapshot(req, q.vehicleCategory),
           cancellationTerms: req.cancellationTerms,
@@ -631,6 +647,7 @@ export async function acceptQuote(actor: Actor | null, quoteId: string) {
         quoteId: q.id,
         bookingId: booking.id,
         agreedPriceCents: q.amountCents,
+        handoffShareCents: booking.handoffShareCents,
       });
       return booking;
     });
@@ -723,7 +740,7 @@ export async function listOwnRequests(actor: Actor | null, statuses?: TransferSt
     take: 200,
     include: {
       _count: { select: { quotes: { where: { status: "SUBMITTED" } } } },
-      booking: { select: { id: true, agreedPriceCents: true, status: true, providerOrg: { select: { name: true } } } },
+      booking: { select: { id: true, agreedPriceCents: true, handoffShareCents: true, status: true, providerOrg: { select: { name: true } } } },
     },
   });
 }
@@ -736,7 +753,7 @@ export async function listIncomingQuotes(actor: Actor | null) {
     orderBy: [{ request: { pickupAt: "asc" } }, { amountCents: "asc" }],
     include: {
       providerOrg: { select: { name: true, city: true } },
-      request: { select: { id: true, number: true, pickupPlaceId: true, dropoffPlaceId: true, pickupAt: true, passengers: true, priceCents: true, priceMode: true } },
+      request: { select: { id: true, number: true, pickupPlaceId: true, dropoffPlaceId: true, pickupAt: true, passengers: true, priceCents: true, priceMode: true, handoffSharePercent: true } },
     },
   });
 }
@@ -747,7 +764,7 @@ export async function listOwnQuotes(actor: Actor | null) {
     where: { providerOrgId: actor.org.id, status: { in: ["SUBMITTED", "REJECTED", "WITHDRAWN"] }, request: { pickupAt: { gt: new Date(Date.now() - 7 * 86400_000) } } },
     orderBy: { updatedAt: "desc" },
     take: 100,
-    include: { request: { select: { id: true, number: true, pickupPlaceId: true, dropoffPlaceId: true, pickupAt: true, status: true } } },
+    include: { request: { select: { id: true, number: true, pickupPlaceId: true, dropoffPlaceId: true, pickupAt: true, status: true, handoffSharePercent: true } } },
   });
 }
 

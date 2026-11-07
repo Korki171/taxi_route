@@ -281,7 +281,7 @@ export async function createTransferRequestAction(fd: FormData) {
       ...formObject(fd, [
         "pickupPlaceId", "dropoffPlaceId", "pickupAddress", "dropoffAddress", "pickupWindowMinutes", "passengers",
         "luggage", "skiEquipment", "specialLuggage", "vehicleCategory", "childSeats", "requirements", "flightNumber",
-        "pickupNotes", "priceMode", "bookingTerms", "cancellationTerms", "clientReference", "passengerName", "passengerPhone",
+        "pickupNotes", "priceMode", "handoffSharePercent", "bookingTerms", "cancellationTerms", "clientReference", "passengerName", "passengerPhone",
       ]),
       pickupAt: localDate(fd, "pickupAt"),
       flightArrivalAt: localDate(fd, "flightArrivalAt"),

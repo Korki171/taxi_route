@@ -179,6 +179,8 @@ a.route:hover { text-decoration: underline; text-underline-offset: 4px; }
 .price-guide { color: var(--muted); }
 .price-guide strong { color: var(--text); font-weight: 600; }
 .price-note { display: block; font-size: 13px; color: var(--muted); font-weight: 400; }
+.price-note.price-share { color: var(--text); font-weight: 600; }
+dl.kv.handoff-split { margin: 12px 0 4px; padding: 10px 12px; background: var(--surface); border-left: 3px solid var(--accent); font-size: 14px; }
 .price-big { font-family: var(--display); font-weight: 450; font-size: 44px; line-height: 1; margin: 0 0 8px; font-variant-numeric: tabular-nums; }
 
 /* ---------- Status ---------- */

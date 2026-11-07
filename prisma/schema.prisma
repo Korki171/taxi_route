@@ -95,15 +95,15 @@ enum VehicleCategory {
 }
 
 model User {
-  id              String       @id @default(cuid())
-  email           String       @unique
+  id              String               @id @default(cuid())
+  email           String               @unique
   name            String
   phone           String?
   passwordHash    String
-  status          UserStatus   @default(ACTIVE)
-  isPlatformAdmin Boolean      @default(false)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  status          UserStatus           @default(ACTIVE)
+  isPlatformAdmin Boolean              @default(false)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
   memberships     Membership[]
   sessions        Session[]
   passwordResets  PasswordResetToken[]
@@ -220,15 +220,15 @@ model TransportProfile {
 }
 
 model Membership {
-  id             String       @id @default(cuid())
-  userId         String
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  role           MemberRole
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role              MemberRole
   /// Zustimmung des Fahrers zur Standortfreigabe während der Schicht
   trackingConsentAt DateTime?
-  createdAt      DateTime     @default(now())
+  createdAt         DateTime     @default(now())
 
   @@unique([userId, organizationId])
   @@index([organizationId])
@@ -396,16 +396,19 @@ model TransferRequest {
   flightArrivalAt DateTime?
   pickupNotes     String?
 
-  priceMode         PriceMode
+  priceMode           PriceMode
   /// Festpreis bzw. unverbindlicher Richtpreis/Budget in Cent
-  priceCents        Int?
-  currency          String    @default("EUR")
-  quoteDeadline     DateTime?
-  bookingTerms      String?
-  cancellationTerms String?
-  clientReference   String?
+  priceCents          Int?
+  currency            String            @default("EUR")
+  /// Anteil in Prozent, den das abgebende Unternehmen vom Fahrpreis behält (0 = keiner).
+  /// Abrechnung direkt zwischen den Unternehmen, die Plattform erhält nichts davon.
+  handoffSharePercent Int               @default(0)
+  quoteDeadline       DateTime?
+  bookingTerms        String?
+  cancellationTerms   String?
+  clientReference     String?
   /// MARKET: in der Börse; INVITED: nur für die Unternehmen in QuoteInvitation sichtbar
-  visibility        RequestVisibility @default(MARKET)
+  visibility          RequestVisibility @default(MARKET)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -470,34 +473,38 @@ model QuoteInvitation {
 
 /// Verbindliche Vereinbarung. requestId ist eindeutig: ein Auftrag kann nur einmal vergeben werden.
 model Booking {
-  id                String          @id @default(cuid())
-  requestId         String          @unique
-  request           TransferRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  quoteId           String?         @unique
-  quote             Quote?          @relation(fields: [quoteId], references: [id])
-  requesterOrgId    String
-  requesterOrg      Organization    @relation("RequesterBookings", fields: [requesterOrgId], references: [id])
-  providerOrgId     String
-  providerOrg       Organization    @relation("ProviderBookings", fields: [providerOrgId], references: [id])
-  vehicleId         String?
-  vehicle           Vehicle?        @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  id                  String          @id @default(cuid())
+  requestId           String          @unique
+  request             TransferRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  quoteId             String?         @unique
+  quote               Quote?          @relation(fields: [quoteId], references: [id])
+  requesterOrgId      String
+  requesterOrg        Organization    @relation("RequesterBookings", fields: [requesterOrgId], references: [id])
+  providerOrgId       String
+  providerOrg         Organization    @relation("ProviderBookings", fields: [providerOrgId], references: [id])
+  vehicleId           String?
+  vehicle             Vehicle?        @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
   /// Vom Disponenten zugewiesener Fahrer (Mitglied des ausführenden Unternehmens)
-  driverId          String?
-  driver            User?           @relation("DriverBookings", fields: [driverId], references: [id], onDelete: SetNull)
+  driverId            String?
+  driver              User?           @relation("DriverBookings", fields: [driverId], references: [id], onDelete: SetNull)
   /// Fortschritt laut Fahrer, solange die Fahrt läuft
-  tripStage         TripStage?
-  tripStageAt       DateTime?
-  capacityOfferId   String?
-  agreedPriceCents  Int
-  currency          String          @default("EUR")
+  tripStage           TripStage?
+  tripStageAt         DateTime?
+  capacityOfferId     String?
+  agreedPriceCents    Int
+  /// Abgabe-Anteil zum Zeitpunkt der Vereinbarung (unveränderlich): Prozent und Betrag in Cent.
+  /// Das ausführende Unternehmen erhält agreedPriceCents minus handoffShareCents.
+  handoffSharePercent Int             @default(0)
+  handoffShareCents   Int             @default(0)
+  currency            String          @default("EUR")
   /// Leistungsumfang zum Zeitpunkt der Annahme (unveränderlich)
-  scope             Json
-  cancellationTerms String?
-  status            BookingStatus   @default(CONFIRMED)
-  acceptedAt        DateTime        @default(now())
-  acceptedById      String
-  completedAt       DateTime?
-  completionNote    String?
+  scope               Json
+  cancellationTerms   String?
+  status              BookingStatus   @default(CONFIRMED)
+  acceptedAt          DateTime        @default(now())
+  acceptedById        String
+  completedAt         DateTime?
+  completionNote      String?
 
   @@index([providerOrgId])
   @@index([requesterOrgId])

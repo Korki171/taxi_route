@@ -118,19 +118,19 @@ async function main() {
   });
   await declineInvitation(kitzLimo, r5.id, "An diesem Tag ausgebucht");
 
-  await createTransferRequest(oetztal, {
+  await createTransferRequest(ziller, {
     pickupPlaceId: "muc", dropoffPlaceId: "soelden", pickupAt: at(1, "16:00"), passengers: 3, luggage: 5, skiEquipment: 3,
-    priceMode: "FIXED", priceCents: 34000, flightNumber: "LH 1987", passengerName: "Familie Jansen", ...terms,
+    priceMode: "FIXED", priceCents: 34000, handoffSharePercent: 10, flightNumber: "LH 1987", passengerName: "Familie Jansen", ...terms,
   });
   await createTransferRequest(oetztal, {
     pickupPlaceId: "inn", dropoffPlaceId: "soelden", pickupAt: at(4, "10:30"), passengers: 2, luggage: 2,
-    priceMode: "FIXED", priceCents: 12000, passengerName: "Paar Svensson", ...terms,
+    priceMode: "FIXED", priceCents: 12000, handoffSharePercent: 5, passengerName: "Paar Svensson", ...terms,
   });
 
   // Taxi → Taxi (Szenario A): Zillertal gibt Spitzen ab
   await createTransferRequest(ziller, {
     pickupPlaceId: "muc", dropoffPlaceId: "mayrhofen", pickupAt: at(1, "11:00"), passengers: 8, luggage: 10, skiEquipment: 8,
-    vehicleCategory: "MINIBUS", priceMode: "NEGOTIABLE", priceCents: 42000, requirements: "Anhänger für Skiausrüstung", passengerName: "Gruppe Utrecht",
+    vehicleCategory: "MINIBUS", priceMode: "NEGOTIABLE", priceCents: 42000, handoffSharePercent: 7, requirements: "Anhänger für Skiausrüstung", passengerName: "Gruppe Utrecht",
   });
   await createTransferRequest(ziller, {
     pickupPlaceId: "mayrhofen", dropoffPlaceId: "muc", pickupAt: at(2, "05:30"), passengers: 3, luggage: 4,
@@ -164,9 +164,9 @@ async function main() {
   await submitQuote(ziller, b1.id, { amountCents: 41000, vehicleCategory: "VAN" });
   await acceptQuote(reise, q.id);
 
-  const b2 = await createTransferRequest(oetztal, {
+  const b2 = await createTransferRequest(ziller, {
     pickupPlaceId: "soelden", dropoffPlaceId: "muc", pickupAddress: "Hotel Central, Sölden", pickupAt: at(3, "09:00"),
-    passengers: 2, luggage: 3, priceMode: "FIXED", priceCents: 36000, passengerName: "Familie Novak", ...terms,
+    passengers: 2, luggage: 3, priceMode: "FIXED", priceCents: 36000, handoffSharePercent: 10, passengerName: "Familie Novak", ...terms,
   });
   await takeFixedPriceRequest(alpen, b2.id, { vehicleId: vClass.id });
 

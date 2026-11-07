@@ -24,6 +24,7 @@ import {
   referenceOf,
   searchBoard,
 } from "@/server/services/marketplace";
+import { splitHandoff } from "@/lib/handoff";
 import { listCapacityWithMatches } from "@/server/services/matching";
 import { requireOrgActor } from "@/server/web";
 import { setCapacityStatusAction } from "../actions";
@@ -46,12 +47,13 @@ const VIEWS: View[] = [
 
 const FILTER_KEYS = ["from", "to", "fromRegion", "toRegion", "country", "dateFrom", "dateTo", "vehicleCategory", "minPassengers", "maxPassengers", "maxPrice", "priceMode"];
 
-async function PriceCell({ mode, cents }: { mode: "FIXED" | "NEGOTIABLE"; cents: number | null }) {
+async function PriceCell({ mode, cents, share = 0 }: { mode: "FIXED" | "NEGOTIABLE"; cents: number | null; share?: number }) {
   const { t, f } = await getI18n();
+  const shareNote = share > 0 ? <span className="price-note price-share">{t("davon {p} % Abgabe-Anteil", { p: share })}</span> : null;
   return mode === "FIXED" ? (
-    <span className="price-fixed">{f.money(cents)}<span className="price-note">{t("Festpreis")}</span></span>
+    <span className="price-fixed">{f.money(cents)}<span className="price-note">{t("Festpreis")}</span>{shareNote}</span>
   ) : (
-    <span className="price-guide"><strong>{cents ? f.money(cents) : "offen"}</strong><span className="price-note">{t("Richtpreis, verhandelbar")}</span></span>
+    <span className="price-guide"><strong>{cents ? f.money(cents) : t("offen")}</strong><span className="price-note">{t("Richtpreis, verhandelbar")}</span>{shareNote}</span>
   );
 }
 
@@ -165,7 +167,7 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
                       <td data-label={t("Fahrgäste")}><Load passengers={r.passengers} luggage={r.luggage} ski={r.skiEquipment} /></td>
                       <td data-label={t("Fahrzeug")}>{r.vehicleCategory ? t(VEHICLE_LABEL[r.vehicleCategory]) : <span className="muted">{t("beliebig")}</span>}</td>
                       <td data-label={t("Auftraggeber")}>{r.requesterOrg.name}<span className="price-note">{r.requesterOrg.city} · {t("geprüft")}</span></td>
-                      <td className="num"><PriceCell mode={r.priceMode} cents={r.priceCents} /></td>
+                      <td className="num"><PriceCell mode={r.priceMode} cents={r.priceCents} share={r.handoffSharePercent} /></td>
                       <td className="nowrap">{r.invitations[0]?.status === "PENDING" && <span className="badge warn">{t("Direktanfrage")}</span>}{mine ? <Badge status={mine.status}>{t("Ihr Angebot")} {f.money(mine.amountCents)}</Badge> : <Link href={`/boerse/auftrag/${r.id}`}>{r.priceMode === "FIXED" ? t("Übernehmen") : t("Angebot abgeben")}</Link>}</td>
                     </tr>
                   );
@@ -199,7 +201,7 @@ async function InvitationsView({ actor }: { actor: OrgActor }) {
                     <td><Route from={r.pickupPlaceId} to={r.dropoffPlaceId} href={`/boerse/auftrag/${r.id}`} /><span className="price-note">{t("angefragt {date}", { date: f.dateTime(createdAt) })}{r.visibility === "INVITED" ? ` · ${t("nur für ausgewählte Unternehmen")}` : ""}</span></td>
                     <td data-label={t("Fahrgäste")}><Load passengers={r.passengers} luggage={r.luggage} ski={r.skiEquipment} /></td>
                     <td data-label={t("Auftraggeber")}>{r.requesterOrg.name}<span className="price-note">{r.requesterOrg.city}</span></td>
-                    <td className="num"><PriceCell mode={r.priceMode} cents={r.priceCents} /></td>
+                    <td className="num"><PriceCell mode={r.priceMode} cents={r.priceCents} share={r.handoffSharePercent} /></td>
                     <td className="nowrap">{mine ? <Badge status={mine.status}>{t("Ihr Angebot")} {f.money(mine.amountCents)}</Badge> : <Link href={`/boerse/auftrag/${r.id}`}>{r.priceMode === "FIXED" ? t("Übernehmen oder ablehnen") : t("Angebot abgeben oder ablehnen")}</Link>}</td>
                   </tr>
                 );
@@ -289,7 +291,7 @@ async function ReturnTripsView({ actor }: { actor: OrgActor }) {
                       <td data-label={t("Fahrgäste")}><Load passengers={r.passengers} luggage={r.luggage} ski={r.skiEquipment} /></td>
                       <td data-label={t("Umweg")}>{t("ca. {n} min", { n: match.detourMinutes })}</td>
                       <td data-label={t("Wartezeit")}>{t("ca. {n} min", { n: match.waitMinutes })}</td>
-                      <td className="num"><PriceCell mode={r.priceMode} cents={r.priceCents} /></td>
+                      <td className="num"><PriceCell mode={r.priceMode} cents={r.priceCents} share={r.handoffSharePercent} /></td>
                       <td><Link href={`/boerse/auftrag/${r.id}`}>{r.priceMode === "FIXED" ? t("Übernehmen") : t("Angebot abgeben")}</Link></td>
                     </tr>
                   ))}
@@ -321,7 +323,7 @@ async function OwnRequestsView({ actor }: { actor: OrgActor }) {
                   <td className="nowrap">{f.dateTime(r.pickupAt)}</td>
                   <td><Route from={r.pickupPlaceId} to={r.dropoffPlaceId} href={`/boerse/auftrag/${r.id}`} /></td>
                   <td data-label={t("Fahrgäste")}><Load passengers={r.passengers} luggage={r.luggage} /></td>
-                  <td className="num">{r.booking ? <span className="price-fixed">{f.money(r.booking.agreedPriceCents)}<span className="price-note">{t("bestätigt")}</span></span> : <PriceCell mode={r.priceMode} cents={r.priceCents} />}</td>
+                  <td className="num">{r.booking ? <span className="price-fixed">{f.money(r.booking.agreedPriceCents)}<span className="price-note">{t("bestätigt")}</span>{r.booking.handoffShareCents > 0 && <span className="price-note price-share">{t("Ihr Anteil {amount}", { amount: f.money(r.booking.handoffShareCents) })}</span>}</span> : <PriceCell mode={r.priceMode} cents={r.priceCents} share={r.handoffSharePercent} />}</td>
                   <td><Badge status={r.status}>{t(TRANSFER_STATUS_LABEL[r.status])}</Badge></td>
                   <td>{r.booking ? r.booking.providerOrg.name : r.status === "OPEN" ? (r._count.quotes ? <Link href={`/boerse/auftrag/${r.id}`}>{t(r._count.quotes > 1 ? "{n} Angebote vergleichen" : "{n} Angebot vergleichen", { n: r._count.quotes })}</Link> : <span className="muted">{t("noch keine")}</span>) : "–"}</td>
                 </tr>
@@ -354,7 +356,7 @@ async function QuotesView({ actor }: { actor: OrgActor }) {
                       <td className="nowrap">{f.dateTime(q.request.pickupAt)}</td>
                       <td data-label={t("Anbieter")}>{q.providerOrg.name}<span className="price-note">{q.providerOrg.city}</span></td>
                       <td data-label={t("Fahrzeug")}>{t(VEHICLE_LABEL[q.vehicleCategory])}</td>
-                      <td className="num price-fixed">{f.money(q.amountCents)}</td>
+                      <td className="num price-fixed">{f.money(q.amountCents)}{q.request.handoffSharePercent > 0 && <span className="price-note price-share">{t("Ihr Anteil {amount}", { amount: f.money(splitHandoff(q.amountCents, q.request.handoffSharePercent).shareCents) })}</span>}</td>
                       <td className="num muted">{f.money(q.request.priceCents)}</td>
                     </tr>
                   ))}
@@ -376,7 +378,7 @@ async function QuotesView({ actor }: { actor: OrgActor }) {
                     <tr key={q.id}>
                       <td>{q.request.status === "OPEN" ? <Route from={q.request.pickupPlaceId} to={q.request.dropoffPlaceId} href={`/boerse/auftrag/${q.request.id}`} /> : <Route from={q.request.pickupPlaceId} to={q.request.dropoffPlaceId} />}</td>
                       <td className="nowrap">{f.dateTime(q.request.pickupAt)}</td>
-                      <td className="num">{f.money(q.amountCents)}</td>
+                      <td className="num">{f.money(q.amountCents)}{q.request.handoffSharePercent > 0 && <span className="price-note price-share">{t("Sie erhalten {amount}", { amount: f.money(splitHandoff(q.amountCents, q.request.handoffSharePercent).providerCents) })}</span>}</td>
                       <td><Badge status={q.status}>{t(QUOTE_STATUS_LABEL[q.status])}</Badge></td>
                     </tr>
                   ))}
@@ -412,7 +414,7 @@ async function BookingsView({ actor, side, statuses, title }: {
                     <td><Route from={b.request.pickupPlaceId} to={b.request.dropoffPlaceId} href={`/boerse/auftrag/${b.request.id}`} /></td>
                     <td data-label={t("Rolle")}>{asProvider ? t("Ausführend") : t("Auftraggeber")}</td>
                     <td data-label={t("Gegenüber")}>{asProvider ? b.requesterOrg.name : b.providerOrg.name}</td>
-                    <td className="num price-fixed">{f.money(b.agreedPriceCents)}</td>
+                    <td className="num price-fixed">{f.money(b.agreedPriceCents)}{b.handoffShareCents > 0 && <span className="price-note price-share">{asProvider ? t("Sie erhalten {amount}", { amount: f.money(b.agreedPriceCents - b.handoffShareCents) }) : t("Ihr Anteil {amount}", { amount: f.money(b.handoffShareCents) })}</span>}</td>
                     <td><Badge status={b.status}>{t(BOOKING_STATUS_LABEL[b.status])}</Badge></td>
                   </tr>
                 );
