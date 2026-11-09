@@ -93,8 +93,9 @@ export default async function Dashboard({ searchParams }: { searchParams: SP }) 
           </ul>
           <div className="band-actions">
             {canRequest && <Link href="/boerse/neu" className="btn accent">{t("Auftrag einstellen")}</Link>}
-            {agencyMode && <Link href="/boerse/neu?gezielt=1#anbieter" className="btn secondary">{t("Unternehmen gezielt anfragen")}</Link>}
-            <Link href="/boerse" className={canRequest ? "btn secondary" : "btn accent"}>{t("Zur Börse")}</Link>
+            {agencyMode
+              ? <Link href="/boerse?view=meine" className="btn secondary">{t("Meine Aufträge")}</Link>
+              : <Link href="/boerse" className={canRequest ? "btn secondary" : "btn accent"}>{t("Zur Börse")}</Link>}
             {actorCan(actor, "capacity.publish") && <Link href="/flotte#fahrt" className="btn secondary">{t("Rückfahrt anbieten")}</Link>}
           </div>
         </section>
@@ -117,7 +118,7 @@ export default async function Dashboard({ searchParams }: { searchParams: SP }) 
 
       {agencyMode && <AgencyOverview actor={actor} q={sp.q} />}
 
-      <div className="split">
+      {!agencyMode && <div className="split">
         <div className="col">
           {canMarket && (
             <section className="card">
@@ -207,7 +208,7 @@ export default async function Dashboard({ searchParams }: { searchParams: SP }) 
             </table>
           </section>
         </div>
-      </div>
+      </div>}
     </AppShell>
   );
 }

@@ -18,12 +18,15 @@ export async function AppShell({ actor, children, narrow, path }: { actor: Actor
   });
   const isDriver = actor.org?.role === "DRIVER";
   const items: NavItem[] = [];
+  // Reisebüros: nur Übersicht, Aufträge und Konto, keine Börse und keine Flottenfunktionen.
+  const isAgencyOnly = actorCan(actor, "transfers.request") && !actorCan(actor, "jobs.accept");
   if (actor.org && !isDriver) items.push({ href: "/dashboard", label: t("Übersicht") });
-  if (actorCan(actor, "jobs.accept") || actorCan(actor, "transfers.request")) items.push({ href: "/boerse", label: t("Börse") });
+  if (isAgencyOnly) items.push({ href: "/boerse?view=meine", label: t("Meine Aufträge") });
+  else if (actorCan(actor, "jobs.accept") || actorCan(actor, "transfers.request")) items.push({ href: "/boerse", label: t("Börse") });
   if (actorCan(actor, "fleet.manage")) items.push({ href: "/flotte/live", label: t("Live-Karte") }, { href: "/flotte", label: t("Flotte") });
   if (isDriver) items.push({ href: "/fahrer", label: t("Meine Fahrten") });
   if (actor.org && !isDriver) items.push({ href: "/organization", label: t("Unternehmen") }, { href: "/organization/members", label: t("Team") });
-  if (actorCan(actor, "documents.read")) items.push({ href: "/organization/documents", label: t("Nachweise") });
+  if (!isAgencyOnly && actorCan(actor, "documents.read")) items.push({ href: "/organization/documents", label: t("Nachweise") });
   if (actor.isPlatformAdmin) items.push({ href: "/admin", label: t("Administration") });
 
   return (

@@ -48,15 +48,8 @@ export default async function NewRequestPage({ searchParams }: { searchParams: S
         </section>
 
         <section className="card stack">
-          <fieldset>
-            <legend>{t("Preis")}</legend>
-            <div className="choice">
-              <label><input type="radio" name="priceMode" value="FIXED" defaultChecked />{t("Festpreis")}</label>
-              <label><input type="radio" name="priceMode" value="NEGOTIABLE" />{t("Angebote einholen")}</label>
-            </div>
-          </fieldset>
-          <label>{t("Preis in €")}<input name="price" inputMode="decimal" placeholder="180,00" /></label>
-          <p className="price-note">{t("Festpreis: Das erste geprüfte Unternehmen kann direkt übernehmen. Angebote einholen: Unternehmen nennen ihren Preis, Sie wählen aus. Die Abrechnung läuft direkt zwischen den Unternehmen.")}</p>
+          <label>{t("Festpreis in €")}<input name="price" inputMode="decimal" placeholder="180,00" required={!targeted} /></label>
+          <p className="price-note">{t("Das erste geprüfte Unternehmen kann den Auftrag direkt zu diesem Preis übernehmen. Die Abrechnung läuft direkt zwischen den Unternehmen.")}</p>
         </section>
 
         <details className="card more-actions" open={targeted}>
@@ -85,6 +78,14 @@ export default async function NewRequestPage({ searchParams }: { searchParams: S
             <label>{t("Besondere Anforderungen")}<textarea name="requirements" rows={2} maxLength={500} /></label>
             <label>{t("Buchungsbedingungen")}<textarea name="bookingTerms" rows={2} maxLength={1000} placeholder={t("Wartezeit am Flughafen inklusive bis 60 Minuten nach Landung")} /></label>
             <label>{t("Stornobedingungen")}<textarea name="cancellationTerms" rows={2} maxLength={500} placeholder={t("Kostenlos bis 24 Stunden vor Abholung")} /></label>
+            <fieldset>
+              <legend>{t("Preisart")}</legend>
+              <div className="choice">
+                <label><input type="radio" name="priceMode" value="FIXED" defaultChecked />{t("Festpreis")}</label>
+                <label><input type="radio" name="priceMode" value="NEGOTIABLE" />{t("Angebote einholen")}</label>
+              </div>
+              <p className="price-note">{t("Bei „Angebote einholen“ ist der Preis oben nur ein Richtpreis. Unternehmen nennen ihren Preis, Sie wählen aus.")}</p>
+            </fieldset>
             <fieldset id="anbieter">
               <legend>{t("Wer soll anbieten?")}</legend>
               <div className="choice">
