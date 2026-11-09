@@ -1031,4 +1031,8 @@ export const EN: Record<string, string> = {
   "Festpreis in €": "Fixed price in €",
   "Preisart": "Price type",
   "Meine Aufträge": "My jobs",
+  "Ansicht wählen": "Choose view",
+  "Freie Fahrzeuge": "Available vehicles",
+  "Mehr Filter": "More filters",
+  "Nur neue Aufträge (letzte 24 Stunden)": "New jobs only (last 24 hours)",
 };

@@ -45,7 +45,16 @@ const VIEWS: View[] = [
   { id: "probleme", label: "Storniert oder beanstandet", allowed: () => true },
 ];
 
-const FILTER_KEYS = ["from", "to", "fromRegion", "toRegion", "country", "dateFrom", "dateTo", "vehicleCategory", "minPassengers", "maxPassengers", "maxPrice", "priceMode"];
+/** Obere Reiter: wenige Gruppen. Innerhalb einer Gruppe wählt man mit kleinen Knöpfen („Chips“) die Ansicht. */
+const GROUPS: { id: string; label: string; views: string[] }[] = [
+  { id: "finden", label: "Aufträge finden", views: ["markt", "neu", "anfragen"] },
+  { id: "meine", label: "Meine Aufträge", views: ["meine", "angebote", "uebernommen", "fahrten", "probleme"] },
+  { id: "fahrzeuge", label: "Freie Fahrzeuge", views: ["kapazitaeten", "rueckfahrten"] },
+];
+/** Chips: „Neue Aufträge“ ist ein Filter (Schalter im Filter), kein eigener Knopf. */
+const CHIP_HIDDEN = new Set(["neu"]);
+
+const FILTER_KEYS = ["from", "to", "fromRegion", "toRegion", "country", "dateFrom", "dateTo", "vehicleCategory", "minPassengers", "maxPassengers", "maxPrice", "priceMode", "newOnly"];
 
 async function PriceCell({ mode, cents, share = 0 }: { mode: "FIXED" | "NEGOTIABLE"; cents: number | null; share?: number }) {
   const { t, f } = await getI18n();
@@ -64,6 +73,9 @@ export default async function BoersePage({ searchParams }: { searchParams: SP })
   const views = VIEWS.filter((v) => v.allowed(actor));
   if (views.length === 0) redirect("/dashboard");
   const view = views.find((v) => v.id === sp.view) ?? views[0];
+  const groups = GROUPS.map((g) => ({ ...g, views: views.filter((v) => g.views.includes(v.id)).map((v) => v.id) })).filter((g) => g.views.length > 0);
+  const group = groups.find((g) => g.views.includes(view.id)) ?? groups[0];
+  const chips = views.filter((v) => group.views.includes(v.id) && !CHIP_HIDDEN.has(v.id));
 
   return (
     <AppShell actor={actor}>
@@ -78,11 +90,20 @@ export default async function BoersePage({ searchParams }: { searchParams: SP })
         </div>
       </div>
       <Flash searchParams={sp} />
-      <nav className="tabs" aria-label={t("Ansichten der Börse")}>
-        {views.map((v) => (
-          <Link key={v.id} href={`/boerse?view=${v.id}`} aria-current={v.id === view.id ? "page" : undefined}>{t(v.label)}</Link>
-        ))}
-      </nav>
+      {groups.length > 1 && (
+        <nav className="tabs" aria-label={t("Ansichten der Börse")}>
+          {groups.map((g) => (
+            <Link key={g.id} href={`/boerse?view=${g.views[0]}`} aria-current={g.id === group.id ? "page" : undefined}>{t(g.label)}</Link>
+          ))}
+        </nav>
+      )}
+      {chips.length > 1 && (
+        <nav className="chips" aria-label={t("Ansicht wählen")}>
+          {chips.map((v) => (
+            <Link key={v.id} href={`/boerse?view=${v.id}`} aria-current={v.id === view.id || (view.id === "neu" && v.id === "markt") ? "page" : undefined}>{t(v.label)}</Link>
+          ))}
+        </nav>
+      )}
       {view.id === "markt" && <MarketView actor={actor} sp={sp} />}
       {view.id === "neu" && <MarketView actor={actor} sp={{ ...sp, newOnly: "1" }} />}
       {view.id === "anfragen" && <InvitationsView actor={actor} />}
@@ -106,11 +127,12 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
   return (
     <>
       <form className="card filters" method="get" aria-label={t("Filter")}>
-        <input type="hidden" name="view" value={sp.newOnly ? "neu" : "markt"} />
+        <input type="hidden" name="view" value="markt" />
         <label>{t("Von")}<PlaceSelect name="from" defaultValue={sp.from} emptyLabel={t("Alle Orte")} /></label>
         <label>{t("Nach")}<PlaceSelect name="to" defaultValue={sp.to} emptyLabel={t("Alle Orte")} /></label>
-        <input type="checkbox" id="more-filters" className="more-check" defaultChecked={FILTER_KEYS.some((k) => k !== "from" && k !== "to" && sp[k])} />
-        <label htmlFor="more-filters" className="more-toggle">{t("Weitere Filter")}</label>
+        <label>{t("Ab Datum")}<input type="date" name="dateFrom" defaultValue={sp.dateFrom} /></label>
+        <input type="checkbox" id="more-filters" className="more-check" defaultChecked={FILTER_KEYS.some((k) => !["from", "to", "dateFrom"].includes(k) && sp[k])} />
+        <label htmlFor="more-filters" className="more-toggle">{t("Mehr Filter")}</label>
         <div className="more">
         <label>{t("Region Start")}
           <select name="fromRegion" defaultValue={sp.fromRegion ?? ""}>
@@ -131,7 +153,6 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
             <option value="IT">{t("Italien")}</option><option value="CH">{t("Schweiz")}</option>
           </select>
         </label>
-        <label>{t("Ab Datum")}<input type="date" name="dateFrom" defaultValue={sp.dateFrom} /></label>
         <label>{t("Bis Datum")}<input type="date" name="dateTo" defaultValue={sp.dateTo} /></label>
         <label>{t("Mein Fahrzeug")}<VehicleSelect name="vehicleCategory" defaultValue={sp.vehicleCategory} emptyLabel={t("Alle")} /></label>
         <label>{t("Max. Personen")}<input type="number" min={1} name="maxPassengers" defaultValue={sp.maxPassengers} /></label>
@@ -141,10 +162,11 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
             <option value="">{t("Alle")}</option><option value="FIXED">{t("Festpreis")}</option><option value="NEGOTIABLE">{t("Verhandelbar")}</option>
           </select>
         </label>
+        <div className="checks"><label><input type="checkbox" name="newOnly" value="1" defaultChecked={!!sp.newOnly} />{" "}{t("Nur neue Aufträge (letzte 24 Stunden)")}</label></div>
         </div>
         <div className="actions">
           <button type="submit">{t("Filtern")}</button>
-          {active && <Link href={`/boerse?view=${sp.newOnly ? "neu" : "markt"}`} className="btn secondary">{t("Zurücksetzen")}</Link>}
+          {active && <Link href="/boerse?view=markt" className="btn secondary">{t("Zurücksetzen")}</Link>}
         </div>
       </form>
       <section className="card">
