@@ -8,7 +8,9 @@ import { getI18n } from "@/server/i18n";
 import { formatCents } from "@/lib/money";
 import { PLANS } from "@/lib/plans";
 
-// Startseite in Richtung „Echte Fahrt“ (2026-11-09): eine konkrete Fahrt statt Werbesprache,
+// Startseite (Redesign 2026-11-09, impeccable + taste-skill + emil-design-eng): flach, eckig, ohne Dekor.
+// Der eine bewegte Moment ist inhaltlich: der Auftrag wechselt von „Offen“ auf „Vergeben“.
+// Davor Richtung „Echte Fahrt“ (2026-11-09): eine konkrete Fahrt statt Werbesprache,
 // ruhiges Layout ohne Effekte, ein echter Screenshot der Börse. Jeder Abschnitt beantwortet eine Frage,
 // die ein Taxiunternehmer wirklich hat: Was ist das, warum nicht WhatsApp, wo, wie sieht es aus, was kostet es.
 
@@ -81,7 +83,10 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
                 <p className="hp-order-route">{t("Flughafen München")} → Kitzbühel</p>
                 <p className="hp-order-load">{t("6 Personen · 6 Koffer · 4 Paar Ski · Kleinbus")}</p>
               </div>
-              <p className="hp-order-price">310 €<span>{t("Festpreis")}</span></p>
+              <p className="hp-order-price">
+                310 €<span>{t("Festpreis")}</span>
+                <b className="hp-status"><i>{t("Offen")}</i><i aria-hidden="true">{t("Vergeben")}</i></b>
+              </p>
               <figcaption className="hp-sr">{t("Beispiel eines Auftrags in der Börse")}</figcaption>
             </figure>
 
