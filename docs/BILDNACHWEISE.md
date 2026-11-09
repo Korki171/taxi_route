@@ -1,5 +1,7 @@
 # Bildnachweise Startseite
 
+**Stand 2026-11-09:** Die Startseite (Richtung „Echte Fahrt“) zeigt derzeit keine Fotos, nur Screenshots der App aus `public/landing/app/` (Beispieldaten). Die Fotos unten bleiben im Projekt für eine spätere Verwendung. Wird eines wieder eingebaut, gehört die Namensnennung (CC BY-SA) zurück in den Fuß in `src/components/landing/Landing.tsx`.
+
 Alle Bilder in `public/landing/` sind frei verwendbar (auch kommerziell). Lizenzen mit Namensnennung (CC BY-SA) werden im Fuß der Startseite genannt. Beim Austausch eines Bildes diese Liste und den Fuß in `src/components/landing/Landing.tsx` mitpflegen.
 
 | Datei | Ort | Urheber | Lizenz | Quelle |
