@@ -1,6 +1,6 @@
 # Bildnachweise Startseite
 
-**Stand 2026-11-09 (Redesign „Transferschein“):** Die Startseite zeigt `kitzbuehel.webp` und `alpen.webp` (Unsplash, frei) im ersten Bild sowie im Schlussstreifen zusammen mit `innsbruck.webp` (CC BY-SA 4.0, Namensnennung steht im Fuß in `src/components/landing/Landing.tsx`). Die übrigen Fotos bleiben im Projekt für spätere Verwendung; wird eines eingebaut, gehört die Namensnennung (CC BY-SA) in den Fuß.
+**Stand 2026-11-09 (Redesign „Transferschein“):** Die Startseite zeigt `kitzbuehel.webp` und `alpen.webp` (Unsplash, frei) im ersten Bild sowie im Schlussstreifen zusammen mit `innsbruck.webp` (CC BY-SA 4.0) und `flughafen.webp` neben dem Ablauf (CC BY-SA 3.0). Die Namensnennungen stehen im Fuß in `src/components/landing/Landing.tsx`. Die übrigen Fotos bleiben im Projekt für spätere Verwendung; wird eines eingebaut, gehört die Namensnennung (CC BY-SA) in den Fuß.
 
 Alle Bilder in `public/landing/` sind frei verwendbar (auch kommerziell). Lizenzen mit Namensnennung (CC BY-SA) werden im Fuß der Startseite genannt. Beim Austausch eines Bildes diese Liste und den Fuß in `src/components/landing/Landing.tsx` mitpflegen.
 

@@ -25,6 +25,12 @@ const ROUTES: [string, string][] = [
   ["Innsbruck → Seefeld, Hall, Kufstein, St. Anton", "regional"],
 ];
 
+const AFTER = [
+  "Einmal einstellen, alle geprüften Kollegen sehen es",
+  "Einer übernimmt, die anderen sehen: weg",
+  "Preis, Flug und Gepäck stehen in der Bestätigung (PDF)",
+];
+
 const FAQ: [string, string][] = [
   [
     "Wer prüft die Unternehmen?",
@@ -294,7 +300,14 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
 
       {/* Text: eine Lesespalte auf der Achse, jeder Absatz mit einem Beweis aus der App */}
       <section id="ablauf" className="hp-text" aria-labelledby="hp-wa">
-        <div className="hp-axis-head"><h2 id="hp-wa">{t("Aus der Gruppe wird ein Auftrag.")}</h2></div>
+        <aside className="hp-axis-head hp-aside">
+          <h2 id="hp-wa">{t("Aus der Gruppe wird ein Auftrag.")}</h2>
+          <p className="hp-lead">{t("Samstag, Hauptanreise, alle Busse sind unterwegs. Statt fünf Kollegen anzurufen, stellen Sie die Fahrt hier ein.")} <strong>{t("Wer frei hat, übernimmt.")}</strong></p>
+          <ul className="hp-checks">
+            {AFTER.map((x) => <li key={x}><svg className="hp-tick" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>{t(x)}</li>)}
+          </ul>
+          <Photo className="hp-aside-photo" src="/landing/flughafen.webp" alt={t("Reisende mit Gepäck und Skisack in der Abflughalle")} w={1400} h={853} />
+        </aside>
         <div className="hp-col">
           <p><b>{t("Bisher läuft es so.")}</b> {t("Die Fahrt geht in die Gruppe, drei Kollegen antworten halb, Preis und Gepäck bleiben mündlich.")}</p>
           <div className="hp-proof"><ChatScene t={t} /></div>
@@ -396,7 +409,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
             <li><Link href="/datenschutz">{t("Datenschutz")}</Link></li>
             <li><Link href="/nutzungsbedingungen">{t("Nutzungsbedingungen")}</Link></li>
           </ul>
-          <p>{t("Fotos: Shpetim Ujkani, Jonas Tebbe (Unsplash), TheTokl (CC BY-SA 4.0)")}</p>
+          <p>{t("Fotos: Shpetim Ujkani, Jonas Tebbe (Unsplash), TheTokl, Usien (CC BY-SA)")}</p>
           <p>Innsbruck · 2026</p>
         </div>
       </footer>

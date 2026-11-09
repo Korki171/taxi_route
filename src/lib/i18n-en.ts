@@ -1206,4 +1206,6 @@ export const EN: Record<string, string> = {
   "Strecke, Zeit, Gepäck": "Route, time, luggage",
   "im Monat, ohne Provision pro Fahrt": "a month, no commission per ride",
   "und für alle anderen ist die Fahrt weg. Niemand fragt mehr, wer zugesagt hat.": "and for everyone else the ride is gone. Nobody asks who said yes any more.",
+  "Fotos: Shpetim Ujkani, Jonas Tebbe (Unsplash), TheTokl, Usien (CC BY-SA)": "Photos: Shpetim Ujkani, Jonas Tebbe (Unsplash), TheTokl, Usien (CC BY-SA)",
+  "Reisende mit Gepäck und Skisack in der Abflughalle": "Travellers with luggage and a ski bag in a departure hall",
 };

@@ -52,7 +52,7 @@
   transition: transform 160ms var(--out), background-color 160ms ease;
 }
 .hp-btn:active { transform: scale(0.97); }
-.hp-link { font-weight: 750; font-size: 16px; }
+.hp-link { font-weight: 750; font-size: 16px; display: inline-flex; align-items: center; min-height: 44px; }
 
 /* ---------- Erste Seite: Brett aus zwei mal zwei ---------- */
 .hp-hero {
@@ -63,7 +63,7 @@
 .hp a.hb-logo { flex: none; width: 60px; display: grid; place-items: center; background: var(--navy); color: #fff; }
 .hb-logo svg { width: 30px; height: auto; }
 .hb-nav { flex: 1; min-width: 0; display: flex; align-items: center; gap: 28px; background: var(--stone); padding: 0 20px 0 max(20px, calc(50vw - 76px)); font-size: 16px; white-space: nowrap; overflow: hidden; }
-.hb-nav a { text-decoration: none; transition: color 160ms ease; }
+.hb-nav a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; transition: color 160ms ease; }
 .hb-nav-end { margin-left: auto; display: flex; gap: 22px; }
 .hp a.hb-action { flex: none; display: flex; align-items: center; padding: 0 28px; background: var(--navy); color: #fff; font-weight: 750; text-decoration: none; transition: background-color 160ms ease, transform 160ms var(--out); }
 .hb-action:active { transform: scale(0.97); }
@@ -82,7 +82,14 @@
 
 /* ---------- Textseiten: Überschrift links, Lesespalte auf der Achse ---------- */
 .hp-text { display: grid; grid-template-columns: var(--m) minmax(0, calc(var(--axis) - var(--m) - 32px)) minmax(0, 1fr) var(--m); column-gap: 32px; padding: 128px 0; }
-.hp-axis-head { grid-column: 2; align-self: start; position: sticky; top: 32px; }
+.hp-axis-head { grid-column: 2; align-self: start; position: sticky; top: 24px; }
+.hp-aside { display: grid; gap: 24px; align-content: start; max-width: 460px; }
+.hp-lead { font-size: 20px; line-height: 1.45; color: var(--muted); }
+.hp-lead strong { color: var(--ink); }
+.hp-checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; font-size: 17px; line-height: 1.4; }
+.hp-checks li { display: flex; gap: 12px; align-items: flex-start; }
+.hp-tick { flex: none; margin-top: 2px; color: var(--ok); }
+.hp-aside-photo { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; object-position: 30% 60%; }
 .hp-col { grid-column: 3; max-width: 580px; }
 .hp-col-wide { max-width: 760px; }
 .hp-col > p { font-size: 18px; line-height: 1.6; color: var(--muted); max-width: 52ch; }
@@ -291,6 +298,7 @@
 
   .hp-text { grid-template-columns: var(--m) minmax(0, 1fr) var(--m); column-gap: 0; padding: 72px 0; }
   .hp-axis-head, .hp-col, .hp-center, .hp-plate { grid-column: 2; position: static; }
+  .hp-aside { max-width: none; }
   .hp-axis-head { margin-bottom: 28px; }
   .hp-proof { margin-bottom: 56px; }
   .hp-plate { grid-template-columns: minmax(0, 1fr); gap: 0; }
