@@ -277,14 +277,16 @@ function cents(fd: FormData, k: string) {
 
 export async function createTransferRequestAction(fd: FormData) {
   await runAction("/boerse/neu", async () => {
+    const byPlane = str(fd, "byPlane") === "yes";
     const req = await createTransferRequest(await getActor(), {
       ...formObject(fd, [
         "pickupPlaceId", "dropoffPlaceId", "pickupAddress", "dropoffAddress", "pickupWindowMinutes", "passengers",
-        "luggage", "skiEquipment", "specialLuggage", "vehicleCategory", "childSeats", "requirements", "flightNumber",
+        "luggage", "skiEquipment", "specialLuggage", "vehicleCategory", "childSeats", "requirements",
         "pickupNotes", "priceMode", "handoffSharePercent", "bookingTerms", "cancellationTerms", "clientReference", "passengerName", "passengerPhone",
       ]),
       pickupAt: localDate(fd, "pickupAt"),
-      flightArrivalAt: localDate(fd, "flightArrivalAt"),
+      flightNumber: byPlane ? str(fd, "flightNumber") : "",
+      flightArrivalAt: byPlane ? localDate(fd, "flightArrivalAt") : "",
       quoteDeadline: localDate(fd, "quoteDeadline"),
       priceCents: cents(fd, "price"),
       visibility: str(fd, "visibility"),

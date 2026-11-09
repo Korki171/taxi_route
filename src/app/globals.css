@@ -550,3 +550,7 @@ label.check input { width: 20px; height: 20px; margin-top: 2px; flex: none; }
 /* ---------- Wege zurück zur Website (Fußzeile der App) ---------- */
 .app-foot { margin-top: 64px; }
 .auth-body .back { margin-bottom: 20px; }
+
+/* Auftrag einstellen: Flugfelder nur bei „Ja, mit dem Flieger“ */
+.order-form .flight-fields { display: none; }
+.order-form:has(input[name="byPlane"][value="yes"]:checked) .flight-fields { display: grid; }
