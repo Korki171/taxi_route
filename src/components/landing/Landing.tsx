@@ -8,7 +8,9 @@ import { getI18n } from "@/server/i18n";
 import { formatCents } from "@/lib/money";
 import { PLANS } from "@/lib/plans";
 
-// Startseite in Richtung „Echte Fahrt“ (2026-11-09): eine konkrete Fahrt statt Werbesprache,
+// Startseite „Abflugtafel bei Nacht“ (Redesign 2026-11-09, impeccable + taste-skill + emil-design-eng):
+// dunkles Cockpit mit Höhenlinien, die eine Route als einziger animierter Moment, der Auftrag als Boarding-Karte.
+// Davor Richtung „Echte Fahrt“ (2026-11-09): eine konkrete Fahrt statt Werbesprache,
 // ruhiges Layout ohne Effekte, ein echter Screenshot der Börse. Jeder Abschnitt beantwortet eine Frage,
 // die ein Taxiunternehmer wirklich hat: Was ist das, warum nicht WhatsApp, wo, wie sieht es aus, was kostet es.
 
@@ -51,6 +53,27 @@ const FAQ: [string, string][] = [
   ],
 ];
 
+/** Höhenlinien der Alpen und die Strecke München → Kitzbühel; rein dekorativ, die Fakten stehen in der Karte. */
+function RouteMap() {
+  return (
+    <svg className="hp-map" viewBox="0 0 640 400" aria-hidden="true" focusable="false">
+      <g className="hp-contours" fill="none" strokeWidth="1">
+        <path d="M-20 330 C 90 290, 150 340, 260 310 S 450 230, 660 280" />
+        <path d="M-20 290 C 100 240, 170 300, 270 262 S 450 180, 660 232" />
+        <path d="M-20 250 C 110 190, 190 262, 285 214 S 460 130, 660 184" />
+        <path d="M-20 210 C 120 140, 210 224, 300 166 S 470 80, 660 136" />
+        <path d="M-20 170 C 130 90, 230 186, 318 118 S 490 34, 660 90" />
+        <path d="M-20 130 C 140 44, 250 148, 336 70 S 520 -10, 660 44" />
+      </g>
+      <path className="hp-route" d="M250 226 C 330 236, 350 150, 430 150 S 540 84, 590 70" pathLength="1" fill="none" />
+      <circle className="hp-dot" cx="250" cy="226" r="7" />
+      <circle className="hp-dot hp-dot-end" cx="590" cy="70" r="7" />
+      <text className="hp-map-label" x="250" y="256">MUC</text>
+      <text className="hp-map-label" x="590" y="42" textAnchor="middle">KB</text>
+    </svg>
+  );
+}
+
 export async function Landing({ appHref }: { appHref?: string } = {}) {
   const { t, locale } = await getI18n();
   const shot = (name: string) => `/landing/app/${name}-${locale === "en" ? "en" : "de"}.webp`;
@@ -69,6 +92,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
 
       <main>
         <section className="hp-dark hp-hero" aria-labelledby="hp-title">
+          <RouteMap />
           <div className="hp-wrap">
             <h1 id="hp-title">
               <span>{t("Abgeben.")}</span>{" "}
