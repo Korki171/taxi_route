@@ -126,7 +126,7 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
   const active = FILTER_KEYS.some((k) => sp[k]);
   return (
     <>
-      <form className="card filters" method="get" aria-label={t("Filter")}>
+      {(rows.length > 0 || active) && <form className="card filters" method="get" aria-label={t("Filter")}>
         <input type="hidden" name="view" value="markt" />
         <label>{t("Von")}<PlaceSelect name="from" defaultValue={sp.from} emptyLabel={t("Alle Orte")} /></label>
         <label>{t("Nach")}<PlaceSelect name="to" defaultValue={sp.to} emptyLabel={t("Alle Orte")} /></label>
@@ -168,11 +168,22 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
           <button type="submit">{t("Filtern")}</button>
           {active && <Link href="/boerse?view=markt" className="btn secondary">{t("Zurücksetzen")}</Link>}
         </div>
-      </form>
+      </form>}
       <section className="card">
-        <h2>{rows.length === 1 ? t("1 offener Auftrag") : t("{n} offene Aufträge", { n: rows.length })}{sp.newOnly ? " " + t("aus den letzten 24 Stunden") : ""}</h2>
+        {rows.length > 0 && <h2>{rows.length === 1 ? t("1 offener Auftrag") : t("{n} offene Aufträge", { n: rows.length })}{sp.newOnly ? " " + t("aus den letzten 24 Stunden") : ""}</h2>}
         {rows.length === 0 ? (
-          <Empty>{t("Keine offenen Aufträge für diese Filter.")}</Empty>
+          active ? (
+            <Empty>{t("Keine offenen Aufträge für diese Filter.")}</Empty>
+          ) : (
+            <div className="empty-state">
+              <h2>{t("Noch keine Aufträge in der Börse")}</h2>
+              <p className="muted">{t("Sobald ein Unternehmen eine Fahrt einstellt, erscheint sie hier. Stellen Sie selbst eine Fahrt ein oder bieten Sie ein freies Fahrzeug an.")}</p>
+              <div className="inline">
+                {actorCan(actor, "transfers.request") && <Link href="/boerse/neu" className="btn accent">{t("Auftrag einstellen")}</Link>}
+                {actorCan(actor, "capacity.publish") && <Link href="/flotte#fahrt" className="btn secondary">{t("Rückfahrt anbieten")}</Link>}
+              </div>
+            </div>
+          )
         ) : (
           <div className="table-wrap">
             <table className="responsive">

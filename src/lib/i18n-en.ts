@@ -1035,4 +1035,6 @@ export const EN: Record<string, string> = {
   "Freie Fahrzeuge": "Available vehicles",
   "Mehr Filter": "More filters",
   "Nur neue Aufträge (letzte 24 Stunden)": "New jobs only (last 24 hours)",
+  "Noch keine Aufträge in der Börse": "No jobs on the board yet",
+  "Sobald ein Unternehmen eine Fahrt einstellt, erscheint sie hier. Stellen Sie selbst eine Fahrt ein oder bieten Sie ein freies Fahrzeug an.": "As soon as a company posts a trip it will appear here. Post a trip yourself or offer a free vehicle.",
 };

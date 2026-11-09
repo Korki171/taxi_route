@@ -226,8 +226,10 @@ a.lang { color: var(--muted); font-size: 14px; }
 .filters .more-check { display: block; position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
 .filters .more-check:checked ~ .more { display: contents; }
 .filters .more-check:focus-visible + .more-toggle { outline: 3px solid var(--focus); outline-offset: 2px; }
-.filters .more-toggle { display: flex; grid-column: 1 / -1; align-items: center; gap: 8px; min-height: 40px; color: var(--text); font-size: 15px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.filters .more-toggle { display: flex; align-items: center; gap: 8px; min-height: 40px; color: var(--text); font-size: 15px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .filters .checks { grid-column: 1 / -1; }
+.empty-state { display: grid; gap: 12px; justify-items: start; padding: 8px 0; }
+.empty-state h2 { margin: 0; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 var(--gap); }
 .chips a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; text-decoration: none; color: var(--muted); background: var(--neutral-bg); font-weight: 500; }
 .chips a[aria-current="page"] { color: var(--primary-ink); background: var(--primary); }
@@ -486,6 +488,7 @@ label.check input { width: 20px; height: 20px; margin-top: 2px; flex: none; }
 
   .tabs { flex-wrap: nowrap; }
   .filters { grid-template-columns: 1fr 1fr; }
+  .filters .more-toggle { grid-column: 1 / -1; }
   .filters .actions { grid-column: 1 / -1; }
   .filters .actions button, .filters .actions .btn { flex: 1; }
 
