@@ -1026,4 +1026,9 @@ export const EN: Record<string, string> = {
   "Weitere Angaben (optional)": "More details (optional)",
   "nur für Sie sichtbar": "visible to you only",
   "vom Fahrpreis": "of the fare",
+  "Bei „Angebote einholen“ ist der Preis oben nur ein Richtpreis. Unternehmen nennen ihren Preis, Sie wählen aus.": "With “Request quotes” the price above is only a guide price. Companies name their price and you choose.",
+  "Das erste geprüfte Unternehmen kann den Auftrag direkt zu diesem Preis übernehmen. Die Abrechnung läuft direkt zwischen den Unternehmen.": "The first verified company can take the job right away at this price. Billing is settled directly between the companies.",
+  "Festpreis in €": "Fixed price in €",
+  "Preisart": "Price type",
+  "Meine Aufträge": "My jobs",
 };
