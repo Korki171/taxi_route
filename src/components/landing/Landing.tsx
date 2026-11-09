@@ -4,13 +4,14 @@ import type { ReactNode } from "react";
 import "@fontsource-variable/albert-sans";
 import "./home.css";
 import { LangSwitch } from "../LangSwitch";
+import { ClaimOrder } from "./ClaimOrder";
 import { getI18n } from "@/server/i18n";
 import { formatCents } from "@/lib/money";
 import { PLANS } from "@/lib/plans";
 
-// Startseite im Stil eines Produkt-Onepagers (Vorbild: caporide.com): weiß, eine Schrift, echte Oberfläche statt Dekor.
-// Jeder Abschnitt zeigt ein Stück der App oder einen Alltagsmoment und beantwortet eine Frage, die ein
-// Taxiunternehmer wirklich hat: Was ist das, warum nicht WhatsApp, wem kann ich trauen, was kostet es.
+// Startseite „Das Brett“ (Richtung dense-tiles aus taste-skill; Vorbilder für den Inhalt: caporide.com, timocom.de).
+// Idee: Die Börse ist ein Brett offener Fahrten, also ist die Seite ein Brett. Jede Kachel ist ein echtes Stück der
+// App (Fahrt, Chat, Bestätigung, Unternehmensliste) oder eine Aussage. Die lebendige Stelle: eine Fahrt übernehmen.
 // Alle Namen und Fahrten in den Beispielen sind erfunden.
 
 /** Strecken mit ungefährer Fahrzeit ab Flughafen München (Werte wie in der App). */
@@ -47,23 +48,17 @@ const FAQ: [string, string][] = [
   ],
 ];
 
-/* ---------- Icons: eine Strichstärke, 20 px ---------- */
-function Icon({ children }: { children: ReactNode }) {
+type T = (key: string, vars?: Record<string, string | number>) => string;
+
+function Tick() {
   return (
-    <svg className="hp-ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-      {children}
+    <svg className="hp-tick" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
     </svg>
   );
 }
-const IcShield = () => <Icon><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z" /><path d="M9 12l2 2 4-4" /></Icon>;
-const IcPin = () => <Icon><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></Icon>;
-const IcEuro = () => <Icon><path d="M17 6.5A6.5 6.5 0 1 0 17 17.5M4 10h9M4 14h9" /></Icon>;
-const IcGlobe = () => <Icon><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" /></Icon>;
-const IcCheck = () => <svg className="hp-tick" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>;
 
-type T = (key: string, vars?: Record<string, string | number>) => string;
-
-/* ---------- Oberflächen als HTML, nicht als Bild: bleiben scharf und übersetzbar ---------- */
+/* ---------- Oberflächen als HTML, nicht als Bild: bleiben scharf und übersetzbar (data-ui) ---------- */
 
 /** Chat, wie er heute abläuft. */
 function ChatScene({ t }: { t: T }) {
@@ -77,7 +72,7 @@ function ChatScene({ t }: { t: T }) {
     ["Hannes", "frag mal Lukas, der hat den Kleinbus", "09:41"],
   ];
   return (
-    <figure className="hp-chat" aria-label={t("Beispiel: Fahrt in der Gruppe suchen")}>
+    <figure className="hp-chat" data-ui aria-label={t("Beispiel: Fahrt in der Gruppe suchen")}>
       <figcaption>
         <b>{t("Fahrer Innsbruck")}</b>
         <span>{t("Gruppenchat · 14 Mitglieder")}</span>
@@ -95,23 +90,85 @@ function ChatScene({ t }: { t: T }) {
   );
 }
 
-/** Der Auftrag, wie die Börse ihn zeigt. */
-function OrderCard({ t, actions = false }: { t: T; actions?: boolean }) {
+/** Eine Karte der Börse in einem Zwischenstand; die Abläufe unten zeigen dieselbe Karte Schritt für Schritt. */
+type CardSpec = {
+  chip: string[];
+  when: string;
+  route: string;
+  load: string;
+  price: string[];
+  lines?: string[];
+  offers?: string[][];
+  doc?: boolean;
+};
+
+const RUN = "Flughafen München → Kitzbühel";
+const LOAD = "6 Personen · 6 Koffer · 4 Paar Ski · Kleinbus";
+const OPEN = "hp-chip-open", TAKEN = "hp-chip-taken", OK = "hp-chip-ok";
+
+type Flow = { id: string; title: string; steps: { card: CardSpec; clause: string; cls: string }[] };
+const COLORS = ["c-white", "c-stone", "c-navy", "c-orange"];
+
+const FLOWS: Flow[] = [
+  {
+    id: "fahrt",
+    title: "So läuft eine Fahrt.",
+    steps: [
+      { clause: "Erst wird sie eingestellt.", card: { chip: [OPEN, "Offen"], when: "Sa 15.11. · 11:00 Uhr", route: RUN, load: LOAD, price: ["310 €", "Festpreis"] } },
+      { clause: "Dann übernimmt jemand.", card: { chip: [TAKEN, "Vergeben"], when: "Sa 15.11. · 11:00 Uhr", route: RUN, load: LOAD, price: ["310 €", "Festpreis"], lines: ["Übernommen von Alpen Taxi Innsbruck"] } },
+      { clause: "Dann steht alles schriftlich da.", card: { chip: [TAKEN, "Vergeben"], when: "Sa 15.11. · 11:00 Uhr", route: RUN, load: LOAD, price: ["310 €", "Festpreis"], lines: ["Übernommen von Alpen Taxi Innsbruck"], doc: true } },
+      { clause: "Dann ist die Fahrt erledigt.", card: { chip: [OK, "Erledigt"], when: "Sa 15.11. · 11:00 Uhr", route: RUN, load: LOAD, price: ["310 €", "Festpreis"], lines: ["Übernommen von Alpen Taxi Innsbruck"], doc: true } },
+    ].map((x, i) => ({ ...x, cls: COLORS[i] })),
+  },
+  {
+    id: "angebote",
+    title: "Wenn der Preis noch offen ist.",
+    steps: [
+      { clause: "Erst fehlt der Preis.", card: { chip: [OPEN, "Offen"], when: "So 16.11. · 14:30 Uhr", route: "Flughafen München → Mayrhofen", load: "3 Personen · 3 Koffer · Limousine", price: ["offen", "Angebote erwünscht"] } },
+      { clause: "Dann kommen Angebote.", card: { chip: [OPEN, "3 Angebote"], when: "So 16.11. · 14:30 Uhr", route: "Flughafen München → Mayrhofen", load: "3 Personen · 3 Koffer · Limousine", price: ["offen", "Angebote erwünscht"], offers: [["Zillertal Transfer", "265 €"], ["Alpen Taxi Innsbruck", "280 €"], ["Kufsteiner Mietwagen", "295 €"]] } },
+      { clause: "Dann wählen Sie.", card: { chip: [TAKEN, "Vergeben"], when: "So 16.11. · 14:30 Uhr", route: "Flughafen München → Mayrhofen", load: "3 Personen · 3 Koffer · Limousine", price: ["265 €", "Angebot angenommen"], lines: ["Übernommen von Zillertal Transfer"] } },
+      { clause: "Dann steht der Preis schwarz auf weiß da.", card: { chip: [OK, "Erledigt"], when: "So 16.11. · 14:30 Uhr", route: "Flughafen München → Mayrhofen", load: "3 Personen · 3 Koffer · Limousine", price: ["265 €", "Angebot angenommen"], lines: ["Übernommen von Zillertal Transfer"], doc: true } },
+    ].map((x, i) => ({ ...x, cls: COLORS[i] })),
+  },
+  {
+    id: "verspaetung",
+    title: "Wenn der Flug später landet.",
+    steps: [
+      { clause: "Erst ist alles ausgemacht.", card: { chip: [TAKEN, "Vergeben"], when: "Sa 15.11. · 11:00 Uhr", route: RUN, load: LOAD, price: ["310 €", "Festpreis"], lines: ["Flug OS 112, Landung 10:05"] } },
+      { clause: "Dann landet der Flug später.", card: { chip: [OPEN, "Geändert"], when: "Sa 15.11. · 12:15 Uhr", route: RUN, load: LOAD, price: ["310 €", "Festpreis"], lines: ["Flug OS 112, Landung 11:40"] } },
+      { clause: "Dann sehen beide Seiten die neue Zeit.", card: { chip: [TAKEN, "Vergeben"], when: "Sa 15.11. · 12:15 Uhr", route: RUN, load: LOAD, price: ["310 €", "Festpreis"], lines: ["Flug OS 112, Landung 11:40", "Zeit vom Auftraggeber geändert, vom Unternehmen gesehen"] } },
+      { clause: "Dann ist die Fahrt gefahren.", card: { chip: [OK, "Erledigt"], when: "Sa 15.11. · 12:15 Uhr", route: RUN, load: LOAD, price: ["310 €", "Festpreis"], lines: ["Flug OS 112, Landung 11:40"], doc: true } },
+    ].map((x, i) => ({ ...x, cls: COLORS[i] })),
+  },
+  {
+    id: "leerfahrt",
+    title: "Wenn der Bus leer zurückfährt.",
+    steps: [
+      { clause: "Erst fährt er leer zurück.", card: { chip: [OK, "Frei"], when: "Sa 15.11. · ab 15:00 Uhr", route: "Kitzbühel → Flughafen München", load: "Kleinbus · 8 Plätze · Skiträger", price: ["", ""], lines: ["Angeboten von Alpen Taxi Innsbruck"] } },
+      { clause: "Dann fragt jemand an.", card: { chip: [OPEN, "Angefragt"], when: "Sa 15.11. · 15:00 Uhr", route: "Kitzbühel → Flughafen München", load: "5 Personen · 5 Koffer", price: ["", ""], lines: ["Anfrage von Hotel Alpenrose"] } },
+      { clause: "Dann ist er gebucht.", card: { chip: [TAKEN, "Vergeben"], when: "Sa 15.11. · 15:00 Uhr", route: "Kitzbühel → Flughafen München", load: "5 Personen · 5 Koffer", price: ["190 €", "Festpreis"], lines: ["Übernommen von Alpen Taxi Innsbruck"], doc: true } },
+      { clause: "Dann fährt er nicht mehr leer.", card: { chip: [OK, "Erledigt"], when: "Sa 15.11. · 15:00 Uhr", route: "Kitzbühel → Flughafen München", load: "5 Personen · 5 Koffer", price: ["190 €", "Festpreis"], lines: ["Übernommen von Alpen Taxi Innsbruck"], doc: true } },
+    ].map((x, i) => ({ ...x, cls: COLORS[i] })),
+  },
+];
+
+function FlowCard({ t, c }: { t: T; c: CardSpec }) {
   return (
-    <div className="hp-card hp-order">
+    <div className="hp-card hp-order hp-order-sm" data-ui>
       <div className="hp-order-top">
-        <span className="hp-chip hp-chip-open">{t("Offen")}</span>
-        <span className="hp-muted">{t("Sa 15.11.")} · {t("11:00 Uhr")}</span>
+        <span className={`hp-chip ${c.chip[0]}`}>{t(c.chip[1])}</span>
+        <span className="hp-muted">{c.when.split(" · ").map((x) => t(x)).join(" · ")}</span>
       </div>
-      <p className="hp-order-route">{t("Flughafen München")} → Kitzbühel</p>
-      <p className="hp-muted">{t("6 Personen · 6 Koffer · 4 Paar Ski · Kleinbus")}</p>
-      <div className="hp-order-price"><b>310 €</b><span>{t("Festpreis")}</span></div>
-      {actions && (
-        <div className="hp-order-actions">
-          <span className="hp-fake hp-fake-primary">{t("Zum Festpreis übernehmen")}</span>
-          <span className="hp-fake">{t("Angebot abgeben")}</span>
-        </div>
+      <p className="hp-order-route">{c.route.split(" → ").map((x) => t(x)).join(" → ")}</p>
+      <p className="hp-muted">{t(c.load)}</p>
+      {c.offers && (
+        <ul className="hp-offers">
+          {c.offers.map(([name, sum]) => <li key={name}><span>{name}</span><b>{sum}</b></li>)}
+        </ul>
       )}
+      {c.price[0] && <div className="hp-order-price"><b>{t(c.price[0])}</b><span>{t(c.price[1])}</span></div>}
+      {c.lines?.map((l) => <p key={l} className="hp-order-by">{t(l)}</p>)}
+      {c.doc && <p className="hp-order-doc">{t("Bestätigung")} · TB-2411-0187.pdf</p>}
     </div>
   );
 }
@@ -123,7 +180,7 @@ function CompanyList({ t }: { t: T }) {
     ["Zillertal Transfer", "Mayrhofen"],
   ];
   return (
-    <div className="hp-card hp-companies" aria-label={t("Beispiel: geprüfte Unternehmen")}>
+    <div className="hp-card hp-companies" data-ui aria-label={t("Beispiel: geprüfte Unternehmen")}>
       {rows.map(([name, city]) => (
         <div key={name} className="hp-company">
           <div>
@@ -152,7 +209,7 @@ function Confirmation({ t }: { t: T }) {
     ["Storno", "bis 24 h vorher kostenlos"],
   ];
   return (
-    <div className="hp-paper" aria-label={t("Beispiel: Bestätigung als PDF")}>
+    <div className="hp-paper" data-ui aria-label={t("Beispiel: Bestätigung als PDF")}>
       <p className="hp-paper-head"><b>{t("Buchungsbestätigung")}</b><span>TB-2411-0187</span></p>
       <dl>
         {rows.map(([k, v]) => (
@@ -163,33 +220,25 @@ function Confirmation({ t }: { t: T }) {
   );
 }
 
-/** Abschnitt aus Text und Oberfläche; `flip` dreht die Seiten. */
-function Feature({ id, flip, title, text, points, children }: { id?: string; flip?: boolean; title: string; text: string; points: [string, string][]; children: ReactNode }) {
-  return (
-    <section id={id} className="hp-section">
-      <div className={`hp-wrap hp-feature${flip ? " hp-flip" : ""}`}>
-        <div className="hp-feature-text">
-          <h2>{title}</h2>
-          <p className="hp-lead">{text}</p>
-          <ul className="hp-points">
-            {points.map(([h, p]) => (
-              <li key={h}><b>{h}</b><span>{p}</span></li>
-            ))}
-          </ul>
-        </div>
-        <div className="hp-feature-shot">{children}</div>
-      </div>
-    </section>
-  );
+/** Eine Kachel des Bretts. `cls` setzt Platz und Farbe (home.css). */
+function Tile({ cls, children }: { cls: string; children: ReactNode }) {
+  return <div className={`t ${cls}`}>{children}</div>;
 }
 
 export async function Landing({ appHref }: { appHref?: string } = {}) {
   const { t, locale } = await getI18n();
   const shot = (name: string) => `/landing/app/${name}-${locale === "en" ? "en" : "de"}.webp`;
+  const price = formatCents(PLANS[0].priceCents, locale);
+  const claim = {
+    open: t("Offen"), taken: t("Vergeben"), when: `${t("Sa 15.11.")} · ${t("11:00 Uhr")}`,
+    route: `${t("Flughafen München")} → Kitzbühel`, load: t("6 Personen · 6 Koffer · 4 Paar Ski · Kleinbus"),
+    fixed: t("Festpreis"), claim: t("Zum Festpreis übernehmen"), reset: t("Zurücksetzen"),
+    by: t("Übernommen von {name}", { name: "Alpen Taxi Innsbruck" }), hint: t("Probieren Sie es aus: Die Fahrt übernehmen."),
+  };
   return (
     <div className="hp">
       <header className="hp-head">
-        <div className="hp-wrap hp-top">
+        <div className="hp-top">
           <Link href="/" className="hp-logo" aria-label="Transferborsa"><Logo /></Link>
           <nav aria-label={t("Abschnitte")}>
             <a href="#ablauf" className="hp-hide-s">{t("Ablauf")}</a>
@@ -200,197 +249,167 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           <div className="hp-top-end">
             <LangSwitch path="/" className="hp-lang" />
             {appHref
-              ? <Link href={appHref} className="hp-btn hp-btn-dark">{t("Zur App")}</Link>
-              : <><Link href="/login" className="hp-hide-s">{t("Anmelden")}</Link><Link href="/register?type=TRANSPORT_COMPANY" className="hp-btn hp-btn-dark">{t("Registrieren")}</Link></>}
+              ? <Link href={appHref} className="hp-btn hp-btn-light">{t("Zur App")}</Link>
+              : <><Link href="/login" className="hp-hide-s">{t("Anmelden")}</Link><Link href="/register?type=TRANSPORT_COMPANY" className="hp-btn hp-btn-light">{t("Registrieren")}</Link></>}
           </div>
         </div>
       </header>
 
       <main>
-        <section className="hp-hero" aria-labelledby="hp-title">
-          <div className="hp-wrap">
+        {/* Erste Seite des Bretts: Name, Aussage, Aktion, zwei Blicke in die App */}
+        <section className="bd bd-hero" aria-labelledby="hp-title">
+          <Tile cls="h-name c-navy">
             <h1 id="hp-title">{t("Das Transfernetzwerk für Taxi- und Mietwagenunternehmen.")}</h1>
-            <ul className="hp-checks hp-hero-checks">
-              <li><IcCheck />{t("Treten Sie einem Netzwerk geprüfter Unternehmen bei.")}</li>
-              <li><IcCheck />{t("Stellen Sie Fahrten ein oder übernehmen Sie offene Aufträge.")}</li>
-              <li><IcCheck />{t("Preis, Flug und Gepäck stehen in der Bestätigung (PDF)")}</li>
-            </ul>
-
+          </Tile>
+          <Tile cls="h-say c-white">
+            <p className="hp-say">{t("Fahrten weitergeben, die Sie selbst nicht schaffen. Aufträge übernehmen, wenn Wagen frei sind.")}</p>
+          </Tile>
+          <Tile cls="h-act c-orange">
             <div className="hp-actions">
-              <Link href="/register?type=TRANSPORT_COMPANY" className="hp-btn">{t("Unternehmen registrieren")}</Link>
+              <Link href="/register?type=TRANSPORT_COMPANY" className="hp-btn hp-btn-navy">{t("Unternehmen registrieren")}</Link>
               <Link href="/register?type=TRAVEL_AGENCY" className="hp-link">{t("Reisebüro oder Hotel? Kostenlos registrieren")}</Link>
             </div>
-            <p className="hp-note">{t("Wir sind im Pilotbetrieb rund um Innsbruck und melden uns persönlich.")}</p>
-          </div>
-
-          <div className="hp-wrap hp-hero-shots">
-            <picture className="hp-browser">
-              <img src={shot("boerse")} width={1600} height={1000} alt={t("Die Auftragsbörse mit offenen Fahrten, Filtern und Preisen")} decoding="async" />
-            </picture>
-            <picture className="hp-phone">
-              <img src={shot("boerse-handy")} width={700} height={1515} alt={t("Die Auftragsbörse auf dem Handy")} loading="lazy" decoding="async" />
-            </picture>
-          </div>
-          <p className="hp-wrap hp-note hp-shot-note">{t("Die Börse mit Beispieldaten.")}</p>
+            <p className="hp-small">{t("Wir sind im Pilotbetrieb rund um Innsbruck und melden uns persönlich.")}</p>
+          </Tile>
+          <Tile cls="h-web c-shot">
+            <img className="hp-shutter" src={shot("boerse")} width={1600} height={1000} alt={t("Die Auftragsbörse mit offenen Fahrten, Filtern und Preisen")} decoding="async" />
+          </Tile>
+          <Tile cls="h-phone c-shot">
+            <img src={shot("boerse-handy")} width={700} height={1515} alt={t("Die Auftragsbörse auf dem Handy")} loading="lazy" decoding="async" />
+          </Tile>
         </section>
 
-        <div className="hp-trust">
-          <ul className="hp-wrap">
-            <li><IcPin />{t("Entwickelt in Tirol")}</li>
-            <li><IcShield />{t("Konzession und Versicherung geprüft")}</li>
-            <li><IcEuro />{t("Keine Provision pro Fahrt")}</li>
-            <li><IcGlobe />{t("Deutsch und Englisch")}</li>
-          </ul>
-        </div>
-
-        <section id="ablauf" className="hp-section" aria-labelledby="hp-wa">
-          <div className="hp-wrap hp-feature">
-            <div className="hp-feature-text">
-              <h2 id="hp-wa">{t("Aus der Gruppe wird ein Auftrag.")}</h2>
-              <p className="hp-lead">{t("Samstag, Hauptanreise, alle Busse sind unterwegs. Statt fünf Kollegen anzurufen, stellen Sie die Fahrt hier ein.")} <strong>{t("Wer frei hat, übernimmt.")}</strong></p>
-              <ul className="hp-checks">
-                {AFTER.map((s) => <li key={s}><IcCheck />{t(s)}</li>)}
-              </ul>
-            </div>
-            <div className="hp-feature-shot hp-duo">
-              <ChatScene t={t} />
-              <OrderCard t={t} />
-            </div>
-          </div>
+        {/* Gruppe → Auftrag, mit der lebendigen Stelle */}
+        <section id="ablauf" className="bd bd-group" aria-labelledby="hp-wa">
+          <Tile cls="g-text c-white">
+            <h2 id="hp-wa">{t("Aus der Gruppe wird ein Auftrag.")}</h2>
+            <p className="hp-body">{t("Samstag, Hauptanreise, alle Busse sind unterwegs. Statt fünf Kollegen anzurufen, stellen Sie die Fahrt hier ein.")} <strong>{t("Wer frei hat, übernimmt.")}</strong></p>
+            <ul className="hp-checks">
+              {AFTER.map((s) => <li key={s}><Tick />{t(s)}</li>)}
+            </ul>
+          </Tile>
+          <Tile cls="g-chat c-stone"><ChatScene t={t} /></Tile>
+          <Tile cls="g-live c-navy"><ClaimOrder L={claim} /></Tile>
         </section>
 
-        <Feature
-          title={t("Festpreis oder Angebot.")}
-          text={t("Wer die Fahrt einstellt, legt fest, wie sie vergeben wird. Beim Festpreis übernimmt das erste geprüfte Unternehmen direkt und verbindlich.")}
-          points={[
-            [t("Festpreis"), t("Ein Klick, die Fahrt ist vergeben.")],
-            [t("Angebot"), t("Unternehmen nennen ihren Preis, Sie wählen.")],
-          ]}
-        >
-          <OrderCard t={t} actions />
-        </Feature>
-
-        <Feature
-          flip
-          title={t("Nur geprüfte Unternehmen.")}
-          text={t("Wir prüfen Konzession, Versicherung und Firmendaten, bevor ein Unternehmen Fahrten übernehmen darf.")}
-          points={[
-            [t("Geprüft je Geschäftsfunktion"), t("Wer nur Fahrzeuge anbietet, wird anders geprüft als wer Aufträge übernimmt.")],
-            [t("Keine Namen für Fremde"), t("Andere Teilnehmer sehen Strecke, Zeit, Personenzahl und Gepäck, aber keine Fahrgastdaten.")],
-          ]}
-        >
-          <CompanyList t={t} />
-        </Feature>
-
-        <Feature
-          title={t("Alles Schriftliche in einer Bestätigung.")}
-          text={t("Preis und Gepäck mündlich auszumachen, führt zu Streit. Hier stehen sie mit jeder Buchung in einem PDF.")}
-          points={[
-            [t("Mit Flugdaten"), t("Abholzeit und Landung stehen im selben Dokument.")],
-            [t("Mit Stornobedingungen"), t("Beide Seiten sehen denselben Stand.")],
-          ]}
-        >
-          <Confirmation t={t} />
-        </Feature>
-
-        <section className="hp-section hp-tint" aria-labelledby="hp-wer">
-          <div className="hp-wrap">
-            <h2 id="hp-wer">{t("Für beide Seiten der Fahrt.")}</h2>
-            <div className="hp-who">
-              <div>
-                <h3>{t("Taxi- und Transferunternehmen")}</h3>
-                <p>{t("Fahrten weitergeben, die Sie nicht schaffen. Aufträge übernehmen, wenn Wagen frei sind. Leerfahrten füllen.")}</p>
-                <p className="hp-muted">{t("Fester Monatspreis, keine Provision pro Fahrt.")}</p>
-              </div>
-              <div>
-                <h3>{t("Reisebüros und Hotels")}</h3>
-                <p>{t("Transfers für Ihre Gäste einstellen und sehen, wer sie übernimmt. Mit Bestätigung für jede Buchung.")}</p>
-                <p className="hp-muted">{t("Kostenlos.")}</p>
-              </div>
+        {/* Was die Börse kann: Ausschnitte als Kacheln */}
+        <section className="bd bd-features" aria-label={t("Funktionen")}>
+          <Tile cls="f-price c-navy">
+            <div className="hp-big" data-ui aria-hidden="true">
+              <b>310 €</b>
+              <span className="hp-chip hp-chip-open">{t("Festpreis")}</span>
             </div>
-          </div>
+            <h2>{t("Festpreis oder Angebot.")}</h2>
+            <p className="hp-body">{t("Wer die Fahrt einstellt, legt fest, wie sie vergeben wird. Beim Festpreis übernimmt das erste geprüfte Unternehmen direkt und verbindlich.")}</p>
+          </Tile>
+          <Tile cls="f-cos c-white">
+            <CompanyList t={t} />
+            <h2>{t("Nur geprüfte Unternehmen.")}</h2>
+          </Tile>
+          <Tile cls="f-pdf c-stone">
+            <Confirmation t={t} />
+            <h2>{t("Alles Schriftliche in einer Bestätigung.")}</h2>
+          </Tile>
+          <Tile cls="f-a c-white">
+            <h3>{t("Keine Namen für Fremde")}</h3>
+            <p className="hp-body">{t("Andere Teilnehmer sehen Strecke, Zeit, Personenzahl und Gepäck, aber keine Fahrgastdaten.")}</p>
+          </Tile>
+          <Tile cls="f-b c-stone">
+            <h3>{t("Geprüft je Geschäftsfunktion")}</h3>
+            <p className="hp-body">{t("Wer nur Fahrzeuge anbietet, wird anders geprüft als wer Aufträge übernimmt.")}</p>
+          </Tile>
+          <Tile cls="f-fee c-orange">
+            <h3>{t("Keine Provision pro Fahrt")}</h3>
+            <p className="hp-body">{t("Ab {price} im Monat für Taxiunternehmen, ohne Provision pro Fahrt. Für Reisebüros und Hotels kostenlos.", { price })}</p>
+            <Link href="/preise" className="hp-link">{t("Alle Tarife ansehen")}</Link>
+          </Tile>
         </section>
 
-        <section className="hp-section" aria-labelledby="hp-schritte">
-          <div className="hp-wrap">
-            <h2 id="hp-schritte">{t("In drei Schritten dabei.")}</h2>
-            <ol className="hp-steps">
-              <li><b>{t("Registrieren")}</b><span>{t("Firmendaten angeben, kostenlos im Pilotbetrieb.")}</span></li>
-              <li><b>{t("Unternehmensprüfung")}</b><span>{t("Wir prüfen Konzession, Versicherung und Firmendaten.")}</span></li>
-              <li><b>{t("Zugang zur Börse")}</b><span>{t("Fahrten einstellen, übernehmen und bestätigen.")}</span></li>
-            </ol>
-            <div className="hp-actions">
-              <Link href="/register?type=TRANSPORT_COMPANY" className="hp-btn">{t("Unternehmen registrieren")}</Link>
-            </div>
-          </div>
-        </section>
+        {/* Abläufe: dieselbe Karte, jedes Mal ein Stück weiter */}
+        {FLOWS.map((f, n) => (
+          <section key={f.id} id={n === 0 ? "ablauf-fahrt" : undefined} className="bd bd-flow" aria-labelledby={`hp-flow-${f.id}`}>
+            <Tile cls="s-head c-white"><h2 id={`hp-flow-${f.id}`}>{t(f.title)}</h2></Tile>
+            {f.steps.map((st, i) => (
+              <Tile key={st.clause} cls={`s s-${i + 1} ${st.cls}`}>
+                <FlowCard t={t} c={st.card} />
+                <p className="hp-clause">{t(st.clause)}</p>
+              </Tile>
+            ))}
+          </section>
+        ))}
 
-        <section id="strecken" className="hp-section" aria-labelledby="hp-strecken">
-          <div className="hp-wrap hp-two">
+        <section id="strecken" className="bd bd-routes" aria-labelledby="hp-strecken">
+          <Tile cls="r-head c-navy">
             <h2 id="hp-strecken">{t("Die Strecken, auf denen wir anfangen")}</h2>
-            <div>
-              <table className="hp-routes">
-                <tbody>
-                  {ROUTES.map(([route, time]) => (
-                    <tr key={route}><td>{t(route)}</td><td>{t(time)}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-              <p className="hp-note">{t("Salzburg, Zürich und Südtirol folgen, sobald dort regelmäßig Fahrten vermittelt werden.")}</p>
-            </div>
+          </Tile>
+          <Tile cls="r-table c-white">
+            <table className="hp-routes">
+              <tbody>
+                {ROUTES.map(([route, time]) => (
+                  <tr key={route}><td>{t(route)}</td><td>{t(time)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="hp-small">{t("Salzburg, Zürich und Südtirol folgen, sobald dort regelmäßig Fahrten vermittelt werden.")}</p>
+          </Tile>
+        </section>
+
+        <section className="bd bd-who" aria-labelledby="hp-wer">
+          <Tile cls="w-head c-white"><h2 id="hp-wer">{t("Für beide Seiten der Fahrt.")}</h2></Tile>
+          <Tile cls="w-a c-stone">
+            <h3>{t("Taxi- und Transferunternehmen")}</h3>
+            <p className="hp-body">{t("Fahrten weitergeben, die Sie nicht schaffen. Aufträge übernehmen, wenn Wagen frei sind. Leerfahrten füllen.")}</p>
+            <p className="hp-small">{t("Fester Monatspreis, keine Provision pro Fahrt.")}</p>
+          </Tile>
+          <Tile cls="w-b c-white">
+            <h3>{t("Reisebüros und Hotels")}</h3>
+            <p className="hp-body">{t("Transfers für Ihre Gäste einstellen und sehen, wer sie übernimmt. Mit Bestätigung für jede Buchung.")}</p>
+            <p className="hp-small">{t("Kostenlos.")}</p>
+          </Tile>
+        </section>
+
+        <section className="bd bd-join" aria-labelledby="hp-schritte">
+          <Tile cls="j-head c-navy"><h2 id="hp-schritte">{t("In drei Schritten dabei.")}</h2></Tile>
+          <Tile cls="j-1 c-white"><h3>{t("Registrieren")}</h3><p className="hp-body">{t("Firmendaten angeben, kostenlos im Pilotbetrieb.")}</p></Tile>
+          <Tile cls="j-2 c-stone"><h3>{t("Unternehmensprüfung")}</h3><p className="hp-body">{t("Wir prüfen Konzession, Versicherung und Firmendaten.")}</p></Tile>
+          <Tile cls="j-3 c-white"><h3>{t("Zugang zur Börse")}</h3><p className="hp-body">{t("Fahrten einstellen, übernehmen und bestätigen.")}</p></Tile>
+        </section>
+
+        <section id="fragen" className="bd bd-faq" aria-labelledby="hp-fragen">
+          <div className="q-head"><h2 id="hp-fragen">{t("Häufige Fragen")}</h2></div>
+          <div className="q-list">
+            {FAQ.map(([q, a]) => (
+              <details key={q} name="hp-faq" className="t c-white">
+                <summary>{t(q)}</summary>
+                <p>{t(a)}</p>
+              </details>
+            ))}
           </div>
         </section>
 
-        <section className="hp-section hp-tint" aria-labelledby="hp-preis">
-          <div className="hp-wrap hp-two">
-            <h2 id="hp-preis">{t("Was es kostet")}</h2>
-            <div>
-              <p className="hp-price">
-                {t("Ab {price} im Monat für Taxiunternehmen, ohne Provision pro Fahrt. Für Reisebüros und Hotels kostenlos.", { price: formatCents(PLANS[0].priceCents, locale) })}
-              </p>
-              <Link href="/preise" className="hp-link">{t("Alle Tarife ansehen")}</Link>
-            </div>
-          </div>
-        </section>
-
-        <section id="fragen" className="hp-section" aria-labelledby="hp-fragen">
-          <div className="hp-wrap hp-two">
-            <h2 id="hp-fragen">{t("Häufige Fragen")}</h2>
-            <div className="hp-faq">
-              {FAQ.map(([q, a]) => (
-                <details key={q} name="hp-faq">
-                  <summary>{t(q)}</summary>
-                  <p>{t(a)}</p>
-                </details>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="hp-cta" aria-labelledby="hp-kontakt">
-          <div className="hp-wrap hp-two">
+        <section className="bd bd-cta" aria-labelledby="hp-kontakt">
+          <Tile cls="x-l c-shot"><img src={shot("boerse")} width={1600} height={1000} alt="" loading="lazy" decoding="async" /></Tile>
+          <Tile cls="x-main c-orange">
             <h2 id="hp-kontakt">{t("Fragen? Schreiben Sie uns.")}</h2>
-            <div>
-              <p className="hp-contact-text">{t("Wir sind im Pilotbetrieb rund um Innsbruck und melden uns persönlich.")}</p>
-              <a className="hp-contact" href="mailto:transferborsatirol@gmail.com?subject=Transferborsa">transferborsatirol@gmail.com</a>
-              <div className="hp-actions">
-                <Link href="/register?type=TRANSPORT_COMPANY" className="hp-btn">{t("Unternehmen registrieren")}</Link>
-              </div>
+            <p className="hp-body">{t("Wir sind im Pilotbetrieb rund um Innsbruck und melden uns persönlich.")}</p>
+            <a className="hp-contact" href="mailto:transferborsatirol@gmail.com?subject=Transferborsa">transferborsatirol@gmail.com</a>
+            <div className="hp-actions">
+              <Link href="/register?type=TRANSPORT_COMPANY" className="hp-btn hp-btn-navy">{t("Unternehmen registrieren")}</Link>
             </div>
-          </div>
+          </Tile>
+          <Tile cls="x-r c-navy"><Logo iconOnly className="hp-icon" /></Tile>
         </section>
       </main>
 
       <footer className="hp-footer">
-        <div className="hp-wrap">
-          <ul>
-            <li>Transferborsa · Innsbruck</li>
-            <li><Link href="/preise">{t("Preise")}</Link></li>
-            <li><Link href="/impressum">{t("Impressum")}</Link></li>
-            <li><Link href="/datenschutz">{t("Datenschutz")}</Link></li>
-            <li><Link href="/nutzungsbedingungen">{t("Nutzungsbedingungen")}</Link></li>
-          </ul>
-        </div>
+        <Logo className="hp-mark" />
+        <ul>
+          <li>Transferborsa · Innsbruck</li>
+          <li><Link href="/preise">{t("Preise")}</Link></li>
+          <li><Link href="/impressum">{t("Impressum")}</Link></li>
+          <li><Link href="/datenschutz">{t("Datenschutz")}</Link></li>
+          <li><Link href="/nutzungsbedingungen">{t("Nutzungsbedingungen")}</Link></li>
+        </ul>
       </footer>
     </div>
   );
