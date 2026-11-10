@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "src/components/landing/Landing.tsx": {
-    "mtime": 1794337403.8031158,
-    "seen": 1794337507.045939,
-    "ast_hash": "11fda82c748576b7a1c2d16bde739a57",
+    "mtime": 1794337778.8968468,
+    "seen": 1794337802.923893,
+    "ast_hash": "b0af68a16538d51738e91d8504a3c2fb",
     "semantic_hash": ""
   },
   "src/components/landing/Pricing.tsx": {
@@ -828,15 +828,15 @@
     "semantic_hash": ""
   },
   "src/components/landing/HeroClaim.tsx": {
-    "mtime": 1794337349.2503548,
-    "seen": 1794337507.045938,
-    "ast_hash": "1ebfa9510531f13efafee0b9e039e21e",
+    "mtime": 1794337778.8962286,
+    "seen": 1794337802.9238908,
+    "ast_hash": "4dab1dfa41010267d0c622859fa647ef",
     "semantic_hash": ""
   },
   "src/components/landing/TaxiSign.tsx": {
-    "mtime": 1794337348.8895926,
-    "seen": 1794337507.04594,
-    "ast_hash": "7687dd4e550729e48dc6119c7414cdc9",
+    "mtime": 1794337778.895939,
+    "seen": 1794337802.923896,
+    "ast_hash": "fcfc858ea9d9a7b53272f60aea6e906f",
     "semantic_hash": ""
   },
   ".impeccable/surfaces/src-components-landing-landing-tsx.md": {
