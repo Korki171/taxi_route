@@ -1,4 +1,4 @@
-/* Startseite „Das Taxischild“: Wer frei hat, übernimmt. Das gelbe Dachschild leuchtet FREI und geht auf BESETZT, sobald jemand übernimmt.
+/* Startseite „Das Taxischild“: Keine Fahrt bleibt liegen. Footer mit Nachtszene in footer.css. Das gelbe Dachschild leuchtet FREI und geht auf BESETZT, sobald jemand übernimmt.
    Doppelrahmen und Linien nur um Abschnitte und in echten Tabellen.
    Farbe „Ruß bei Nacht“ (taste-skill, Palette „Soot and lime“ mit Taxigelb statt Limette): Rußschwarz als Grund, helle Schrift, Taxigelb auf dem freien Schild und den Buttons, Rot nur auf dem besetzten Schild.
    App-Ausschnitte (data-ui: Fahrtkarte, Chat, Bestätigung) bleiben hell wie echte Bildschirme.
@@ -144,9 +144,15 @@
 .hp-facts tbody tr:last-child { border-bottom: 3px double var(--navy); }
 
 .hp-routes-box { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 340px); gap: 48px; align-items: start; }
-.hp-routes td:last-child { text-align: right; color: var(--muted); white-space: nowrap; padding-right: 0; }
-.hp-routes td:first-child { font-weight: 600; }
-.hp-routes-box .hp-small { margin-top: 16px; }
+
+/* Partner: drei Stufen, jede eine Stufe weiter eingerückt, wie eine Treppe nach unten */
+.hp-stairs { list-style: none; margin: 0; padding: 0; display: grid; border-top: 3px double var(--navy); }
+.hp-stairs li { margin-left: calc(var(--i, 0) * clamp(20px, 5vw, 72px)); padding: 20px 0 22px; border-bottom: 1px solid var(--navy); display: grid; gap: 6px; }
+.hp-stairs li:last-child { border-bottom: 3px double var(--navy); }
+.hp-stairs h3 { display: flex; align-items: baseline; gap: 14px; }
+.hp-stairs h3 span { font-family: "Imbue Variable", "Times New Roman", serif; font-weight: 480; font-size: 40px; line-height: 0.8; color: var(--accent); font-variant-numeric: tabular-nums; }
+.hp-stairs p { font-size: 17px; line-height: 1.5; max-width: 52ch; }
+.hp-stairs-note { margin-top: 22px !important; font-size: 16px; color: var(--muted); max-width: 60ch; }
 .hp-xf { position: relative; width: 100%; overflow: hidden; background: var(--stone); }
 .hp-xf img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1600ms ease; }
 .hp-xf img[data-on="true"] { opacity: 1; }
@@ -159,21 +165,10 @@
 .hp-price-grid p:not(.hp-price-sign) { font-size: 18px; max-width: 46ch; }
 .hp-price-grid ul { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 2px; font-size: 18px; }
 
-.hp-ask-head { display: flex; flex-wrap: wrap; align-items: end; gap: 16px 40px; }
-.hp-ask h2 { font-size: clamp(56px, 8vw, 132px); text-wrap: balance; }
-.hp-ask-head .hp-sign { width: 150px; margin-bottom: 0.6vw; }
-.hp-ask-lead { margin-top: 24px !important; font-size: 20px; max-width: 46ch; }
-.hp-ask .hp-small { margin-top: 20px; }
-.hp-ask .hp-act > span { font-size: 16px; color: var(--muted); }
-
-.hp-foot { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px 32px; align-items: baseline; padding: 40px 4px 28px; font-size: 14px; color: var(--muted); }
-.hp-foot nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 24px; }
-.hp-foot nav a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); text-decoration: none; }
-.hp-foot-end { text-align: right; }
 @media (hover: hover) and (pointer: fine) {
   .hp-btn:hover:not(:disabled) { background: var(--accent-hover); }
   .hp-btn-ghost:hover:not(:disabled) { background: var(--stone); }
-  .hp-head nav a:hover, .hp-foot nav a:hover { text-decoration: underline; }
+  .hp-head nav a:hover { text-decoration: underline; }
 }
 
 /* Bewegung */
@@ -185,7 +180,7 @@
   @keyframes hp-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
   @keyframes hp-fade { from { opacity: 0; } to { opacity: 1; } }
   @supports (animation-timeline: view()) {
-    .hp-box:not(.hp-hero) > h2, .hp-steps li, .hp-pair > div, .hp-facts, .hp-pic, .hp-price-sign, .hp-ask h2 { animation: hp-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 35%; }
+    .hp-box:not(.hp-hero) > h2, .hp-steps li, .hp-stairs li, .hp-pair > div, .hp-facts, .hp-pic, .hp-price-sign { animation: hp-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 35%; }
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -206,8 +201,8 @@
 @media (max-width: 760px) {
   .hp { font-size: 17px; }
   .hp-head nav { gap: 0 16px; }
-  .hp-hero h1, .hp-ask h2 { font-size: 15vw; }
-  .hp-lead, .hp-ask-lead { font-size: 18px; }
+  .hp-hero h1 { font-size: 15vw; }
+  .hp-lead { font-size: 18px; }
   .hp-sign-l { max-width: 300px; }
   .hp-ride { padding: 22px 20px; }
   .hp-steps { grid-template-columns: minmax(0, 1fr); gap: 28px; }
@@ -217,12 +212,8 @@
   .hp td, .hp th { padding: 2px 0; }
   .hp td[data-label]::before { content: attr(data-label) ": "; font-size: 14px; color: var(--muted); }
   .hp-facts th { width: auto; padding-bottom: 4px; }
-  .hp-routes td:last-child { text-align: left; }
   .hp-pair, .hp-routes-box, .hp-price-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .hp-pair { margin-top: 40px; }
-  .hp-foot { grid-template-columns: minmax(0, 1fr); gap: 4px; }
-  .hp-foot nav { justify-content: flex-start; }
-  .hp-foot-end { text-align: left; }
 }
 
 /* Dunkle Seite bis an den Rand */

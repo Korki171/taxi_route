@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "src/components/landing/Landing.tsx": {
-    "mtime": 1794337778.8968468,
-    "seen": 1794337802.923893,
-    "ast_hash": "b0af68a16538d51738e91d8504a3c2fb",
+    "mtime": 1794339459.2342505,
+    "seen": 1794339462.7719,
+    "ast_hash": "a6c6301ce65bba8d77d67f6253fb8270",
     "semantic_hash": ""
   },
   "src/components/landing/Pricing.tsx": {
@@ -330,9 +330,9 @@
     "semantic_hash": ""
   },
   "src/lib/i18n-en.ts": {
-    "mtime": 1794337431.004167,
-    "seen": 1794337507.0459452,
-    "ast_hash": "1f0c0a707cb7614118494603e2813247",
+    "mtime": 1794339386.428044,
+    "seen": 1794339462.7719092,
+    "ast_hash": "e0f44a13f302bd884a9e046129a0174b",
     "semantic_hash": ""
   },
   "src/lib/i18n.ts": {
@@ -828,14 +828,14 @@
     "semantic_hash": ""
   },
   "src/components/landing/HeroClaim.tsx": {
-    "mtime": 1794337778.8962286,
-    "seen": 1794337802.9238908,
+    "mtime": 1794338534.1121159,
+    "seen": 1794339462.771899,
     "ast_hash": "4dab1dfa41010267d0c622859fa647ef",
     "semantic_hash": ""
   },
   "src/components/landing/TaxiSign.tsx": {
-    "mtime": 1794337778.895939,
-    "seen": 1794337802.923896,
+    "mtime": 1794338534.1126528,
+    "seen": 1794339462.771904,
     "ast_hash": "fcfc858ea9d9a7b53272f60aea6e906f",
     "semantic_hash": ""
   },
@@ -849,6 +849,18 @@
     "mtime": 1794337325.196956,
     "seen": 1794337507.045995,
     "ast_hash": "4211605bbc6a79220d9b12b1e3032b2a",
+    "semantic_hash": ""
+  },
+  "src/components/landing/NightRoad.tsx": {
+    "mtime": 1794339434.531254,
+    "seen": 1794339462.771901,
+    "ast_hash": "d67d7d4e5a2fdb1eeb674889351ab6f7",
+    "semantic_hash": ""
+  },
+  "src/components/landing/SiteFooter.tsx": {
+    "mtime": 1794339274.767293,
+    "seen": 1794339462.771903,
+    "ast_hash": "3b849d0bc9624285059e4f4c17480cb6",
     "semantic_hash": ""
   },
   "package-lock.json": {
