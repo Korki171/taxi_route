@@ -42,7 +42,7 @@ const DAY: Palette = {
   snow: ["rgba(255,255,255,0.75)", "rgba(255,255,255,0.5)"], rim: "255,255,255",
   road: "#3a3b3d", roadLine: "rgba(255,255,255,0.35)", dash: "rgba(255,255,255,0.8)", ground: "#f6f5f1",
   mist: [255, 255, 255], mistAlpha: [0.55, 0.4],
-  car: "#161616", carRim: "rgba(255,255,255,0.25)", glass: "#5b6670", beam: "255,250,230",
+  car: "#f4f4f2", carRim: "rgba(0,0,0,0.35)", glass: "#4a5560", beam: "255,250,230",
 };
 const DRIVE_MS = 15000;
 const PAUSE_MS = 5000;
