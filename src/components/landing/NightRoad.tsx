@@ -2,20 +2,48 @@
 
 import { useEffect, useRef } from "react";
 
-// Tiroler Nacht hinter dem Footer: Sternenhimmel mit Mond, vier Bergketten (in der Mitte das Tal, wo der Text steht),
-// Nebel zwischen den Ketten, vorne eine Straße. Ein Taxi mit gelb leuchtendem Dachschild fährt ab und zu durch.
-// Himmel, Berge und Straße werden je Größe einmal in eigene Leinwände gemalt; pro Bild kommen nur Nebel und Taxi dazu.
+// Tirol hinter dem Footer: Himmel mit Mond (Nacht, dunkler Modus) oder Sonne (Tag, heller Modus), vier Bergketten
+// (in der Mitte das Tal, wo der Text steht), Nebel zwischen den Ketten, vorne eine Straße. Ein Taxi mit gelbem Dachschild fährt ab und zu durch.
+// Himmel, Berge und Straße werden je Größe und Modus einmal in eigene Leinwände gemalt; pro Bild kommen nur Nebel und Taxi dazu.
+// Der Modus kommt aus data-theme der umgebenden .hp und wechselt mit dem Umschalter.
 // Läuft nur, solange der Footer sichtbar ist. Bei reduzierter Bewegung steht das Taxi still in der Mitte.
 
 const TAXI = "#f5c518";
-const GROUND = "#0f0f0f";
-/** Bergketten von hinten nach vorne: [Grat, Fuß] */
-const RIDGES: [string, string][] = [
-  ["#2c2e33", "#1d1e22"],
-  ["#222327", "#18191c"],
-  ["#1a1b1e", "#141416"],
-  ["#141415", "#0f0f0f"],
-];
+
+type Palette = {
+  night: boolean;
+  sky: [string, string];
+  /** Mond- oder Sonnenscheibe und ihr Schein */
+  orb: string; halo: string;
+  /** Bergketten von hinten nach vorne: [Grat, Fuß] */
+  ridges: [string, string][];
+  snow: [string, string]; rim: string;
+  road: string; roadLine: string; dash: string; ground: string;
+  mist: [number, number, number]; mistAlpha: [number, number];
+  car: string; carRim: string; glass: string; beam: string;
+};
+
+const NIGHT: Palette = {
+  night: true,
+  sky: ["#0a0b0e", "#1a1b20"],
+  orb: "#e9e7dc", halo: "232,230,218",
+  ridges: [["#2c2e33", "#1d1e22"], ["#222327", "#18191c"], ["#1a1b1e", "#141416"], ["#141415", "#0f0f0f"]],
+  snow: ["rgba(226,229,236,0.16)", "rgba(226,229,236,0.09)"], rim: "235,236,240",
+  road: "#0b0b0c", roadLine: "rgba(230,230,230,0.10)", dash: "rgba(230,230,230,0.16)", ground: "#0f0f0f",
+  mist: [150, 154, 164], mistAlpha: [0.5, 0.35],
+  car: "#050505", carRim: "rgba(255,255,255,0.14)", glass: "#1c1d21", beam: "255,244,214",
+};
+
+const DAY: Palette = {
+  night: false,
+  sky: ["#cfdbe6", "#f1eee6"],
+  orb: "#fff6d8", halo: "255,236,170",
+  ridges: [["#b8c1cb", "#c9d0d6"], ["#9eaab4", "#b4bcc2"], ["#8a968e", "#a3ab9f"], ["#6f7a68", "#f6f5f1"]],
+  snow: ["rgba(255,255,255,0.75)", "rgba(255,255,255,0.5)"], rim: "255,255,255",
+  road: "#3a3b3d", roadLine: "rgba(255,255,255,0.35)", dash: "rgba(255,255,255,0.8)", ground: "#f6f5f1",
+  mist: [255, 255, 255], mistAlpha: [0.55, 0.4],
+  car: "#161616", carRim: "rgba(255,255,255,0.25)", glass: "#5b6670", beam: "255,250,230",
+};
 const DRIVE_MS = 15000;
 const PAUSE_MS = 5000;
 
@@ -57,7 +85,7 @@ function ridgeHeight(n: (x: number) => number, x: number) {
 type Scene = {
   W: number; H: number; dpr: number; roadY: number; roadH: number;
   sky: HTMLCanvasElement; ridges: HTMLCanvasElement[]; road: HTMLCanvasElement; mist: HTMLCanvasElement;
-  mistY: number[];
+  mistY: number[]; P: Palette;
 };
 
 const MX = 24; // Überstand links und rechts für die Parallaxe
@@ -71,19 +99,19 @@ function layer(w: number, h: number, dpr: number) {
   return { c, g };
 }
 
-function buildScene(W: number, H: number, dpr: number): Scene {
+function buildScene(W: number, H: number, dpr: number, P: Palette): Scene {
   const roadH = Math.max(30, H * 0.055);
   const roadY = H - roadH - Math.max(24, H * 0.04);
 
-  // Himmel, Sterne, Mond
+  // Himmel, Sterne (nur nachts), Mond oder Sonne
   const sky = layer(W, H, dpr);
   const grad = sky.g.createLinearGradient(0, 0, 0, H * 0.75);
-  grad.addColorStop(0, "#0a0b0e");
-  grad.addColorStop(1, "#1a1b20");
+  grad.addColorStop(0, P.sky[0]);
+  grad.addColorStop(1, P.sky[1]);
   sky.g.fillStyle = grad;
   sky.g.fillRect(0, 0, W, H);
   const r = rng(7);
-  const stars = Math.round((W * H) / 4200);
+  const stars = P.night ? Math.round((W * H) / 4200) : 0;
   for (let i = 0; i < stars; i++) {
     const x = r() * W;
     const y = Math.pow(r(), 1.5) * H * 0.62;
@@ -97,23 +125,23 @@ function buildScene(W: number, H: number, dpr: number): Scene {
   const mx = narrow ? W - mr * 2.4 : W * 0.82;
   const my = narrow ? mr * 2.4 : H * 0.15;
   const halo = sky.g.createRadialGradient(mx, my, 0, mx, my, mr * 9);
-  halo.addColorStop(0, "rgba(232,230,218,0.16)");
-  halo.addColorStop(1, "rgba(232,230,218,0)");
+  halo.addColorStop(0, `rgba(${P.halo},${P.night ? 0.16 : 0.55})`);
+  halo.addColorStop(1, `rgba(${P.halo},0)`);
   sky.g.fillStyle = halo;
   sky.g.fillRect(0, 0, W, H);
-  sky.g.fillStyle = "#e9e7dc";
+  sky.g.fillStyle = P.orb;
   sky.g.beginPath();
   sky.g.arc(mx, my, mr, 0, Math.PI * 2);
   sky.g.fill();
   sky.g.fillStyle = "rgba(160,158,148,0.28)";
-  for (const [dx, dy, cr] of [[-0.3, -0.25, 0.26], [0.32, 0.12, 0.18], [-0.05, 0.4, 0.14]]) {
+  if (P.night) for (const [dx, dy, cr] of [[-0.3, -0.25, 0.26], [0.32, 0.12, 0.18], [-0.05, 0.4, 0.14]]) {
     sky.g.beginPath();
     sky.g.arc(mx + dx * mr, my + dy * mr, cr * mr, 0, Math.PI * 2);
     sky.g.fill();
   }
 
   // Bergketten: in der Mitte flacher (das Tal), außen höher
-  const ridges = RIDGES.map(([top, foot], i) => {
+  const ridges = P.ridges.map(([top, foot], i) => {
     const L = layer(W + MX * 2, H, dpr);
     const n = noise1(101 + i * 37);
     const base = H * (0.6 + i * 0.075);
@@ -140,14 +168,14 @@ function buildScene(W: number, H: number, dpr: number): Scene {
     // Schnee auf den hohen Gipfeln der hinteren Ketten
     if (i < 2) {
       const snowLine = base - amp * 0.55;
-      L.g.fillStyle = i === 0 ? "rgba(226,229,236,0.16)" : "rgba(226,229,236,0.09)";
+      L.g.fillStyle = P.snow[i];
       L.g.beginPath();
       pathAlong(L.g);
       for (let k = crest.length - 1; k >= 0; k--) L.g.lineTo(k * 2, crest[k] + Math.max(0, snowLine - crest[k]) * 0.45);
       L.g.closePath();
       L.g.fill();
     }
-    L.g.strokeStyle = `rgba(235,236,240,${0.07 - i * 0.015})`;
+    L.g.strokeStyle = `rgba(${P.rim},${(P.night ? 0.07 : 0.35) - i * (P.night ? 0.015 : 0.08)})`;
     L.g.lineWidth = 1;
     L.g.beginPath();
     pathAlong(L.g);
@@ -158,14 +186,14 @@ function buildScene(W: number, H: number, dpr: number): Scene {
   // Straße und Boden davor
   const road = layer(W, H - roadY + 8, dpr);
   const y0 = 8;
-  road.g.fillStyle = "#0b0b0c";
+  road.g.fillStyle = P.road;
   road.g.fillRect(0, y0, W, roadH);
-  road.g.fillStyle = "rgba(230,230,230,0.10)";
+  road.g.fillStyle = P.roadLine;
   road.g.fillRect(0, y0, W, 1);
   road.g.fillRect(0, y0 + roadH - 1, W, 1);
-  road.g.fillStyle = "rgba(230,230,230,0.16)";
+  road.g.fillStyle = P.dash;
   for (let x = -((W / 2) % 44); x < W; x += 44) road.g.fillRect(x, y0 + roadH / 2 - 1, 20, 2);
-  road.g.fillStyle = GROUND;
+  road.g.fillStyle = P.ground;
   road.g.fillRect(0, y0 + roadH, W, H);
 
   // Nebelband, waagrecht kachelbar
@@ -177,22 +205,22 @@ function buildScene(W: number, H: number, dpr: number): Scene {
     for (let x = 0; x < 512; x++) {
       const v = 0.6 * nm((x / 512) * 12 + y * 0.05) + 0.4 * nm((x / 512) * 24 + 77 + y * 0.09);
       const k = (y * 512 + x) * 4;
-      img.data[k] = 150; img.data[k + 1] = 154; img.data[k + 2] = 164;
+      [img.data[k], img.data[k + 1], img.data[k + 2]] = P.mist;
       img.data[k + 3] = Math.max(0, Math.min(1, (v - 0.35) * 2.4)) * bell * 255;
     }
   }
   mist.g.putImageData(img, 0, 0);
 
-  return { W, H, dpr, roadY, roadH, sky: sky.c, ridges, road: road.c, mist: mist.c, mistY: [H * 0.68, H * 0.78] };
+  return { W, H, dpr, roadY, roadH, sky: sky.c, ridges, road: road.c, mist: mist.c, mistY: [H * 0.68, H * 0.78], P };
 }
 
 /** Das Taxi von der Seite, Front nach rechts. x = linke Kante, b = Unterkante der Räder. */
-function drawTaxi(g: CanvasRenderingContext2D, x: number, b: number, L: number, roadY: number, roadH: number) {
+function drawTaxi(g: CanvasRenderingContext2D, x: number, b: number, L: number, roadY: number, roadH: number, P: Palette) {
   const r = L * 0.1;
   // Lichtkegel und Lichtfleck auf der Straße
   const beam = g.createLinearGradient(x + L, 0, x + L * 3.2, 0);
-  beam.addColorStop(0, "rgba(255,244,214,0.22)");
-  beam.addColorStop(1, "rgba(255,244,214,0)");
+  beam.addColorStop(0, `rgba(${P.beam},${P.night ? 0.22 : 0.3})`);
+  beam.addColorStop(1, `rgba(${P.beam},0)`);
   g.fillStyle = beam;
   g.beginPath();
   g.moveTo(x + L, b - L * 0.2);
@@ -207,7 +235,7 @@ function drawTaxi(g: CanvasRenderingContext2D, x: number, b: number, L: number, 
   g.fillRect(x - L * 0.3, b - L * 1.3, L * 1.6, L * 1.4);
 
   // Karosserie
-  g.fillStyle = "#050505";
+  g.fillStyle = P.car;
   g.beginPath();
   g.moveTo(x + L * 0.02, b - r);
   g.lineTo(x + L * 0.02, b - L * 0.25);
@@ -219,11 +247,11 @@ function drawTaxi(g: CanvasRenderingContext2D, x: number, b: number, L: number, 
   g.lineTo(x + L, b - r);
   g.closePath();
   g.fill();
-  g.strokeStyle = "rgba(255,255,255,0.14)";
+  g.strokeStyle = P.carRim;
   g.lineWidth = 1;
   g.stroke();
   // Fenster
-  g.fillStyle = "#1c1d21";
+  g.fillStyle = P.glass;
   g.beginPath();
   g.moveTo(x + L * 0.25, b - L * 0.31);
   g.lineTo(x + L * 0.32, b - L * 0.405);
@@ -297,7 +325,7 @@ export function NightRoad() {
           const bw = W * 1.6;
           const bh = H * (i === 1 ? 0.2 : 0.14);
           const off = ((t * (i === 1 ? 0.006 : 0.01)) % bw);
-          ctx.globalAlpha = i === 1 ? 0.5 : 0.35;
+          ctx.globalAlpha = s.P.mistAlpha[i - 1];
           ctx.drawImage(s.mist, -off, s.mistY[i - 1] - bh / 2, bw, bh);
           ctx.drawImage(s.mist, bw - off, s.mistY[i - 1] - bh / 2, bw, bh);
           ctx.globalAlpha = 1;
@@ -307,12 +335,12 @@ export function NightRoad() {
       const L = Math.max(72, Math.min(116, W * 0.075));
       const b = s.roadY + s.roadH * 0.72;
       if (reduced) {
-        drawTaxi(ctx, W * 0.56, b, L, s.roadY, s.roadH);
+        drawTaxi(ctx, W * 0.56, b, L, s.roadY, s.roadH, s.P);
       } else {
         const cycle = t % (DRIVE_MS + PAUSE_MS);
         if (cycle < DRIVE_MS) {
           const p = cycle / DRIVE_MS;
-          drawTaxi(ctx, -L * 3.4 + (W + L * 4.6) * p, b, L, s.roadY, s.roadH);
+          drawTaxi(ctx, -L * 3.4 + (W + L * 4.6) * p, b, L, s.roadY, s.roadH, s.P);
         }
       }
     };
@@ -333,7 +361,7 @@ export function NightRoad() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(H * dpr);
-      scene = buildScene(W, H, dpr);
+      scene = buildScene(W, H, dpr, box.closest<HTMLElement>(".hp")?.dataset.theme === "dark" ? NIGHT : DAY);
       draw(performance.now());
     };
 
@@ -348,6 +376,10 @@ export function NightRoad() {
     document.fonts?.ready.then(() => draw(performance.now()));
     const ro = new ResizeObserver(resize);
     ro.observe(box);
+    // Umschalter hell/dunkel: Szene neu malen
+    const hp = box.closest(".hp");
+    const mo = new MutationObserver(resize);
+    if (hp) mo.observe(hp, { attributes: true, attributeFilter: ["data-theme"] });
     const io = new IntersectionObserver(([e]) => {
       visible = !!e?.isIntersecting;
       if (visible) wake();
@@ -357,6 +389,7 @@ export function NightRoad() {
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      mo.disconnect();
       io.disconnect();
       box.removeEventListener("pointermove", onMove);
     };

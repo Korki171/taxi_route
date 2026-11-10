@@ -846,15 +846,15 @@
     "semantic_hash": ""
   },
   "src/components/landing/NightRoad.tsx": {
-    "mtime": 1794339434.531254,
-    "seen": 1794339462.771901,
-    "ast_hash": "d67d7d4e5a2fdb1eeb674889351ab6f7",
+    "mtime": 1794340935.5376303,
+    "seen": 1794340988.460408,
+    "ast_hash": "0a32888c07fbf7dcb605daec3416e9c7",
     "semantic_hash": ""
   },
   "src/components/landing/SiteFooter.tsx": {
-    "mtime": 1794340370.6056914,
-    "seen": 1794340427.9362319,
-    "ast_hash": "4b5a23978910c4d678f8ecf116272ed4",
+    "mtime": 1794340943.5589116,
+    "seen": 1794340988.4604108,
+    "ast_hash": "0a1eeb6f026a178d131bb708f6147d52",
     "semantic_hash": ""
   },
   "src/components/landing/PartnerRelay.tsx": {
