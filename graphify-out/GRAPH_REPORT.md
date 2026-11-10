@@ -1,7 +1,7 @@
 # Graph Report - taxi_route-hero  (2026-11-10)
 
 ## Corpus Check
-- 143 files · ~80,896 words
+- 143 files · ~80,792 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 12 file(s) not represented in the graph (top: .css 5, (none) 3, .example 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `75a9a328`
+- Built from commit: `35d7ed76`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -64,14 +64,14 @@
 ## Surprising Connections (you probably didn't know these)
 - `main()` --calls--> `hashPassword()`  [EXTRACTED]
   prisma/seed.ts → src/server/auth/password.ts
-- `at()` --calls--> `fromLocalInput()`  [EXTRACTED]
-  prisma/demo-boerse.ts → src/lib/format.ts
-- `liveFleetDemo()` --calls--> `recordPositions()`  [EXTRACTED]
-  prisma/demo-boerse.ts → src/server/services/driver.ts
 - `main()` --calls--> `createVehicle()`  [EXTRACTED]
   prisma/demo-boerse.ts → src/server/services/fleet.ts
 - `setup()` --calls--> `createVehicle()`  [EXTRACTED]
   tests/fleet-tracking.test.ts → src/server/services/fleet.ts
+- `at()` --calls--> `fromLocalInput()`  [EXTRACTED]
+  prisma/demo-boerse.ts → src/lib/format.ts
+- `liveFleetDemo()` --calls--> `recordPositions()`  [EXTRACTED]
+  prisma/demo-boerse.ts → src/server/services/driver.ts
 
 ## Import Cycles
 - 2-file cycle: `src/server/notifications.ts -> src/server/services/marketplace.ts -> src/server/notifications.ts`

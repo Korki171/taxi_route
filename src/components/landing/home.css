@@ -181,9 +181,7 @@
 
 .hp-counts { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(28px, 4vw, 64px); align-items: center; }
 .hp-counts .hp-points { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.hp-faq-box { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: clamp(28px, 4vw, 64px); align-items: start; }
 .hp-photo img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
-.hp-photo-tall img { aspect-ratio: 4 / 5; }
 .hp-photo figcaption, .hp-band figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
 .hp-band img { width: 100%; aspect-ratio: 21 / 8; object-fit: cover; }
 .hp-points { margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px 28px; }
@@ -256,8 +254,7 @@
 }
 
 @media (max-width: 900px) {
-  .hp-counts, .hp-faq-box { grid-template-columns: minmax(0, 1fr); }
-  .hp-photo-tall { max-width: 420px; }
+  .hp-counts { grid-template-columns: minmax(0, 1fr); }
   .hp-points { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hp-routes-box, .hp-price-grid, .hp-hero { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .hp-hero { min-height: 0; }

@@ -198,11 +198,11 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           </div>
         </section>
 
-        {/* Weitergabe: auf grauer Fläche, links ein Taxi mit Dachschild von 1965, rechts die vier Punkte als Liste ohne Linien */}
+        {/* Weitergabe: auf grauer Fläche, links eine verschneite Dorfstraße in Tirol, rechts die vier Punkte als Liste ohne Linien */}
         <section className="hp-box hp-field hp-counts" aria-labelledby="hp-zaehlt">
           <figure className="hp-photo">
-            <Photo src="/landing/welt/mercedes190dctaxi-1965.jpg" alt={t("Schwarzes Mercedes-Taxi von 1965 mit Taxischild auf dem Dach")} w={1920} h={1289} />
-            <figcaption>{t("Das Schild auf dem Dach gibt es seit Jahrzehnten: Mercedes 190 Dc als Taxi, 1965.")}</figcaption>
+            <Photo src="/landing/welt/mathon-ischgl-winter.jpg" alt={t("Verschneite Straße im Schneetreiben in Mathon bei Ischgl, mit Bushaltestelle")} w={1920} h={1080} />
+            <figcaption>{t("Mathon bei Ischgl im Schneetreiben.")}</figcaption>
           </figure>
           <div>
             <h2 id="hp-zaehlt">{t("Was bei einer Weitergabe zählt.")}</h2>
@@ -231,10 +231,10 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           <PartnerRelay L={relay} />
         </section>
 
-        {/* Ruhepunkt: Verkehrszeichen über der Autobahn, über die ganze Breite */}
+        {/* Ruhepunkt: Serpentinen im Schnee am Arlberg, über die ganze Breite */}
         <figure className="hp-band">
-          <Photo src="/landing/welt/vba-showing-100-kilometers-per-hour-limit.jpg" alt={t("Elektronische Verkehrszeichen über einer österreichischen Autobahn zeigen Tempo 100 nach IG-L")} w={1920} h={1285} />
-          <figcaption>{t("Tempo 100 nach IG-L, wie es Fahrer auf Österreichs Autobahnen kennen.")}</figcaption>
+          <Photo src="/landing/welt/stuben-arlberg-winter.jpg" alt={t("Verschneite Passstraße mit Serpentinen bei Stuben am Arlberg, von oben")} w={1920} h={1281} />
+          <figcaption>{t("Die Passstraße bei Stuben am Arlberg im Winter.")}</figcaption>
         </figure>
 
         {/* Preis: die Zahl als Tafelziffern, auf grauer Fläche */}
@@ -253,22 +253,15 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           </div>
         </section>
 
-        {/* Fragen: echte Tabelle, daneben ein Taxi-Wegweiser */}
-        <section id="fragen" className="hp-box hp-faq-box" aria-labelledby="hp-fragen">
-          <div>
-            <h2 id="hp-fragen">{t("Häufige Fragen")}</h2>
-            <table className="hp-facts hp-faq">
-              <tbody>
-                {FAQ.map(([q, a]) => (
-                  <tr key={q}><th scope="row">{t(q)}</th><td>{t(a)}</td></tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <figure className="hp-photo hp-photo-tall">
-            <Photo src="/landing/welt/taxi-sign-inzersdorf.jpg" alt={t("Gelbes Taxi-Schild mit Pfeil an einer Einfahrt in Wien")} w={1920} h={1314} />
-            <figcaption>{t("Taxi-Wegweiser am Großmarkt Wien-Inzersdorf.")}</figcaption>
-          </figure>
+        <section id="fragen" className="hp-box" aria-labelledby="hp-fragen">
+          <h2 id="hp-fragen">{t("Häufige Fragen")}</h2>
+          <table className="hp-facts hp-faq">
+            <tbody>
+              {FAQ.map(([q, a]) => (
+                <tr key={q}><th scope="row">{t(q)}</th><td>{t(a)}</td></tr>
+              ))}
+            </tbody>
+          </table>
         </section>
       </main>
 
