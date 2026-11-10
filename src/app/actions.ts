@@ -7,6 +7,7 @@ import { AppError, invalid } from "@/server/errors";
 import { adminReviewCapability, adminReviewDocument, adminSetOrganizationPlan, adminSetOrganizationStatus } from "@/server/services/admin";
 import { login, switchActiveOrganization } from "@/server/services/auth";
 import { deleteDocument, uploadDocument } from "@/server/services/documents";
+import { sendMessage, updateJobAlerts } from "@/server/services/messages";
 import { returnBooking, uploadBookingDocument } from "@/server/services/booking-extras";
 import { addPartner, advanceAudience, blockOrg, removePartner, takeOwnRequest, unblockOrg } from "@/server/services/partners";
 import {
@@ -297,6 +298,21 @@ export async function createTransferRequestAction(fd: FormData) {
       invitedOrgIds: fd.getAll("invitedOrgIds").map(String),
     });
     return withParam(`/boerse/auftrag/${req.id}`, "ok", req.visibility === "INVITED" ? "Anfrage an die ausgewählten Unternehmen geschickt." : "Auftrag veröffentlicht.");
+  });
+}
+
+export async function sendMessageAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await sendMessage(await getActor(), id, { body: str(fd, "body"), threadOrgId: str(fd, "threadOrgId") || undefined });
+    return withParam(`/boerse/auftrag/${id}`, "ok", "Nachricht gesendet.") + "#nachrichten";
+  });
+}
+
+export async function updateJobAlertsAction(fd: FormData) {
+  await runAction("/organization", async () => {
+    await updateJobAlerts(await getActor(), { mailNewJobs: fd.get("mailNewJobs") === "on", from: str(fd, "from"), to: str(fd, "to") });
+    return withParam("/organization", "ok", "Benachrichtigungen gespeichert.");
   });
 }
 

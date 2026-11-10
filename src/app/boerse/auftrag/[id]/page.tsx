@@ -22,6 +22,7 @@ import { actorCan } from "@/server/authz/context";
 import { AppError } from "@/server/errors";
 import { listVehicles } from "@/server/services/fleet";
 import { escalateDueRequests } from "@/server/services/partners";
+import { listThreads } from "@/server/services/messages";
 import { listBookingDocuments } from "@/server/services/booking-extras";
 import { getTransferRequest, listProviderDirectory, MAX_INVITATIONS, referenceOf } from "@/server/services/marketplace";
 import { EVENT_LABEL } from "@/server/services/transfer-events";
@@ -38,6 +39,7 @@ import {
   rejectQuoteAction,
   submitQuoteAction,
   takeFixedPriceAction,
+  sendMessageAction,
   takeOwnRequestAction,
   uploadBookingDocumentAction,
   withdrawQuoteAction,
@@ -81,6 +83,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
       : orgId && orgId === booking?.providerOrgId ? booking.providerOrg.name
       : quotes.find((q) => q.providerOrgId === orgId)?.providerOrg.name
         ?? invitations.find((i) => i.providerOrgId === orgId)?.providerOrg.name ?? t("Anbieter");
+  const chat = await listThreads(actor, id).catch(() => null);
   const bookingDocs = booking && booking.status !== "CANCELLED" ? await listBookingDocuments(actor, booking.id) : [];
   const canDocs = !!booking && booking.status !== "CANCELLED" && (actorCan(actor, "bookings.manage") || actorCan(actor, "jobs.accept"));
   const scope = booking?.scope as { vehicleCategory?: VehicleCategory | null } | undefined;
@@ -447,6 +450,38 @@ export default async function RequestDetailPage({ params, searchParams }: { para
           <input type="hidden" name="requestId" value={r.id} />
           <button type="submit" className="danger">{t("Auftrag zurückziehen")}</button>
         </form>
+      )}
+
+      {chat && chat.threads.length > 0 && (
+        <section className="card stack" id="nachrichten">
+          <h2>{t("Nachrichten")}</h2>
+          {chat.role === "counterpart" && chat.threads[0].messages.length === 0 && (
+            <p className="muted">{t("Rückfragen zum Auftrag stellen Sie hier direkt dem Auftraggeber.")}</p>
+          )}
+          {chat.threads.map((th) => (
+            <div key={th.threadOrgId} className="stack">
+              {th.withName && <h3>{th.withName}</h3>}
+              {th.messages.length > 0 && (
+                <ol className="timeline">
+                  {th.messages.map((m) => (
+                    <li key={m.id}>
+                      <time dateTime={m.createdAt.toISOString()}>{f.dateTime(m.createdAt)}</time>
+                      <span><strong>{chat.names.get(m.senderOrgId)}</strong>: {m.body}</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+              {chat.canWrite && (
+                <form action={sendMessageAction} className="stack">
+                  <input type="hidden" name="requestId" value={r.id} />
+                  <input type="hidden" name="threadOrgId" value={th.threadOrgId} />
+                  <textarea name="body" rows={2} maxLength={1000} required aria-label={t("Nachricht")} placeholder={t("Nachricht schreiben")} />
+                  <div><button type="submit" className="secondary">{t("Senden")}</button></div>
+                </form>
+              )}
+            </div>
+          ))}
+        </section>
       )}
 
       {booking && (bookingDocs.length > 0 || canDocs) && (
