@@ -111,7 +111,7 @@
 .hp-box { padding-block: clamp(56px, 8vw, 120px); }
 .hp-hero { padding-block: clamp(24px, 4vw, 56px) clamp(56px, 8vw, 120px); }
 /* Ganze Fläche in einem Grauton, von Rand zu Rand der Seite; der Inhalt bleibt am Seitenrand */
-.hp .hp-field, .hp .hp-band { margin-inline: calc(-1 * clamp(16px, 3vw, 40px)); padding-inline: clamp(16px, 3vw, 40px); }
+.hp .hp-field { margin-inline: calc(-1 * clamp(16px, 3vw, 40px)); padding-inline: clamp(16px, 3vw, 40px); }
 .hp-field { background: var(--stone); }
 .hp-box h2:not(.hp-d) { font-size: clamp(26px, 3vw, 40px); line-height: 1.1; letter-spacing: -0.03em; font-weight: 600; text-wrap: balance; margin-bottom: 28px; }
 .hp-box h3 { font-size: 20px; line-height: 1.2; letter-spacing: -0.02em; font-weight: 600; }
@@ -169,10 +169,11 @@
 .hp tbody tr { border-bottom: 1px solid var(--frame); }
 .hp tbody tr:last-child { border-bottom: 0; }
 
-.hp-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(24px, 4vw, 56px); row-gap: 12px; grid-template-rows: auto auto 1fr; margin-top: clamp(56px, 7vw, 96px); padding: clamp(20px, 3vw, 40px); background: var(--stone); }
-.hp-pair > div { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 12px; }
-.hp-pair p { font-size: 16px; line-height: 1.5; color: var(--muted); max-width: 46ch; }
-.hp-pair .hp-chat, .hp-pair .hp-paper { margin-top: 8px; }
+.hp-proof { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(28px, 5vw, 80px); align-items: center; margin-top: clamp(64px, 8vw, 120px); }
+.hp-proof > div { display: grid; gap: 16px; justify-items: start; }
+.hp-proof p { font-size: 20px; line-height: 1.5; max-width: 40ch; }
+.hp .hp-price { padding-bottom: clamp(72px, 9vw, 140px); }
+.hp .hp-price + .hp-faq-box { padding-top: 0; }
 
 .hp-facts th { width: 32%; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; padding-right: 32px; }
 .hp-facts { max-width: 1040px; }
@@ -183,11 +184,7 @@
 .hp-faq-box { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: clamp(28px, 4vw, 64px); align-items: start; }
 .hp-faq-box .hp-photo { margin-top: 72px; }
 .hp-photo img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; }
-.hp-photo figcaption, .hp-band figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
-.hp-band img { width: 100%; aspect-ratio: 21 / 8; object-fit: cover; }
-.hp-points { margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px 28px; }
-.hp-points dt { font-size: 20px; font-weight: 650; letter-spacing: -0.01em; line-height: 1.25; }
-.hp-points dd { margin: 8px 0 0; font-size: 16px; line-height: 1.5; }
+.hp-photo figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
 .hp-routes-box { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 400px); gap: 48px; align-items: start; }
 
 /* Staffel: dieselbe Fahrt wandert von Stufe zu Stufe, bis ein Schild auf BESETZT springt */
@@ -245,8 +242,7 @@
   @supports (animation-timeline: view()) {
     /* Beim Scrollen gleiten Teile nach oben; sie sind dabei nie ganz unsichtbar, damit vor dem Einblenden nichts leer wirkt */
     @keyframes hp-scroll-in { from { opacity: 0.5; transform: translateY(24px); } to { opacity: 1; transform: none; } }
-    .hp-box:not(.hp-hero) h2, .hp-steps li, .hp-stairs li, .hp-pair > div, .hp-facts, .hp-points > div, .hp-relay, .hp-price-sign { animation: hp-scroll-in linear both; animation-timeline: view(); animation-range: entry 0% entry 35%; }
-  }
+    .hp-box:not(.hp-hero) h2, .hp-steps li, .hp-stairs li, .hp-proof > *, .hp-facts,   }
 }
 @media (prefers-reduced-motion: reduce) {
   .hp { scroll-behavior: auto; }
@@ -258,8 +254,7 @@
   .hp-faq-box { grid-template-columns: minmax(0, 1fr); }
   .hp-faq-box .hp-photo { margin-top: 0; max-width: 420px; }
   .hp-photo img { aspect-ratio: 4 / 3; }
-  .hp-points { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .hp-routes-box, .hp-price-grid, .hp-hero { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    .hp-routes-box, .hp-price-grid, .hp-hero { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .hp-hero { min-height: 0; }
   .hp-stage { justify-items: start; }
   .hp-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -268,9 +263,7 @@
 
 /* Telefon: Tabellen werden zu Zeilenblöcken */
 @media (max-width: 760px) {
-  .hp-band img { aspect-ratio: 4 / 3; }
-  .hp-points { grid-template-columns: minmax(0, 1fr); gap: 22px; }
-  .hp { font-size: 16px; }
+      .hp { font-size: 16px; }
   .hp-head nav { gap: 0 16px; }
   .hp-hero h1 { font-size: 15vw; }
   .hp-lead { font-size: 18px; }
@@ -283,8 +276,8 @@
   .hp td, .hp th { padding: 2px 0; }
   .hp td[data-label]::before { content: attr(data-label) ": "; font-size: 14px; color: var(--muted); }
   .hp-facts th { width: auto; padding-bottom: 4px; }
-  .hp-pair, .hp-routes-box, .hp-price-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
-  .hp-pair { margin-top: 40px; }
+  .hp-proof, .hp-routes-box, .hp-price-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .hp-proof { margin-top: 40px; }
 }
 
 /* Grund bis an den Rand, passend zum Modus */
