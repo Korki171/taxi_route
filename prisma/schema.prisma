@@ -192,6 +192,21 @@ model Organization {
   driverShifts      DriverShift[]
   partners          PartnerLink[]     @relation("OwnPartners")
   partnerOf         PartnerLink[]     @relation("PartnerOf")
+  blocks            OrgBlock[]        @relation("OwnBlocks")
+  blockedBy         OrgBlock[]        @relation("BlockedBy")
+}
+
+/// Sperrliste: gesperrte Unternehmen sehen keine Aufträge dieses Unternehmens.
+model OrgBlock {
+  id           String       @id @default(cuid())
+  orgId        String
+  org          Organization @relation("OwnBlocks", fields: [orgId], references: [id], onDelete: Cascade)
+  blockedOrgId String
+  blockedOrg   Organization @relation("BlockedBy", fields: [blockedOrgId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
+
+  @@unique([orgId, blockedOrgId])
+  @@index([blockedOrgId])
 }
 
 /// Eigenes Partnernetzwerk: Unternehmen, die ein Betrieb in Stufe 2 zuerst sehen lässt (einseitig, ohne Zustimmung).
