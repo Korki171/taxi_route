@@ -1,29 +1,35 @@
 /* Startseite „Das Taxischild“: Keine Fahrt bleibt liegen. Footer mit Nachtszene in footer.css. Das gelbe Dachschild leuchtet FREI und geht auf BESETZT, sobald jemand übernimmt.
    Doppelrahmen und Linien in Grau (--frame) nur um Abschnitte und in echten Tabellen, damit nur Gelb und Rot leuchten.
-   Farbe „Ruß bei Nacht“ (taste-skill, Palette „Soot and lime“ mit Taxigelb statt Limette): Rußschwarz als Grund, helle Schrift, Taxigelb auf dem freien Schild und den Buttons, Rot nur auf dem besetzten Schild.
-   App-Ausschnitte (data-ui: Fahrtkarte, Chat, Bestätigung) bleiben hell wie echte Bildschirme.
+   Zwei Modi: hell (Standard, Papierweiß) und „Ruß bei Nacht“ (dunkel). Taxigelb auf dem freien Schild und den Buttons, Rot nur auf dem besetzten Schild.
+   App-Ausschnitte (data-ui: Fahrtkarte, Chat, Bestätigung) folgen dem Modus über --surface, --stone und --bubble.
    Schrift: Imbue für Ziffern und Wörter in Tafelgröße, Albert Sans zum Lesen; Stufen 14 / 16 / 18 / 28 / Display.
    Bewegung (emil-design-eng): Zeilen kommen nacheinander, Zustandswechsel überblendet, Druck auf Knöpfen; alles aus bei reduzierter Bewegung. */
 .hp {
-  --paper: #0f0f0f;
-  --stone: #1a1a1a;
-  --stone-2: #262626;
-  --navy: #f2f2f2;
-  --ink: #f2f2f2;
-  --muted: #a3a3a3;
+  /* Hell (Standard): warmes Papierweiß, schwarze Schrift, Taxigelb auf Schild und Knöpfen */
+  --paper: #f6f5f1;
+  --surface: #ffffff;
+  --stone: #ecebe6;
+  --stone-2: #e2e1db;
+  --navy: #111111;
+  --ink: #111111;
+  --muted: #5a5a57;
   --accent: #f5c518;
   --accent-hover: #ffd43b;
-  --on-accent: #0f0f0f;
-  --ok-bg: #16331f;
-  --ok: #8fd6a4;
-  --open-bg: #3b3210;
-  --open: #f5d65c;
-  --line: #2c2c2c;
-  --frame: #3a3a3a;
+  --on-accent: #111111;
+  --focus: #111111;
+  --accent-text: #8a6a00;
+  --ok-bg: #dcf3e3;
+  --ok: #145c32;
+  --open-bg: #fff1b8;
+  --open: #5c4a00;
+  --line: #e2e1db;
+  --frame: #c9c7c0;
+  --bubble: #ffffff;
+  --bubble-me: #d9f0cf;
   --taxi: #f5c518;
   --taxi-ink: #111111;
-  --sign-off: #2a2a2a;
-  --sign-off-ink: #8a8a8a;
+  --sign-off: #e2e1db;
+  --sign-off-ink: #8a8a86;
   --sign-cap: #3a3a3a;
   --busy: #d92b21;
   --busy-ink: #ffffff;
@@ -39,8 +45,32 @@
   font-size: 18px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  color-scheme: dark;
+  color-scheme: light;
   scroll-behavior: smooth;
+}
+
+/* Dunkel „Ruß bei Nacht“: per Umschalter im Kopf (Cookie hp-theme), data-theme auf .hp */
+.hp[data-theme="dark"] {
+  --paper: #0f0f0f;
+  --surface: #1a1a1a;
+  --stone: #232323;
+  --stone-2: #2c2c2c;
+  --navy: #f2f2f2;
+  --ink: #f2f2f2;
+  --muted: #a3a3a3;
+  --focus: #f5c518;
+  --accent-text: #f5c518;
+  --ok-bg: #16331f;
+  --ok: #8fd6a4;
+  --open-bg: #3b3210;
+  --open: #f5d65c;
+  --line: #2c2c2c;
+  --frame: #3a3a3a;
+  --bubble: #262626;
+  --bubble-me: #1f3a24;
+  --sign-off: #2a2a2a;
+  --sign-off-ink: #8a8a8a;
+  color-scheme: dark;
 }
 .hp *, .hp *::before, .hp *::after { box-sizing: border-box; }
 .hp h1, .hp h2, .hp h3, .hp p, .hp figure { margin: 0; }
@@ -48,15 +78,12 @@
 .hp a { color: inherit; text-underline-offset: 5px; text-decoration-thickness: 1px; }
 .hp img { display: block; max-width: 100%; height: auto; }
 .hp ::selection { background: var(--accent); color: var(--on-accent); }
-.hp :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.hp :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 .hp [id] { scroll-margin-top: 16px; }
 .hp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .hp-small { font-size: 14px; color: var(--muted); }
 .hp-d { font-family: "Imbue Variable", "Times New Roman", serif; font-weight: 480; text-transform: uppercase; letter-spacing: -0.02em; line-height: 0.9; }
 
-/* App-Ausschnitte bleiben hell, wie echte Bildschirme auf der dunklen Seite */
-.hp [data-ui] { --ink: #0f1a33; --muted: #4d566e; --navy: #1f2b4d; --stone: #e6edf5; --line: #dfe3ea; --open-bg: #fff4c2; --open: #5c4a00; --ok-bg: #dcf3e3; --ok: #145c32; color: var(--ink); }
-.hp [data-ui] .hp-btn { --accent: #1f2b4d; --accent-hover: #0f1a33; --on-accent: #ffffff; }
 
 /* Knopf: eckig, eine Form */
 .hp-btn {
@@ -76,6 +103,7 @@
 .hp-logo svg { display: block; height: 40px; width: auto; }
 .hp-head nav { display: flex; flex-wrap: wrap; align-items: center; gap: 0 24px; font-size: 16px; font-weight: 600; }
 .hp-head nav a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
+.hp-theme { display: inline-grid; place-items: center; width: 44px; height: 44px; border: 0; background: none; color: var(--ink); cursor: pointer; border-radius: 50%; transition: background-color 160ms ease; }
 
 /* Abschnitte im Doppelrahmen */
 .hp-box { border: 3px double var(--frame); padding: clamp(20px, 3.4vw, 52px); margin-bottom: 20px; }
@@ -106,9 +134,9 @@
 .hp-hero h1 { font-size: clamp(56px, 7.6vw, 128px); text-wrap: balance; }
 .hp .hp-lead { margin-top: 32px; max-width: 46ch; font-size: 20px; line-height: 1.45; }
 .hp-stage { display: grid; justify-items: center; }
-.hp-ride { width: 100%; max-width: 480px; margin-top: 18px; background: #fff; padding: 26px 28px; box-shadow: inset 0 0 0 1px var(--line); display: grid; gap: 6px; }
+.hp-ride { width: 100%; max-width: 480px; margin-top: 18px; background: var(--surface); padding: 26px 28px; box-shadow: inset 0 0 0 1px var(--line); display: grid; gap: 6px; }
 .hp-ride-chip { justify-self: start; font-size: 14px; font-weight: 650; padding: 2px 10px; background: var(--open-bg); color: var(--open); transition: background-color 300ms ease, color 300ms ease; }
-.hp-ride-chip[data-state="taken"] { background: var(--navy); color: #fff; }
+.hp-ride-chip[data-state="taken"] { background: var(--navy); color: var(--paper); }
 .hp-ride-route { font-size: 26px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.15; margin-top: 8px !important; }
 .hp-ride-meta { font-size: 16px; color: var(--muted); }
 .hp-ride-price { font-size: 40px; font-weight: 650; letter-spacing: -0.03em; margin: 10px 0 8px !important; font-variant-numeric: tabular-nums; }
@@ -153,8 +181,8 @@
 .hp-relay-steps li { padding-top: 10px; font-size: 14px; font-weight: 600; color: var(--muted); line-height: 1.3; transition: color 300ms ease; }
 .hp-relay-steps li span { display: block; font-family: "Imbue Variable", "Times New Roman", serif; font-size: 30px; line-height: 0.9; }
 .hp-relay-steps li[data-on="true"] { color: var(--ink); }
-.hp-relay-steps li[data-on="true"] span { color: var(--accent); }
-.hp-relay-card { background: #fff; padding: 16px 18px; box-shadow: inset 0 0 0 1px var(--line); display: grid; gap: 4px; }
+.hp-relay-steps li[data-on="true"] span { color: var(--accent-text); }
+.hp-relay-card { background: var(--surface); padding: 16px 18px; box-shadow: inset 0 0 0 1px var(--line); display: grid; gap: 4px; }
 .hp-relay-route { font-size: 18px; font-weight: 650; letter-spacing: -0.01em; line-height: 1.2; margin-top: 4px !important; }
 .hp-relay-card .hp-ride-meta { font-size: 15px; }
 .hp-relay-card .hp-ride-meta b { color: var(--ink); }
@@ -172,7 +200,7 @@
 .hp-stairs li { margin-left: calc(var(--i, 0) * clamp(20px, 5vw, 72px)); padding: 20px 0 22px; border-bottom: 1px solid var(--frame); display: grid; gap: 6px; }
 .hp-stairs li:last-child { border-bottom: 3px double var(--frame); }
 .hp-stairs h3 { display: flex; align-items: baseline; gap: 14px; }
-.hp-stairs h3 span { font-family: "Imbue Variable", "Times New Roman", serif; font-weight: 480; font-size: 40px; line-height: 0.8; color: var(--accent); font-variant-numeric: tabular-nums; }
+.hp-stairs h3 span { font-family: "Imbue Variable", "Times New Roman", serif; font-weight: 480; font-size: 40px; line-height: 0.8; color: var(--accent-text); font-variant-numeric: tabular-nums; }
 .hp-stairs p { font-size: 17px; line-height: 1.5; max-width: 52ch; }
 .hp-stairs-note { margin-top: 22px !important; font-size: 16px; color: var(--muted); max-width: 60ch; }
 
@@ -187,6 +215,7 @@
   .hp-btn:hover:not(:disabled) { background: var(--accent-hover); }
   .hp-btn-ghost:hover:not(:disabled) { background: var(--stone); }
   .hp-head nav a:hover { text-decoration: underline; }
+  .hp-theme:hover { background: var(--stone); }
 }
 
 /* Bewegung */
@@ -233,5 +262,6 @@
   .hp-pair { margin-top: 40px; }
 }
 
-/* Dunkle Seite bis an den Rand */
-body:has(> .hp), body:has(.hp) { background: #0f0f0f; }
+/* Grund bis an den Rand, passend zum Modus */
+body:has(.hp) { background: #f6f5f1; }
+body:has(.hp[data-theme="dark"]) { background: #0f0f0f; }
