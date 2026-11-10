@@ -232,19 +232,21 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
       </section>
 
       {/* Text: eine Lesespalte auf der Achse, jeder Absatz mit einem Beweis aus der App */}
-      <section id="ablauf" className="hp-text" aria-labelledby="hp-wa">
-        <aside className="hp-axis-head hp-aside">
-          <h2 id="hp-wa">{t("Aus der Gruppe wird ein Auftrag.")}</h2>
-          <p className="hp-lead">{t("Samstag, Hauptanreise, alle Busse sind unterwegs. Statt fünf Kollegen anzurufen, stellen Sie die Fahrt hier ein.")} <strong>{t("Wer frei hat, übernimmt.")}</strong></p>
-          <ol className="hp-shift">
-            {SHIFT.map(([was, wird]) => (
-              <li key={was}>
-                <s>{t(was)}</s>
-                <b>{t(wird)}</b>
-              </li>
-            ))}
-          </ol>
-        </aside>
+      <section id="ablauf" className="hp-swap" aria-labelledby="hp-wa">
+        <h2 id="hp-wa">{t("Aus der Gruppe wird ein Auftrag.")}</h2>
+        <p className="hp-lead">{t("Samstag, Hauptanreise, alle Busse sind unterwegs. Statt fünf Kollegen anzurufen, stellen Sie die Fahrt hier ein.")} <strong>{t("Wer frei hat, übernimmt.")}</strong></p>
+        <ol className="hp-shift">
+          {SHIFT.map(([was, wird]) => (
+            <li key={was}>
+              <s>{t(was)}</s>
+              <b>{t(wird)}</b>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="hp-text" aria-labelledby="hp-so">
+        <div className="hp-axis-head"><h2 id="hp-so">{t("So läuft eine Fahrt.")}</h2></div>
         <div className="hp-col">
           <p><b>{t("Bisher läuft es so.")}</b> {t("Die Fahrt geht in die Gruppe, drei Kollegen antworten halb, Preis und Gepäck bleiben mündlich.")}</p>
           <div className="hp-proof"><ChatScene t={t} /></div>
