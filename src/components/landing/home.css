@@ -6,9 +6,9 @@
    Bewegung (emil-design-eng): Zeilen kommen nacheinander, Zustandswechsel überblendet, Druck auf Knöpfen; alles aus bei reduzierter Bewegung. */
 .hp {
   /* Hell (Standard): warmes Papierweiß, schwarze Schrift, Taxigelb auf Schild und Knöpfen */
-  --paper: #f6f5f1;
+  --paper: #f4f4f2;
   --surface: #ffffff;
-  --stone: #ecebe6;
+  --stone: #e8e8e5;
   --stone-2: #e2e1db;
   --navy: #111111;
   --ink: #111111;
@@ -22,15 +22,15 @@
   --ok: #145c32;
   --open-bg: #fff1b8;
   --open: #5c4a00;
-  --line: #e2e1db;
-  --frame: #c9c7c0;
-  --chat-bg: #ecebe6;
+  --line: #dcdcd8;
+  --frame: #c6c6c1;
+  --chat-bg: #e8e8e5;
   --bubble: #ffffff;
   --bubble-me: #d9f0cf;
   --taxi: #f5c518;
   --taxi-ink: #111111;
-  --sign-off: #e2e1db;
-  --sign-off-ink: #8a8a86;
+  --sign-off: #dcdcd8;
+  --sign-off-ink: #5c5c58;
   --sign-cap: #3a3a3a;
   --busy: #d92b21;
   --busy-ink: #ffffff;
@@ -108,9 +108,13 @@
 .hp-theme { display: inline-grid; place-items: center; width: 44px; height: 44px; border: 0; background: none; color: var(--ink); cursor: pointer; border-radius: 50%; transition: background-color 160ms ease; }
 
 /* Abschnitte im Doppelrahmen */
-.hp-box { border: 3px double var(--frame); padding: clamp(20px, 3.4vw, 52px); margin-bottom: 20px; }
+.hp-box { padding-block: clamp(56px, 8vw, 120px); }
+.hp-hero { padding-block: clamp(24px, 4vw, 56px) clamp(56px, 8vw, 120px); }
+/* Ganze Fläche in einem Grauton, von Rand zu Rand der Seite; der Inhalt bleibt am Seitenrand */
+.hp .hp-field { margin-inline: calc(-1 * clamp(16px, 3vw, 40px)); padding-inline: clamp(16px, 3vw, 40px); }
+.hp-field { background: var(--stone); }
 .hp-box h2:not(.hp-d) { font-size: clamp(26px, 3vw, 40px); line-height: 1.1; letter-spacing: -0.03em; font-weight: 600; text-wrap: balance; margin-bottom: 28px; }
-.hp-box h3 { font-size: 22px; line-height: 1.2; letter-spacing: -0.02em; font-weight: 600; }
+.hp-box h3 { font-size: 20px; line-height: 1.2; letter-spacing: -0.02em; font-weight: 600; }
 
 .hp-textbtn { border: 0; background: none; padding: 0; font: inherit; font-weight: 600; color: var(--navy); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
 
@@ -148,7 +152,7 @@
 .hp-ride-by { font-size: 16px; }
 
 /* Ablauf: dieselbe Fahrt, vier Schilder */
-.hp-steps { list-style: none; margin: 0; padding: 28px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; border-top: 3px double var(--frame); }
+.hp-steps { list-style: none; margin: 0; padding: 28px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; }
 .hp-steps li { display: grid; gap: 10px; align-content: start; }
 .hp-steps .hp-sign { justify-items: start; }
 .hp-steps .hp-sign-cap { margin-left: 28%; }
@@ -174,36 +178,39 @@
 .hp-facts thead + tbody tr:first-child, .hp-facts tbody tr:first-child { border-top: 3px double var(--frame); }
 .hp-facts tbody tr:last-child { border-bottom: 3px double var(--frame); }
 
+.hp-points { margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px 28px; }
+.hp-points dt { font-size: 20px; font-weight: 650; letter-spacing: -0.01em; line-height: 1.25; }
+.hp-points dd { margin: 8px 0 0; font-size: 16px; line-height: 1.5; }
 .hp-routes-box { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 400px); gap: 48px; align-items: start; }
 
 /* Staffel: dieselbe Fahrt wandert von Stufe zu Stufe, bis ein Schild auf BESETZT springt */
 .hp-relay { display: grid; gap: 18px; }
 .hp-relay > div { display: grid; gap: 18px; }
-.hp-relay-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 3px double var(--frame); }
+.hp-relay-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .hp-relay-steps li { padding-top: 10px; font-size: 14px; font-weight: 600; color: var(--muted); line-height: 1.3; transition: color 300ms ease; }
 .hp-relay-steps li span { display: block; font-family: "Imbue Variable", "Times New Roman", serif; font-size: 30px; line-height: 0.9; }
 .hp-relay-steps li[data-on="true"] { color: var(--ink); }
 .hp-relay-steps li[data-on="true"] span { color: var(--accent-text); }
 .hp-relay-card { background: var(--surface); padding: 16px 18px; box-shadow: inset 0 0 0 1px var(--line); display: grid; gap: 4px; }
 .hp-relay-route { font-size: 18px; font-weight: 650; letter-spacing: -0.01em; line-height: 1.2; margin-top: 4px !important; }
-.hp-relay-card .hp-ride-meta { font-size: 15px; }
+.hp-relay-card .hp-ride-meta { font-size: 16px; }
 .hp-relay-card .hp-ride-meta b { color: var(--ink); }
 .hp-relay-board { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 10px; }
 .hp-relay-board .hp-sign { font-size: clamp(14px, 1.3vw, 17px); }
 .hp-relay-board .hp-sign-cap { height: 4px; }
 .hp-relay-board .hp-sign-face { border-radius: 8px 8px 3px 3px; }
 /* Partner tragen eine feine Linie darunter, damit man sie in der vollen Börse wiedererkennt */
-.hp-relay-board li[data-partner="true"] { box-shadow: 0 6px 0 -4px var(--accent); }
+.hp-relay-board li { position: relative; }
+.hp-relay-board li[data-partner="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 3px; background: var(--accent); }
 .hp-relay[data-phase="1"] .hp-relay-board li:not([data-partner="true"]) { opacity: 0.35; }
 .hp-relay-board li { transition: opacity 400ms ease; }
 
 /* Partner: drei Stufen, jede eine Stufe weiter eingerückt, wie eine Treppe nach unten */
-.hp-stairs { list-style: none; margin: 0; padding: 0; display: grid; border-top: 3px double var(--frame); }
-.hp-stairs li { margin-left: calc(var(--i, 0) * clamp(20px, 5vw, 72px)); padding: 20px 0 22px; border-bottom: 1px solid var(--frame); display: grid; gap: 6px; }
-.hp-stairs li:last-child { border-bottom: 3px double var(--frame); }
+.hp-stairs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.hp-stairs li { margin-left: calc(var(--i, 0) * clamp(20px, 5vw, 72px)); padding: 14px 0; display: grid; gap: 6px; }
 .hp-stairs h3 { display: flex; align-items: baseline; gap: 14px; }
 .hp-stairs h3 span { font-family: "Imbue Variable", "Times New Roman", serif; font-weight: 480; font-size: 40px; line-height: 0.8; color: var(--accent-text); font-variant-numeric: tabular-nums; }
-.hp-stairs p { font-size: 17px; line-height: 1.5; max-width: 52ch; }
+.hp-stairs p { font-size: 16px; line-height: 1.5; max-width: 52ch; }
 .hp-stairs-note { margin-top: 22px !important; font-size: 16px; color: var(--muted); max-width: 60ch; }
 
 .hp-price-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 40px; align-items: end; }
@@ -229,7 +236,9 @@
   @keyframes hp-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
   @keyframes hp-fade { from { opacity: 0; } to { opacity: 1; } }
   @supports (animation-timeline: view()) {
-    .hp-box:not(.hp-hero) > h2, .hp-steps li, .hp-stairs li, .hp-pair > div, .hp-facts, .hp-relay, .hp-price-sign { animation: hp-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 35%; }
+    /* Beim Scrollen gleiten Teile nach oben; sie sind dabei nie ganz unsichtbar, damit vor dem Einblenden nichts leer wirkt */
+    @keyframes hp-scroll-in { from { opacity: 0.5; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+    .hp-box:not(.hp-hero) h2, .hp-steps li, .hp-stairs li, .hp-pair > div, .hp-facts, .hp-points > div, .hp-relay, .hp-price-sign { animation: hp-scroll-in linear both; animation-timeline: view(); animation-range: entry 0% entry 35%; }
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -239,6 +248,7 @@
 }
 
 @media (max-width: 900px) {
+  .hp-points { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hp-routes-box, .hp-price-grid, .hp-hero { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .hp-hero { min-height: 0; }
   .hp-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -247,7 +257,8 @@
 
 /* Telefon: Tabellen werden zu Zeilenblöcken */
 @media (max-width: 760px) {
-  .hp { font-size: 17px; }
+  .hp-points { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .hp { font-size: 16px; }
   .hp-head nav { gap: 0 16px; }
   .hp-hero h1 { font-size: 15vw; }
   .hp-lead { font-size: 18px; }
@@ -265,5 +276,6 @@
 }
 
 /* Grund bis an den Rand, passend zum Modus */
-body:has(.hp) { background: #f6f5f1; }
+body:has(.hp) { background: #f4f4f2; }
 body:has(.hp[data-theme="dark"]) { background: #0f0f0f; }
+@media (max-width: 600px) { .hp-nav-sec { display: none !important; } }

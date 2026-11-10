@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "src/components/landing/Landing.tsx": {
-    "mtime": 1794340665.0453255,
-    "seen": 1794340719.846742,
-    "ast_hash": "668a19878e3872c5d7216c6e8d2578db",
+    "mtime": 1794341463.193904,
+    "seen": 1794341505.356746,
+    "ast_hash": "9dd29bd85e9482909b0c69a8d96544fa",
     "semantic_hash": ""
   },
   "src/components/landing/Pricing.tsx": {
@@ -330,9 +330,9 @@
     "semantic_hash": ""
   },
   "src/lib/i18n-en.ts": {
-    "mtime": 1794340665.046315,
-    "seen": 1794340719.846754,
-    "ast_hash": "0566b6a733f4c2c35ab17ff1caae991e",
+    "mtime": 1794341456.8486147,
+    "seen": 1794341505.356757,
+    "ast_hash": "f8912c90c0726d39b389ccc702a45421",
     "semantic_hash": ""
   },
   "src/lib/i18n.ts": {
@@ -846,15 +846,15 @@
     "semantic_hash": ""
   },
   "src/components/landing/NightRoad.tsx": {
-    "mtime": 1794340935.5376303,
-    "seen": 1794340988.460408,
-    "ast_hash": "0a32888c07fbf7dcb605daec3416e9c7",
+    "mtime": 1794341290.8805654,
+    "seen": 1794341505.356747,
+    "ast_hash": "19782d8da1f2513bc9ab64793c4d42a9",
     "semantic_hash": ""
   },
   "src/components/landing/SiteFooter.tsx": {
-    "mtime": 1794340943.5589116,
-    "seen": 1794340988.4604108,
-    "ast_hash": "0a1eeb6f026a178d131bb708f6147d52",
+    "mtime": 1794341456.8440936,
+    "seen": 1794341505.356749,
+    "ast_hash": "b5404af119147b81beb85f8bdaa5c1b3",
     "semantic_hash": ""
   },
   "src/components/landing/PartnerRelay.tsx": {

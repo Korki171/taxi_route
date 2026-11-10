@@ -38,9 +38,9 @@ const DAY: Palette = {
   night: false,
   sky: ["#cfdbe6", "#f1eee6"],
   orb: "#fff6d8", halo: "255,236,170",
-  ridges: [["#b8c1cb", "#c9d0d6"], ["#9eaab4", "#b4bcc2"], ["#8a968e", "#a3ab9f"], ["#6f7a68", "#f6f5f1"]],
+  ridges: [["#b8c1cb", "#c9d0d6"], ["#9eaab4", "#b4bcc2"], ["#8a968e", "#a3ab9f"], ["#6f7a68", "#f4f4f2"]],
   snow: ["rgba(255,255,255,0.75)", "rgba(255,255,255,0.5)"], rim: "255,255,255",
-  road: "#3a3b3d", roadLine: "rgba(255,255,255,0.35)", dash: "rgba(255,255,255,0.8)", ground: "#f6f5f1",
+  road: "#3a3b3d", roadLine: "rgba(255,255,255,0.35)", dash: "rgba(255,255,255,0.8)", ground: "#f4f4f2",
   mist: [255, 255, 255], mistAlpha: [0.55, 0.4],
   car: "#f4f4f2", carRim: "rgba(0,0,0,0.35)", glass: "#4a5560", beam: "255,250,230",
 };
@@ -217,7 +217,15 @@ function buildScene(W: number, H: number, dpr: number, P: Palette): Scene {
 /** Das Taxi von der Seite, Front nach rechts. x = linke Kante, b = Unterkante der Räder. */
 function drawTaxi(g: CanvasRenderingContext2D, x: number, b: number, L: number, roadY: number, roadH: number, P: Palette) {
   const r = L * 0.1;
-  // Lichtkegel und Lichtfleck auf der Straße
+  // Bei Tag: weicher Schatten auf dem Asphalt statt Lichtkegel und Schein
+  if (!P.night) {
+    g.fillStyle = "rgba(0,0,0,0.28)";
+    g.beginPath();
+    g.ellipse(x + L * 0.5, b - 1, L * 0.56, L * 0.05, 0, 0, Math.PI * 2);
+    g.fill();
+  }
+  // Nachts: Lichtkegel und Lichtfleck auf der Straße
+  if (P.night) {
   const beam = g.createLinearGradient(x + L, 0, x + L * 3.2, 0);
   beam.addColorStop(0, `rgba(${P.beam},${P.night ? 0.22 : 0.3})`);
   beam.addColorStop(1, `rgba(${P.beam},0)`);
@@ -233,6 +241,7 @@ function drawTaxi(g: CanvasRenderingContext2D, x: number, b: number, L: number, 
   glow.addColorStop(1, "rgba(245,197,24,0)");
   g.fillStyle = glow;
   g.fillRect(x - L * 0.3, b - L * 1.3, L * 1.6, L * 1.4);
+  }
 
   // Karosserie
   g.fillStyle = P.car;
@@ -271,7 +280,7 @@ function drawTaxi(g: CanvasRenderingContext2D, x: number, b: number, L: number, 
     g.fill();
   }
   // Scheinwerfer und Rücklicht
-  g.fillStyle = "#fff4d6";
+  g.fillStyle = P.night ? "#fff4d6" : "#d9d6cc";
   g.fillRect(x + L * 0.965, b - L * 0.23, L * 0.035, L * 0.04);
   g.fillStyle = "#d92b21";
   g.fillRect(x + L * 0.02, b - L * 0.24, L * 0.03, L * 0.045);
@@ -282,8 +291,8 @@ function drawTaxi(g: CanvasRenderingContext2D, x: number, b: number, L: number, 
   const sx = x + L * 0.48 - sw / 2;
   const sy = b - L * 0.44 - sh - L * 0.012;
   g.save();
-  g.shadowColor = "rgba(245,197,24,0.9)";
-  g.shadowBlur = L * 0.22;
+  g.shadowColor = P.night ? "rgba(245,197,24,0.9)" : "rgba(0,0,0,0.25)";
+  g.shadowBlur = P.night ? L * 0.22 : L * 0.03;
   g.fillStyle = TAXI;
   g.beginPath();
   g.roundRect(sx, sy, sw, sh, [sh * 0.6, sh * 0.6, sh * 0.15, sh * 0.15]);
