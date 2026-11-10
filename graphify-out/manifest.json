@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "src/components/landing/Landing.tsx": {
-    "mtime": 1794343666.8991368,
-    "seen": 1794343717.18725,
-    "ast_hash": "60a9c53d45184cfb8807664b484bfe55",
+    "mtime": 1794343924.634419,
+    "seen": 1794344045.2725508,
+    "ast_hash": "32d9c7ad6d16afd14bb62f7fbf9577b5",
     "semantic_hash": ""
   },
   "src/components/landing/Pricing.tsx": {
@@ -330,9 +330,9 @@
     "semantic_hash": ""
   },
   "src/lib/i18n-en.ts": {
-    "mtime": 1794343666.9006908,
-    "seen": 1794343717.1872692,
-    "ast_hash": "b22ffe483661be04ec114e4b0faa15c8",
+    "mtime": 1794343940.2446318,
+    "seen": 1794344045.2725692,
+    "ast_hash": "6bbb0f9f172d5f12534f5cf1b4ea16b2",
     "semantic_hash": ""
   },
   "src/lib/i18n.ts": {
@@ -852,9 +852,9 @@
     "semantic_hash": ""
   },
   "src/components/landing/SiteFooter.tsx": {
-    "mtime": 1794342907.8306804,
-    "seen": 1794342995.5816379,
-    "ast_hash": "a0d30806180ecf8b9137c078e251f5b3",
+    "mtime": 1794343940.1682875,
+    "seen": 1794344045.272557,
+    "ast_hash": "03fe95737bb2ec0bc148e746b52a3e2f",
     "semantic_hash": ""
   },
   "src/components/landing/PartnerRelay.tsx": {
