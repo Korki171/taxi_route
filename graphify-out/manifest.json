@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "src/components/landing/Landing.tsx": {
-    "mtime": 1794340370.6061394,
-    "seen": 1794340427.936228,
-    "ast_hash": "f299fb9e3fcd10c12869ef469be835ea",
+    "mtime": 1794340512.229655,
+    "seen": 1794340542.2252579,
+    "ast_hash": "2b93fea4001a1aa983c58ae178da0206",
     "semantic_hash": ""
   },
   "src/components/landing/Pricing.tsx": {
