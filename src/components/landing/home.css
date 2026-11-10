@@ -85,7 +85,14 @@
 .hp-lead { font-size: 20px; line-height: 1.45; color: var(--muted); }
 .hp-lead strong { color: var(--ink); }
 .hp-text .hp-axis-head { position: static; }
-.hp-swap { padding: 128px var(--m) 112px; }
+.hp-swap { padding: 128px var(--m) 112px; background: var(--stone); }
+.hp-read { padding-top: 112px; }
+.hp-read .hp-axis-head { grid-column: 2 / 4; margin-bottom: 56px; }
+.hp-read .hp-col { grid-column: 2 / 4; max-width: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 80px 64px; align-items: start; }
+.hp-step { display: grid; gap: 0; align-content: start; }
+.hp-step > p { font-size: 18px; line-height: 1.6; color: var(--muted); max-width: 46ch; }
+.hp-step > p b { color: var(--ink); }
+.hp-read .hp-proof { margin: 24px 0 0; }
 .hp-swap h2 { font-size: clamp(40px, 4.4vw, 68px); line-height: 1.02; letter-spacing: -0.035em; max-width: 12ch; }
 .hp-swap .hp-lead { margin-top: 24px; max-width: 44ch; color: var(--ink); }
 .hp-shift { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 28px; }
@@ -302,6 +309,8 @@
   .hp-verb-text { right: var(--m); max-width: none; font-size: 16px; }
   .hp-state { min-height: 56svh; }
   .hp-swap { padding: 72px var(--m); }
+  .hp-read .hp-axis-head, .hp-read .hp-col { grid-column: 2; }
+  .hp-read .hp-col { grid-template-columns: minmax(0, 1fr); gap: 48px; }
   .hp-swap .hp-shift { margin-top: 48px; }
   .hp-swap .hp-shift li { grid-template-columns: 1fr; }
   .hp-swap .hp-shift s, .hp-swap .hp-shift b { grid-column: 1; }

@@ -245,17 +245,25 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
         </ol>
       </section>
 
-      <section className="hp-text" aria-labelledby="hp-so">
+      <section className="hp-text hp-read" aria-labelledby="hp-so">
         <div className="hp-axis-head"><h2 id="hp-so">{t("So läuft eine Fahrt.")}</h2></div>
         <div className="hp-col">
-          <p><b>{t("Bisher läuft es so.")}</b> {t("Die Fahrt geht in die Gruppe, drei Kollegen antworten halb, Preis und Gepäck bleiben mündlich.")}</p>
-          <div className="hp-proof"><ChatScene t={t} /></div>
-          <p><b>{t("Mit Transferborsa stellen Sie die Fahrt einmal ein.")}</b> {t("Alle geprüften Kollegen sehen sie, mit Zeit, Gepäck und Festpreis.")}</p>
-          <div className="hp-proof"><ClaimOrder L={claim} /></div>
-          <p><b>{t("Einer übernimmt,")}</b> {t("und für alle anderen ist die Fahrt weg. Niemand fragt mehr, wer zugesagt hat.")}</p>
-          <div className="hp-proof"><FlowCard t={t} c={FLOWS[0].steps[1][1]} /></div>
-          <p><b>{t("Danach steht alles schriftlich da.")}</b> {t("Preis, Flug, Gepäck und Stornobedingungen in einer Bestätigung als PDF.")}</p>
-          <div className="hp-proof"><Confirmation t={t} /></div>
+          <div className="hp-step">
+            <p><b>{t("Bisher läuft es so.")}</b> {t("Die Fahrt geht in die Gruppe, drei Kollegen antworten halb, Preis und Gepäck bleiben mündlich.")}</p>
+            <div className="hp-proof"><ChatScene t={t} /></div>
+          </div>
+          <div className="hp-step">
+            <p><b>{t("Mit Transferborsa stellen Sie die Fahrt einmal ein.")}</b> {t("Alle geprüften Kollegen sehen sie, mit Zeit, Gepäck und Festpreis.")}</p>
+            <div className="hp-proof"><ClaimOrder L={claim} /></div>
+          </div>
+          <div className="hp-step">
+            <p><b>{t("Einer übernimmt,")}</b> {t("und für alle anderen ist die Fahrt weg. Niemand fragt mehr, wer zugesagt hat.")}</p>
+            <div className="hp-proof"><FlowCard t={t} c={FLOWS[0].steps[1][1]} /></div>
+          </div>
+          <div className="hp-step">
+            <p><b>{t("Danach steht alles schriftlich da.")}</b> {t("Preis, Flug, Gepäck und Stornobedingungen in einer Bestätigung als PDF.")}</p>
+            <div className="hp-proof"><Confirmation t={t} /></div>
+          </div>
         </div>
       </section>
 
