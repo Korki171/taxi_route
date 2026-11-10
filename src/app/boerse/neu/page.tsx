@@ -86,6 +86,24 @@ export default async function NewRequestPage({ searchParams }: { searchParams: S
               </div>
               <p className="price-note">{t("Bei „Angebote einholen“ ist der Preis oben nur ein Richtpreis. Unternehmen nennen ihren Preis, Sie wählen aus.")}</p>
             </fieldset>
+            <fieldset>
+              <legend>{t("Wer sieht den Auftrag zuerst?")}</legend>
+              <div className="choice">
+                <label><input type="radio" name="audience" value="MARKET" defaultChecked />{t("Gesamte Börse")}</label>
+                <label><input type="radio" name="audience" value="PARTNERS" />{t("Erst meine Partner")}</label>
+                <label><input type="radio" name="audience" value="OWN" />{t("Erst mein Betrieb")}</label>
+              </div>
+              <label>{t("Danach automatisch weitergeben nach")}
+                <select name="escalateAfterMinutes" defaultValue="60">
+                  <option value="30">{t("30 Minuten")}</option>
+                  <option value="60">{t("1 Stunde")}</option>
+                  <option value="120">{t("2 Stunden")}</option>
+                  <option value="240">{t("4 Stunden")}</option>
+                  <option value="">{t("Nicht automatisch")}</option>
+                </select>
+              </label>
+              <p className="price-note">{t("Zuerst sieht nur der gewählte Kreis den Auftrag. Übernimmt niemand, geht er automatisch an Ihre Partner und dann an die ganze Börse. Partner pflegen Sie unter „Unternehmen“.")}</p>
+            </fieldset>
             <fieldset id="anbieter">
               <legend>{t("Wer soll anbieten?")}</legend>
               <div className="choice">

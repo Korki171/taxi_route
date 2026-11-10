@@ -21,12 +21,14 @@ import { placeName } from "@/lib/places";
 import { actorCan } from "@/server/authz/context";
 import { AppError } from "@/server/errors";
 import { listVehicles } from "@/server/services/fleet";
+import { escalateDueRequests } from "@/server/services/partners";
 import { getTransferRequest, listProviderDirectory, MAX_INVITATIONS, referenceOf } from "@/server/services/marketplace";
 import { EVENT_LABEL } from "@/server/services/transfer-events";
 import { requireOrgActor } from "@/server/web";
 import { getI18n } from "@/server/i18n";
 import {
   acceptQuoteAction,
+  advanceAudienceAction,
   bookingTransitionAction,
   cancelTransferRequestAction,
   declineInvitationAction,
@@ -35,6 +37,7 @@ import {
   rejectQuoteAction,
   submitQuoteAction,
   takeFixedPriceAction,
+  takeOwnRequestAction,
   withdrawQuoteAction,
 } from "../../../actions";
 
@@ -55,6 +58,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
   const { id } = await params;
   const sp = await searchParams;
   const actor = await requireOrgActor();
+  await escalateDueRequests().catch(() => 0);
   const data = await getTransferRequest(actor, id).catch((e) => {
     if (e instanceof AppError && e.code === "NOT_FOUND") notFound();
     throw e;
@@ -394,6 +398,34 @@ export default async function RequestDetailPage({ params, searchParams }: { para
               </div>
             </details>
           )}
+        </section>
+      )}
+
+      {role === "requester" && r.status === "OPEN" && r.visibility === "MARKET" && (
+        <section className="card">
+          <h2>{t("Wer sieht diesen Auftrag?")}</h2>
+          <p>
+            <Badge status={r.audience === "MARKET" ? "VERIFIED" : "PENDING"}>
+              {t(r.audience === "OWN" ? "Nur Ihr Betrieb" : r.audience === "PARTNERS" ? "Ihre Partner" : "Gesamte Börse")}
+            </Badge>
+            {r.audience !== "MARKET" && r.escalateAfterMinutes != null && (
+              <> {t("Automatisch weiter am {time}", { time: f.dateTime(new Date(r.audienceSince.getTime() + r.escalateAfterMinutes * 60_000)) })}</>
+            )}
+          </p>
+          <div className="actions-row">
+            {actorCan(actor, "jobs.accept") && (
+              <form action={takeOwnRequestAction}>
+                <input type="hidden" name="requestId" value={r.id} />
+                <button type="submit" className="accent">{t("Selbst fahren")}</button>
+              </form>
+            )}
+            {r.audience !== "MARKET" && (
+              <form action={advanceAudienceAction}>
+                <input type="hidden" name="requestId" value={r.id} />
+                <button type="submit" className="secondary">{t(r.audience === "OWN" ? "Jetzt an Partner weitergeben" : "Jetzt an die ganze Börse")}</button>
+              </form>
+            )}
+          </div>
         </section>
       )}
 

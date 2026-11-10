@@ -65,6 +65,10 @@ export const transferRequestSchema = z
     passengerName: optText(120),
     passengerPhone: optText(40),
     visibility: z.preprocess((v) => (v === "" || v == null ? "MARKET" : v), z.enum(["MARKET", "INVITED"])),
+    /** Startstufe: OWN eigener Betrieb, PARTNERS eigene Partner, MARKET gesamte Börse (Standard) */
+    audience: z.preprocess((v) => (v === "" || v == null ? "MARKET" : v), z.enum(["OWN", "PARTNERS", "MARKET"])),
+    /** Minuten bis zur automatischen Weitergabe an die nächste Stufe (leer = nie) */
+    escalateAfterMinutes: z.preprocess((v) => (v === "" || v == null || v === "0" ? undefined : v), z.coerce.number().int().min(5).max(24 * 60).optional()),
     /** Gezielt angefragte Beförderungsunternehmen (bei INVITED Pflicht, bei MARKET zusätzlich benachrichtigt) */
     invitedOrgIds: z.preprocess((v) => (v == null ? [] : Array.isArray(v) ? v : [v]), z.array(z.string().min(1).max(40)).max(MAX_INVITATIONS)),
   })
@@ -111,6 +115,7 @@ const marketSelect = {
   bookingTerms: true,
   cancellationTerms: true,
   visibility: true,
+  audience: true,
   createdAt: true,
   requesterOrg: { select: { id: true, name: true, city: true, type: true } },
 } satisfies Prisma.TransferRequestSelect;
@@ -165,6 +170,11 @@ export async function createTransferRequest(actor: Actor | null, input: unknown)
   if (d.pickupAt <= new Date()) throw invalid("Die Abholzeit liegt in der Vergangenheit.");
   const invitees = await checkInvitees(actor, d.invitedOrgIds);
   if (d.visibility === "INVITED" && invitees.length === 0) throw invalid("Bitte mindestens ein Unternehmen auswählen");
+  // Stufen gelten nur für Börsenaufträge. Ohne Partner entfällt Stufe 2.
+  let audience = d.visibility === "INVITED" ? "MARKET" : d.audience;
+  if (audience === "PARTNERS" && (await db.partnerLink.count({ where: { orgId: actor.org.id } })) === 0) {
+    throw invalid("Sie haben noch keine Partner. Bitte unter „Unternehmen“ Partner hinzufügen.");
+  }
 
   const created = await db.$transaction(async (tx) => {
     const req = await tx.transferRequest.create({
@@ -196,6 +206,8 @@ export async function createTransferRequest(actor: Actor | null, input: unknown)
         cancellationTerms: d.cancellationTerms,
         clientReference: d.clientReference,
         visibility: d.visibility,
+        audience,
+        escalateAfterMinutes: audience === "MARKET" ? null : (d.escalateAfterMinutes ?? null),
         invitations: invitees.length
           ? { create: invitees.map((providerOrgId) => ({ providerOrgId, invitedById: actor.userId })) }
           : undefined,
@@ -207,6 +219,7 @@ export async function createTransferRequest(actor: Actor | null, input: unknown)
       priceCents: d.priceCents ?? null,
       handoffSharePercent: d.handoffSharePercent,
       visibility: d.visibility,
+      audience,
     });
     if (invitees.length) {
       await transferEvent(tx, req.id, "request.invited", { userId: actor.userId, orgId: actor.org.id }, { orgIds: invitees, count: invitees.length });
@@ -465,7 +478,7 @@ export async function getTransferRequest(actor: Actor | null, requestId: string)
 // Festpreis übernehmen (Szenario A, ohne Verhandlung)
 // ---------------------------------------------------------------------------
 
-function scopeSnapshot(r: {
+export function scopeSnapshot(r: {
   pickupPlaceId: string; dropoffPlaceId: string; pickupAt: Date; passengers: number; luggage: number;
   skiEquipment: number; childSeats: number; vehicleCategory: VehicleCategory | null; requirements: string | null;
   flightNumber: string | null; bookingTerms: string | null;
@@ -539,7 +552,7 @@ export async function takeFixedPriceRequest(actor: Actor | null, requestId: stri
   return booking;
 }
 
-async function ownVehicleId(actor: OrgActor, vehicleId?: string) {
+export async function ownVehicleId(actor: OrgActor, vehicleId?: string) {
   if (!vehicleId) return undefined;
   const v = await db.vehicle.findFirst({ where: { id: vehicleId, organizationId: actor.org.id, active: true } });
   if (!v) throw invalid("Fahrzeug nicht gefunden.");
