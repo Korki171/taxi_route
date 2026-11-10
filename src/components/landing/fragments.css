@@ -1,0 +1,62 @@
+/* ---------- App-Ausschnitte (data-ui) ---------- */
+.hp-card, .hp-paper, .hp-chat { font-variant-numeric: tabular-nums; color: var(--ink); }
+.hp-card p { margin: 0; }
+.hp-chip { display: inline-block; font-size: 14px; font-weight: 750; padding: 2px 8px; line-height: 1.4; }
+.hp-chip-open { background: var(--open-bg); color: var(--open); }
+.hp-chip-ok { background: var(--ok-bg); color: var(--ok); }
+.hp-chip-taken { background: var(--navy); color: #fff; }
+
+.hp-order { background: #fff; padding: 20px 22px; display: grid; gap: 6px; align-content: start; box-shadow: inset 0 0 0 1px var(--line); }
+.hp-order-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; font-size: 14px; }
+.hp-order-route { font-size: 21px; font-weight: 750; letter-spacing: -0.015em; line-height: 1.25; }
+.hp-order .hp-muted { font-size: 15px; }
+.hp-order-price { display: flex; align-items: baseline; gap: 10px; margin-top: 16px; }
+.hp-order-price b { font-size: 28px; letter-spacing: -0.02em; }
+.hp-order-price span { color: var(--muted); font-size: 14px; }
+.hp-order-by { font-size: 14px; font-weight: 750; }
+.hp-order-doc { font-size: 14px; padding: 6px 10px; background: var(--stone); justify-self: start; }
+.hp-offers { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
+.hp-offers li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 10px; background: var(--stone); font-size: 14px; }
+.hp-offers li:first-child { background: var(--ok-bg); }
+.hp-order-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.hp-fake {
+  font: inherit; font-weight: 750; font-size: 15px; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px;
+  border: 0; background: var(--stone); color: var(--ink); cursor: pointer;
+  transition: transform 160ms var(--out), background-color 160ms ease, opacity 160ms ease;
+}
+.hp-fake:active:not(:disabled) { transform: scale(0.97); }
+.hp-fake:disabled { opacity: 0.45; cursor: default; }
+.hp-fake-primary { background: var(--accent); color: var(--on-accent); }
+
+/* lebendige Fahrt */
+.hp-claim .hp-order-by { opacity: 0; transform: translateY(-4px); height: 0; margin: 0; overflow: hidden; transition: opacity 200ms var(--out), transform 200ms var(--out); }
+.hp-claim[data-taken="true"] .hp-order-by { opacity: 1; transform: none; height: auto; }
+.hp-claim[data-taken="false"] .hp-chip-b, .hp-claim[data-taken="true"] .hp-chip-a { display: none; }
+.hp-claim .hp-order-top { justify-content: flex-start; }
+.hp-claim .hp-when { margin-left: auto; }
+.hp-hint { margin: 12px 0 0; font-size: 14px; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) {
+  .hp-claim[data-taken="true"] .hp-chip-b { animation: hp-chip 220ms var(--out); }
+  @keyframes hp-chip { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+}
+
+.hp-chat { background: var(--stone); overflow: hidden; }
+.hp-chat figcaption { display: grid; padding: 12px 16px; background: #fff; line-height: 1.3; }
+.hp-chat figcaption span { font-size: 14px; color: var(--muted); }
+.hp-chat ol { list-style: none; margin: 0; padding: 14px 14px 18px; display: grid; gap: 7px; }
+.hp-chat li { justify-self: start; max-width: 88%; background: #fff; border-radius: 3px 10px 10px 10px; padding: 7px 11px 5px; font-size: 16px; line-height: 1.35; }
+.hp-chat li.me { justify-self: end; background: #d9f0cf; border-radius: 10px 3px 10px 10px; }
+.hp-chat li b { display: block; font-size: 14px; color: var(--navy); }
+.hp-chat li p { margin: 0; }
+.hp-chat time { display: block; text-align: right; font-size: 14px; color: var(--muted); margin-top: 1px; }
+
+.hp-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.hp-paper { background: #fff; padding: 22px 22px 12px; box-shadow: inset 0 0 0 1px var(--line); }
+.hp-paper-head { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 10px; padding-bottom: 10px; border-bottom: 2px solid var(--ink); font-size: 17px; }
+.hp-paper-head span { color: var(--muted); font-size: 14px; }
+.hp-paper dl { margin: 0; }
+.hp-paper dl div { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+.hp-paper dt { color: var(--muted); }
+.hp-paper dd { margin: 0; font-weight: 750; text-align: right; }
+
