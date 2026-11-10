@@ -44,7 +44,7 @@ export function SiteFooter({ t, loggedIn }: { t: T; loggedIn: boolean }) {
       <div className="mf-sky">
         <NightRoad />
         <div className="mf-call">
-          <h2 id="mf-title" className="hp-d">{t("Melden Sie Ihr Unternehmen an.")}</h2>
+          <h2 id="mf-title" className="hp-d">{t("Steigen Sie ein.")}</h2>
           <p>{t("Die Anmeldung ist kostenlos. Sobald wir Ihr Unternehmen geprüft haben, können Sie Fahrten abgeben und übernehmen.")}</p>
           <div className="hp-act">
             <Link href="/register?type=TRANSPORT_COMPANY" className="hp-btn">{t("Unternehmen registrieren")}</Link>

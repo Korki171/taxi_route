@@ -104,10 +104,6 @@ function Confirmation({ t }: { t: T }) {
   );
 }
 
-function Photo({ src, alt = "", w, h, eager, className }: { src: string; alt?: string; w: number; h: number; eager?: boolean; className?: string }) {
-  return <img className={className} src={src} width={w} height={h} alt={alt} loading={eager ? undefined : "lazy"} decoding="async" />;
-}
-
 export async function Landing({ appHref }: { appHref?: string } = {}) {
   const { t, locale } = await getI18n();
   // Hell ist Standard; „Ruß bei Nacht“ nur, wenn der Besucher es oben umgeschaltet hat.
@@ -146,10 +142,10 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
       <header className="hp-head">
         <Link href="/" className="hp-logo" aria-label="Transferborsa"><Logo /></Link>
         <nav aria-label={t("Abschnitte")}>
-          <a href="#ablauf">{t("Ablauf")}</a>
-          <a href="#partner">{t("Partner")}</a>
-          <Link href="/preise">{t("Preise")}</Link>
-          <a href="#fragen">{t("Fragen")}</a>
+          <a href="#ablauf" className="hp-nav-sec">{t("Ablauf")}</a>
+          <a href="#partner" className="hp-nav-sec">{t("Partner")}</a>
+          <Link href="/preise" className="hp-nav-sec">{t("Preise")}</Link>
+          <a href="#fragen" className="hp-nav-sec">{t("Fragen")}</a>
           <LangSwitch path="/" className="hp-lang" />
           <ThemeToggle initial={theme} labels={{ toDark: t("Dunkle Ansicht"), toLight: t("Helle Ansicht") }} />
           {!appHref && <Link href="/login">{t("Anmelden")}</Link>}
@@ -197,15 +193,14 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           </div>
         </section>
 
-        <section className="hp-box" aria-labelledby="hp-zaehlt">
+        {/* Weitergabe: auf grauer Fläche, die vier Punkte nebeneinander als Liste ohne Linien */}
+        <section className="hp-box hp-field" aria-labelledby="hp-zaehlt">
           <h2 id="hp-zaehlt">{t("Was bei einer Weitergabe zählt.")}</h2>
-          <table className="hp-facts">
-            <tbody>
-              {counts.map(([k, v]) => (
-                <tr key={k}><th scope="row">{t(k)}</th><td>{t(v)}</td></tr>
-              ))}
-            </tbody>
-          </table>
+          <dl className="hp-points">
+            {counts.map(([k, v]) => (
+              <div key={k}><dt>{t(k)}</dt><dd>{t(v)}</dd></div>
+            ))}
+          </dl>
         </section>
 
         {/* Partner: wer die Fahrt zuerst sieht, als Treppe in drei Stufen; daneben dieselbe Fahrt als Staffel (PartnerRelay) */}
@@ -225,8 +220,8 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           <PartnerRelay L={relay} />
         </section>
 
-        {/* Preis: die Zahl als Tafelziffern */}
-        <section className="hp-box hp-price" aria-labelledby="hp-preis">
+        {/* Preis: die Zahl als Tafelziffern, auf grauer Fläche */}
+        <section className="hp-box hp-field hp-price" aria-labelledby="hp-preis">
           <h2 id="hp-preis">{t("Ein Preis für alle Fahrten.")}</h2>
           <div className="hp-price-grid">
             <p className="hp-price-sign"><span className="hp-sr">{t("Ab")} {figure} € {t("im Monat.")}</span><span aria-hidden="true"><TaxiSign label={`${figure} €`} tone="free" size="m" /></span></p>

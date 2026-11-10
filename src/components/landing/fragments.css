@@ -8,8 +8,8 @@
 
 .hp-order { background: var(--surface); padding: 20px 22px; display: grid; gap: 6px; align-content: start; box-shadow: inset 0 0 0 1px var(--line); }
 .hp-order-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; font-size: 14px; }
-.hp-order-route { font-size: 21px; font-weight: 750; letter-spacing: -0.015em; line-height: 1.25; }
-.hp-order .hp-muted { font-size: 15px; }
+.hp-order-route { font-size: 20px; font-weight: 750; letter-spacing: -0.015em; line-height: 1.25; }
+.hp-order .hp-muted { font-size: 16px; }
 .hp-order-price { display: flex; align-items: baseline; gap: 10px; margin-top: 16px; }
 .hp-order-price b { font-size: 28px; letter-spacing: -0.02em; }
 .hp-order-price span { color: var(--muted); font-size: 14px; }
@@ -20,7 +20,7 @@
 .hp-offers li:first-child { background: var(--ok-bg); }
 .hp-order-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .hp-fake {
-  font: inherit; font-weight: 750; font-size: 15px; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px;
+  font: inherit; font-weight: 750; font-size: 16px; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px;
   border: 0; background: var(--stone); color: var(--ink); cursor: pointer;
   transition: transform 160ms var(--out), background-color 160ms ease, opacity 160ms ease;
 }
@@ -55,10 +55,10 @@
 .hp-paper { background: var(--surface); padding: 22px 22px 12px; box-shadow: inset 0 0 0 1px var(--line); }
 /* Briefkopf wie im echten PDF: Logo, darunter Titel über einer gelben Linie in Schildfarbe */
 .hp .hp-paper-logo { display: block; height: 30px; width: auto; margin-bottom: 14px; }
-.hp-paper-head { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 10px; padding-bottom: 10px; border-bottom: 3px solid #f5c518; font-size: 17px; }
+.hp-paper-head { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 10px; padding-bottom: 10px; border-bottom: 3px solid #f5c518; font-size: 16px; }
 .hp-paper-head span { color: var(--muted); font-size: 14px; }
 .hp-paper dl { margin: 0; }
-.hp-paper dl div { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+.hp-paper dl div { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 16px; }
 .hp-paper dt { color: var(--muted); }
 .hp-paper dd { margin: 0; font-weight: 750; text-align: right; }
 
