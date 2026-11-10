@@ -1,5 +1,6 @@
 import { Logo } from "../Logo";
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import "@fontsource-variable/albert-sans";
 import "@fontsource-variable/imbue";
 import "./fragments.css";
@@ -7,22 +8,21 @@ import "./home.css";
 import { LangSwitch } from "../LangSwitch";
 import { HeroClaim } from "./HeroClaim";
 import { TaxiSign } from "./TaxiSign";
-import { Crossfade } from "./Crossfade";
+import { PartnerRelay } from "./PartnerRelay";
+import { SiteFooter } from "./SiteFooter";
 import { getI18n } from "@/server/i18n";
 import { PLANS } from "@/lib/plans";
 
 // Startseite „Das Taxischild“ (2026-11-10). Gewählt aus vier Hero-Varianten (Taxischild, Fahrtenbuch, Funk, Fallblatt-Tafel).
-// Idee: Wer frei hat, übernimmt. Das gelbe Dachschild leuchtet FREI, solange eine Fahrt offen ist, und geht auf BESETZT, sobald jemand übernimmt.
-// Gelb nur auf dem Schild, Zirbengrün auf Handlungen. Welt der Live-Seite: Papier, Navy, Doppelrahmen, echte Tabellen.
+// Idee: Keine Fahrt bleibt liegen. Das gelbe Dachschild leuchtet FREI, solange eine Fahrt offen ist, und geht auf BESETZT, sobald jemand übernimmt.
+// Farbwelt „Ruß bei Nacht“ (home.css). Doppelrahmen und echte Tabellen; am Ende der Nacht-Footer (SiteFooter).
 // Alle Namen und Fahrten in den Beispielen sind erfunden.
 
-/** Strecken mit ungefährer Fahrzeit ab Flughafen München (Werte wie in der App). */
-const ROUTES: [string, string][] = [
-  ["Flughafen München → Innsbruck", "ca. 1 h 50 min"],
-  ["Flughafen München → Kitzbühel", "ca. 1 h 40 min"],
-  ["Flughafen München → Mayrhofen", "ca. 2 h"],
-  ["Flughafen München → Sölden", "ca. 2 h 30 min"],
-  ["Innsbruck → Seefeld, Hall, Kufstein, St. Anton", "regional"],
+/** Wer eine Fahrt zuerst sieht (Audience OWN → PARTNERS → MARKET in src/server/services/partners.ts). */
+const AUDIENCE: [string, string][] = [
+  ["Eigene Fahrer", "Passt es in Ihren eigenen Plan, fahren Sie selbst. Niemand sonst sieht die Fahrt."],
+  ["Ihre Partner", "Dann sehen sie die Unternehmen auf Ihrer Partnerliste. Bis zu 100 Kollegen, die Sie selbst auswählen."],
+  ["Alle Geprüften", "Übernimmt kein Partner, geht die Fahrt an alle geprüften Unternehmen der Börse. Auf Wunsch sofort."],
 ];
 
 const FAQ: [string, string][] = [
@@ -36,7 +36,7 @@ const FAQ: [string, string][] = [
   ],
   [
     "Wie wird bezahlt?",
-    "Fahrpreise rechnen die beteiligten Unternehmen direkt miteinander ab; vereinbarter Preis und Rechnungsreferenz werden mit der Buchung gespeichert. Taxiunternehmen zahlen für Transferborsa einen festen Monatspreis per Rechnung, ohne Provision pro Fahrt. Für Reisebüros und Hotels ist die Nutzung kostenlos.",
+    "Fahrpreise rechnen die beteiligten Unternehmen direkt miteinander ab; vereinbarter Preis und Rechnungsreferenz werden mit der Buchung gespeichert. Taxiunternehmen zahlen für Transferborsa einen festen Monatspreis per Rechnung. Für Reisebüros und Hotels ist die Nutzung kostenlos.",
   ],
   [
     "Was gilt bei Storno oder Verspätung?",
@@ -118,6 +118,12 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
     claim: t("Zum Festpreis übernehmen"), by: t("Übernommen von {name}.", { name: "Alpen Taxi Innsbruck" }),
     gone: t("Für alle anderen ist die Fahrt weg."), reset: t("Zurücksetzen"), hint: t("Probieren Sie es aus: Die Fahrt übernehmen."),
   };
+  const relay = {
+    stages: AUDIENCE.map(([who]) => t(who)) as [string, string, string],
+    route: claim.route, when: `${t("Sa 15.11.")} · ${t("11:00 Uhr")}`, price: "310 €",
+    open: t("Offen"), taken: t("Vergeben"), free: t("Frei"), busy: t("Besetzt"),
+    summary: t("Beispiel: Die Fahrt geht zuerst an die eigenen Fahrer, dann an drei Partner, dann an alle geprüften Unternehmen. Eines übernimmt."),
+  };
   const steps: [string, string, string, string][] = [
     ["Frei", "Abgeben", "Sie stellen die Fahrt einmal ein, mit Zeit, Gepäck und Festpreis. Alle geprüften Kollegen sehen sie.", "Taxi Hofer · 310 € Festpreis"],
     ["Besetzt", "Übernehmen", "Der erste Kollege mit freiem Wagen übernimmt. Für alle anderen ist die Fahrt weg.", "Alpen Taxi Innsbruck"],
@@ -136,7 +142,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
         <Link href="/" className="hp-logo" aria-label="Transferborsa"><Logo mono /></Link>
         <nav aria-label={t("Abschnitte")}>
           <a href="#ablauf">{t("Ablauf")}</a>
-          <a href="#strecken">{t("Strecken")}</a>
+          <a href="#partner">{t("Partner")}</a>
           <Link href="/preise">{t("Preise")}</Link>
           <a href="#fragen">{t("Fragen")}</a>
           <LangSwitch path="/" className="hp-lang" />
@@ -148,7 +154,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
         {/* Erste Seite: der Satz, daneben das Schild über einer echten Fahrt. Übernehmen schaltet das Schild auf BESETZT. */}
         <section className="hp-box hp-hero" aria-labelledby="hp-title">
           <div className="hp-hero-copy">
-            <h1 id="hp-title" className="hp-d">{t("Wer frei hat, übernimmt.")}</h1>
+            <h1 id="hp-title" className="hp-d">{t("Keine Fahrt bleibt liegen.")}</h1>
             <p className="hp-lead">{t("Taxi- und Mietwagenunternehmen in Tirol geben Fahrten ab, die sie nicht schaffen. Das erste geprüfte Unternehmen mit freiem Wagen übernimmt zum Festpreis.")}</p>
             <div className="hp-act">
               <Link href={registerHref} className="hp-btn">{appHref ? t("Zur App") : t("Unternehmen registrieren")}</Link>
@@ -196,30 +202,21 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           </table>
         </section>
 
-        {/* Strecken: echte Tabelle, daneben ein Foto im Rahmen */}
-        <section id="strecken" className="hp-box hp-routes-box" aria-labelledby="hp-strecken">
+        {/* Partner: wer die Fahrt zuerst sieht, als Treppe in drei Stufen; daneben dieselbe Fahrt als Staffel (PartnerRelay) */}
+        <section id="partner" className="hp-box hp-routes-box" aria-labelledby="hp-partner">
           <div>
-            <h2 id="hp-strecken">{t("Die Strecken, auf denen wir anfangen")}</h2>
-            <table className="hp-routes">
-              <tbody>
-                {ROUTES.map(([route, time]) => (
-                  <tr key={route}><td>{rt(route)}</td><td>{t(time)}</td></tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="hp-small">{t("Salzburg, Zürich und Südtirol folgen, sobald dort regelmäßig Fahrten vermittelt werden.")}</p>
+            <h2 id="hp-partner">{t("Erst Ihre Partner, dann alle.")}</h2>
+            <ol className="hp-stairs">
+              {AUDIENCE.map(([who, what], i) => (
+                <li key={who} style={{ "--i": i } as CSSProperties}>
+                  <h3><span>{i + 1}</span> {t(who)}</h3>
+                  <p>{t(what)}</p>
+                </li>
+              ))}
+            </ol>
+            <p className="hp-stairs-note">{t("Wen Sie sperren, der sieht Ihre Fahrten nicht mehr. Und vor der Übernahme sieht niemand Namen, Adressen oder Telefonnummern Ihrer Fahrgäste.")}</p>
           </div>
-          <figure className="hp-pic">
-            <Crossfade
-              w={1100} h={1400}
-              images={[
-                { src: "/landing/tirol/arlberg-gipfel.jpg", alt: t("Verschneiter Gipfel am Arlberg") },
-                { src: "/landing/tirol/mayrhofen-abend.jpg", alt: t("Abendlicht über dem Zillertal bei Mayrhofen") },
-                { src: "/landing/tirol/innsbruck-hofgasse.jpg", alt: t("Die Hofgasse in der Innsbrucker Altstadt") },
-              ]}
-            />
-            <figcaption>{t("Fotos: Erich Fend, Linas Bam, Leonhard Lenz (Unsplash, alle CC0)")}</figcaption>
-          </figure>
+          <PartnerRelay L={relay} />
         </section>
 
         {/* Preis: die Zahl als Tafelziffern */}
@@ -228,7 +225,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           <div className="hp-price-grid">
             <p className="hp-price-sign"><span className="hp-sr">{t("Ab")} {figure} € {t("im Monat.")}</span><span aria-hidden="true"><TaxiSign label={`${figure} €`} tone="free" size="m" /></span></p>
             <div>
-              <p><b>{t("Ab")} {t("im Monat.")}</b> {t("Ohne Provision.")} {t("Fester Monatspreis per Rechnung für Taxi- und Transferunternehmen. Für Reisebüros und Hotels ist die Nutzung kostenlos.")}</p>
+              <p><b>{t("Ab")} {figure} € {t("im Monat.")}</b> {t("Fester Monatspreis per Rechnung für Taxi- und Transferunternehmen. Für Reisebüros und Hotels ist die Nutzung kostenlos.")}</p>
               <ul>{plan.features.slice(0, 4).map((f) => <li key={f}>{t(f)}</li>)}</ul>
               <div className="hp-act">
                 <Link href="/register?type=TRANSPORT_COMPANY" className="hp-btn">{t("Unternehmen registrieren")}</Link>
@@ -248,33 +245,9 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
             </tbody>
           </table>
         </section>
-
-        <section className="hp-box hp-ask" aria-labelledby="hp-wer">
-          <div className="hp-ask-head">
-            <h2 id="hp-wer" className="hp-d">{t("Ist Ihr Wagen frei?")}</h2>
-            <TaxiSign label={t("Frei")} tone="free" size="s" />
-          </div>
-          <p className="hp-ask-lead">{t("Dann übernehmen Sie Fahrten von Kollegen. Und wenn nicht, geben Sie Ihre ab.")}</p>
-          <div className="hp-act">
-            <Link href="/register?type=TRANSPORT_COMPANY" className="hp-btn">{t("Unternehmen registrieren")}</Link>
-            <span>{t("oder")}</span>
-            <Link href="/register?type=TRAVEL_AGENCY" className="hp-btn hp-btn-ghost">{t("Reisebüro oder Hotel registrieren")}</Link>
-          </div>
-          <p className="hp-small">{t("Wir sind im Pilotbetrieb rund um Innsbruck und melden uns persönlich.")}</p>
-        </section>
       </main>
 
-      <footer className="hp-foot">
-        <p>{t("Die Börse für Taxi- und Transferunternehmen in Tirol.")}</p>
-        <nav aria-label={t("Rechtliches")}>
-          <Link href="/preise">{t("Preise")}</Link>
-          <Link href="/impressum">{t("Impressum")}</Link>
-          <Link href="/datenschutz">{t("Datenschutz")}</Link>
-          <Link href="/nutzungsbedingungen">{t("Nutzungsbedingungen")}</Link>
-          <a href="mailto:transferborsatirol@gmail.com?subject=Transferborsa">{t("Kontakt")}</a>
-        </nav>
-        <p className="hp-foot-end">Innsbruck · 2026</p>
-      </footer>
+      <SiteFooter t={t} loggedIn={!!appHref} />
     </div>
   );
 }
