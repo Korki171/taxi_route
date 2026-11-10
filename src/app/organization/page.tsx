@@ -7,7 +7,8 @@ import { getOwnOrganization } from "@/server/services/organizations";
 import { listBlocked, listPartnerCandidates, listPartners } from "@/server/services/partners";
 import { requireOrgActor } from "@/server/web";
 import type { Capability, VehicleCategory } from "@prisma/client";
-import { addPartnerAction, blockOrgAction, unblockOrgAction, removePartnerAction, requestCapabilityAction, updateProfileAction, updateTransportProfileAction } from "../actions";
+import { PlaceSelect } from "@/components/market";
+import { addPartnerAction, updateJobAlertsAction, blockOrgAction, unblockOrgAction, removePartnerAction, requestCapabilityAction, updateProfileAction, updateTransportProfileAction } from "../actions";
 import { getI18n } from "@/server/i18n";
 import Link from "next/link";
 import { PLAN_BY_ID, planStatus } from "@/lib/plans";
@@ -101,6 +102,21 @@ export default async function OrganizationPage({ searchParams }: { searchParams:
           </table>
         </div>
       </section>
+
+      {capByType.has("TRANSPORT_PROVIDER") && canEdit && (
+        <section className="card stack">
+          <h2>{t("Benachrichtigungen")}</h2>
+          <form action={updateJobAlertsAction} className="stack">
+            <label className="check"><input type="checkbox" name="mailNewJobs" defaultChecked={org.mailNewJobs} />{t("E-Mail bei neuen Aufträgen in der Börse")}</label>
+            <div className="fields">
+              <label>{t("Nur von")}<PlaceSelect name="from" defaultValue={org.alertFromPlaceId ?? ""} emptyLabel={t("Egal")} /></label>
+              <label>{t("Nur nach")}<PlaceSelect name="to" defaultValue={org.alertToPlaceId ?? ""} emptyLabel={t("Egal")} /></label>
+            </div>
+            <p className="price-note">{t("Direktanfragen und Nachrichten erhalten Sie immer per E-Mail.")}</p>
+            <div><button type="submit">{t("Speichern")}</button></div>
+          </form>
+        </section>
+      )}
 
       {canPartners && (
         <section className="card stack">

@@ -65,6 +65,12 @@ export async function notifyNewRequest(requestId: string, skipOrgIds: string[] =
   const providers = await db.organization.findMany({
     where: {
       id: { notIn: [req.requesterOrgId, ...invited, ...skipOrgIds], ...(partnerIds ? { in: partnerIds } : {}) },
+      // Suchagent: nur wer E-Mails will und dessen Strecke (falls gesetzt) passt
+      mailNewJobs: true,
+      AND: [
+        { OR: [{ alertFromPlaceId: null }, { alertFromPlaceId: req.pickupPlaceId }] },
+        { OR: [{ alertToPlaceId: null }, { alertToPlaceId: req.dropoffPlaceId }] },
+      ],
       status: "ACTIVE",
       capabilities: { some: { capability: "TRANSPORT_PROVIDER", status: "VERIFIED" } },
     },
@@ -166,6 +172,18 @@ export async function notifyBookingStatus(bookingId: string, eventType: string, 
       "{actor} hat den Status der Buchung {ref} ({route}, {pickup}) geändert: {status}.",
       ...(note ? ["Begründung: {note}"] : []),
     ], { actor: actor.name, status: makeT(localeOf(other.country))(STATUS_WORD[eventType]), note: note ?? "" }),
+  ]);
+}
+
+/** Neue Nachricht zum Auftrag: an die andere Seite. Der Text steht nur in der App. */
+export async function notifyNewMessage(messageId: string) {
+  const m = await db.message.findUniqueOrThrow({
+    where: { id: messageId },
+    include: { request: true, senderOrg: { select: orgSelect }, threadOrg: { select: orgSelect } },
+  });
+  const to = m.senderOrgId === m.threadOrgId ? await db.organization.findUniqueOrThrow({ where: { id: m.request.requesterOrgId }, select: orgSelect }) : m.threadOrg;
+  await sendAll([
+    mail(to, m.request, "Neue Nachricht zu {ref}", ["{actor} hat Ihnen zum Auftrag {ref} ({route}, {pickup}) geschrieben. Die Nachricht lesen und antworten Sie in Transferborsa."], { actor: m.senderOrg.name }),
   ]);
 }
 
