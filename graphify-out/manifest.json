@@ -150,9 +150,9 @@
     "semantic_hash": ""
   },
   "src/app/manifest.ts": {
-    "mtime": 1794336722.1936862,
-    "seen": 1794337507.045919,
-    "ast_hash": "5cc064b11ba8c7812d5e4e2a3eb71fd0",
+    "mtime": 1794340384.9207275,
+    "seen": 1794340427.9362051,
+    "ast_hash": "022140e77e061569d47c5fab1b6e8828",
     "semantic_hash": ""
   },
   "src/app/no-organization/page.tsx": {
@@ -264,9 +264,9 @@
     "semantic_hash": ""
   },
   "src/components/Logo.tsx": {
-    "mtime": 1794336722.1964803,
-    "seen": 1794337507.045933,
-    "ast_hash": "6ed5d4f618908da018880d597fd8c660",
+    "mtime": 1794340352.4399683,
+    "seen": 1794340427.936223,
+    "ast_hash": "c8d9aaca1c699bd52556e3013215b13b",
     "semantic_hash": ""
   },
   "src/components/OrgProfileFields.tsx": {
@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "src/components/landing/Landing.tsx": {
-    "mtime": 1794339616.4380558,
-    "seen": 1794339701.006388,
-    "ast_hash": "5b5b478ee8691857fe2896a42b117040",
+    "mtime": 1794340370.6061394,
+    "seen": 1794340427.936228,
+    "ast_hash": "f299fb9e3fcd10c12869ef469be835ea",
     "semantic_hash": ""
   },
   "src/components/landing/Pricing.tsx": {
@@ -678,15 +678,15 @@
     "semantic_hash": ""
   },
   "src/app/apple-icon.png": {
-    "mtime": 1794336722.1892622,
-    "seen": 1794337507.045998,
-    "ast_hash": "95a07dc54e69b6b1ff8da558618ea20f",
+    "mtime": 1794340384.071823,
+    "seen": 1794340427.9363,
+    "ast_hash": "2e4a8901efd6b1a55be858bd244371ba",
     "semantic_hash": ""
   },
   "src/app/icon.svg": {
-    "mtime": 1794336722.1929119,
-    "seen": 1794337507.045999,
-    "ast_hash": "7ddd968d716915b697fe3876269bbd52",
+    "mtime": 1794340382.9463952,
+    "seen": 1794340427.936301,
+    "ast_hash": "889e3efb4a91f1730587491ab4b7dc87",
     "semantic_hash": ""
   },
   "prisma/migrations/20261026094944_init/migration.sql": {
@@ -852,9 +852,9 @@
     "semantic_hash": ""
   },
   "src/components/landing/SiteFooter.tsx": {
-    "mtime": 1794339274.767293,
-    "seen": 1794339462.771903,
-    "ast_hash": "3b849d0bc9624285059e4f4c17480cb6",
+    "mtime": 1794340370.6056914,
+    "seen": 1794340427.9362319,
+    "ast_hash": "4b5a23978910c4d678f8ecf116272ed4",
     "semantic_hash": ""
   },
   "src/components/landing/PartnerRelay.tsx": {

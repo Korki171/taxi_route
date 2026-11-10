@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Fahrten und Disposition für Taxi- und Transferunternehmen",
     start_url: "/fahrer",
     display: "standalone",
-    background_color: "#1f2b4d",
-    theme_color: "#1f2b4d",
+    background_color: "#0f0f0f",
+    theme_color: "#0f0f0f",
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icon-512.png", sizes: "512x512", type: "image/png" },

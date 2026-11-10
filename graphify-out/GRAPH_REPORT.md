@@ -1,7 +1,7 @@
 # Graph Report - taxi_route-hero  (2026-11-10)
 
 ## Corpus Check
-- 142 files · ~79,906 words
+- 142 files · ~80,081 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 12 file(s) not represented in the graph (top: .css 5, (none) 3, .example 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b682d6a5`
+- Built from commit: `a0f23bce`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -96,12 +96,12 @@ Cohesion: 0.10
 Nodes (64): acceptInvitationAction(), acceptQuoteAction(), addPartnerAction(), adminReviewCapabilityAction(), adminReviewDocumentAction(), adminSetOrgPlanAction(), adminSetOrgStatusAction(), advanceAudienceAction() (+56 more)
 
 ### Community 5 - "getI18n"
-Cohesion: 0.05
-Nodes (122): nextConfig, next, AdminOrgPage(), AdminPage(), PlanCell(), STATUSES, TYPES, RequestDetailPage() (+114 more)
+Cohesion: 0.06
+Nodes (112): nextConfig, next, AdminOrgPage(), AdminPage(), PlanCell(), STATUSES, TYPES, RequestDetailPage() (+104 more)
 
 ### Community 7 - "Landing.tsx"
-Cohesion: 0.07
-Nodes (34): react, Home(), Labels, HeroClaim(), Labels, AUDIENCE, ChatScene(), Confirmation() (+26 more)
+Cohesion: 0.05
+Nodes (44): react, Datenschutz(), metadata, Impressum(), metadata, NotFound(), metadata, Nutzungsbedingungen() (+36 more)
 
 ### Community 8 - "invalid"
 Cohesion: 0.16
@@ -182,11 +182,11 @@ Nodes (13): scripts, build, db:demo, db:deploy, db:migrate, db:seed, dev, lint (
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `next` connect `getI18n` to `marketplace.ts`, `actions.ts`, `package.json`, `Landing.tsx`, `organizations/[id]/page.tsx`, `layout.tsx`, `dependencies`?**
-  _High betweenness centrality (0.062) - this node is a cross-community bridge._
+  _High betweenness centrality (0.061) - this node is a cross-community bridge._
 - **Should `20261026102414_phase3_marketplace/migration.sql` be split into smaller, more focused modules?**
   _Cohesion score 0.0528169014084507 - nodes in this community are weakly interconnected._
 - **Why does `getI18n` connect `getI18n` to `organizations/[id]/page.tsx`, `layout.tsx`, `dispatch.ts`, `Landing.tsx`?**
-  _High betweenness centrality (0.048) - this node is a cross-community bridge._
+  _High betweenness centrality (0.047) - this node is a cross-community bridge._
 - **Should `LiveMap.tsx` be split into smaller, more focused modules?**
   _Cohesion score 0.12307692307692308 - nodes in this community are weakly interconnected._
 - **Why does `@prisma/client` connect `context.ts` to `notFound`, `marketplace.ts`, `actions.ts`, `getI18n`, `package.json`, `organizations/[id]/page.tsx`, `requirePermission`, `db.ts`, `members.ts`, `dispatch.ts`, `messages.ts`, `audit`, `dependencies`?**

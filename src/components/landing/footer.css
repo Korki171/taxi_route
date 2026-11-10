@@ -9,10 +9,8 @@
 .mf-call .hp-act { justify-content: center; }
 
 .mf-ground { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 40px 56px; padding: 8px 4px 28px; }
-.mf-logo { display: inline-flex; align-items: center; gap: 12px; min-height: 44px; text-decoration: none; font-size: 20px; font-weight: 650; letter-spacing: -0.02em; }
-.hp .mf-mark { width: 54px; font-size: 17px; }
-.hp .mf-mark .hp-sign-cap { height: 4px; }
-.hp .mf-mark .hp-sign-face { border-radius: 8px 8px 3px 3px; }
+.mf-logo { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); }
+.mf-logo svg { display: block; height: 40px; width: auto; }
 .hp .mf-brand p { margin-top: 10px; font-size: 15px; color: var(--muted); max-width: 32ch; }
 .mf-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 24px; }
 .hp .mf-cols h3 { font-size: 15px; font-weight: 650; margin-bottom: 8px; }

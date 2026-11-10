@@ -1,5 +1,5 @@
 /* Startseite „Das Taxischild“: Keine Fahrt bleibt liegen. Footer mit Nachtszene in footer.css. Das gelbe Dachschild leuchtet FREI und geht auf BESETZT, sobald jemand übernimmt.
-   Doppelrahmen und Linien nur um Abschnitte und in echten Tabellen.
+   Doppelrahmen und Linien in Grau (--frame) nur um Abschnitte und in echten Tabellen, damit nur Gelb und Rot leuchten.
    Farbe „Ruß bei Nacht“ (taste-skill, Palette „Soot and lime“ mit Taxigelb statt Limette): Rußschwarz als Grund, helle Schrift, Taxigelb auf dem freien Schild und den Buttons, Rot nur auf dem besetzten Schild.
    App-Ausschnitte (data-ui: Fahrtkarte, Chat, Bestätigung) bleiben hell wie echte Bildschirme.
    Schrift: Imbue für Ziffern und Wörter in Tafelgröße, Albert Sans zum Lesen; Stufen 14 / 16 / 18 / 28 / Display.
@@ -19,6 +19,7 @@
   --open-bg: #3b3210;
   --open: #f5d65c;
   --line: #2c2c2c;
+  --frame: #3a3a3a;
   --taxi: #f5c518;
   --taxi-ink: #111111;
   --sign-off: #2a2a2a;
@@ -72,12 +73,12 @@
 /* Kopf */
 .hp-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; padding: 8px 4px 20px; }
 .hp-logo { color: var(--navy); }
-.hp-logo svg { display: block; height: 28px; width: auto; }
+.hp-logo svg { display: block; height: 40px; width: auto; }
 .hp-head nav { display: flex; flex-wrap: wrap; align-items: center; gap: 0 24px; font-size: 16px; font-weight: 600; }
 .hp-head nav a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
 
 /* Abschnitte im Doppelrahmen */
-.hp-box { border: 3px double var(--navy); padding: clamp(20px, 3.4vw, 52px); margin-bottom: 20px; }
+.hp-box { border: 3px double var(--frame); padding: clamp(20px, 3.4vw, 52px); margin-bottom: 20px; }
 .hp-box h2:not(.hp-d) { font-size: clamp(26px, 3vw, 40px); line-height: 1.1; letter-spacing: -0.03em; font-weight: 600; text-wrap: balance; margin-bottom: 28px; }
 .hp-box h3 { font-size: 22px; line-height: 1.2; letter-spacing: -0.02em; font-weight: 600; }
 
@@ -117,7 +118,7 @@
 .hp-ride-by { font-size: 16px; }
 
 /* Ablauf: dieselbe Fahrt, vier Schilder */
-.hp-steps { list-style: none; margin: 0; padding: 28px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; border-top: 3px double var(--navy); }
+.hp-steps { list-style: none; margin: 0; padding: 28px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; border-top: 3px double var(--frame); }
 .hp-steps li { display: grid; gap: 10px; align-content: start; }
 .hp-steps .hp-sign { justify-items: start; }
 .hp-steps .hp-sign-cap { margin-left: 28%; }
@@ -128,8 +129,8 @@
 /* Tabellen: echte Tabellen, die Tafel */
 .hp table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .hp th, .hp td { text-align: left; vertical-align: baseline; padding: 14px 16px 14px 0; font-size: 18px; }
-.hp thead th { font-size: 16px; font-weight: 600; padding-bottom: 10px; border-bottom: 3px double var(--navy); }
-.hp tbody tr { border-bottom: 1px solid var(--navy); }
+.hp thead th { font-size: 16px; font-weight: 600; padding-bottom: 10px; border-bottom: 3px double var(--frame); }
+.hp tbody tr { border-bottom: 1px solid var(--frame); }
 .hp tbody tr:last-child { border-bottom: 0; }
 
 .hp-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; margin-top: 56px; }
@@ -140,15 +141,15 @@
 .hp-facts th { width: 32%; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; padding-right: 32px; }
 .hp-facts { max-width: 1040px; }
 .hp-facts td { max-width: 60ch; }
-.hp-facts thead + tbody tr:first-child, .hp-facts tbody tr:first-child { border-top: 3px double var(--navy); }
-.hp-facts tbody tr:last-child { border-bottom: 3px double var(--navy); }
+.hp-facts thead + tbody tr:first-child, .hp-facts tbody tr:first-child { border-top: 3px double var(--frame); }
+.hp-facts tbody tr:last-child { border-bottom: 3px double var(--frame); }
 
 .hp-routes-box { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 400px); gap: 48px; align-items: start; }
 
 /* Staffel: dieselbe Fahrt wandert von Stufe zu Stufe, bis ein Schild auf BESETZT springt */
 .hp-relay { display: grid; gap: 18px; }
 .hp-relay > div { display: grid; gap: 18px; }
-.hp-relay-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 3px double var(--navy); }
+.hp-relay-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 3px double var(--frame); }
 .hp-relay-steps li { padding-top: 10px; font-size: 14px; font-weight: 600; color: var(--muted); line-height: 1.3; transition: color 300ms ease; }
 .hp-relay-steps li span { display: block; font-family: "Imbue Variable", "Times New Roman", serif; font-size: 30px; line-height: 0.9; }
 .hp-relay-steps li[data-on="true"] { color: var(--ink); }
@@ -167,9 +168,9 @@
 .hp-relay-board li { transition: opacity 400ms ease; }
 
 /* Partner: drei Stufen, jede eine Stufe weiter eingerückt, wie eine Treppe nach unten */
-.hp-stairs { list-style: none; margin: 0; padding: 0; display: grid; border-top: 3px double var(--navy); }
-.hp-stairs li { margin-left: calc(var(--i, 0) * clamp(20px, 5vw, 72px)); padding: 20px 0 22px; border-bottom: 1px solid var(--navy); display: grid; gap: 6px; }
-.hp-stairs li:last-child { border-bottom: 3px double var(--navy); }
+.hp-stairs { list-style: none; margin: 0; padding: 0; display: grid; border-top: 3px double var(--frame); }
+.hp-stairs li { margin-left: calc(var(--i, 0) * clamp(20px, 5vw, 72px)); padding: 20px 0 22px; border-bottom: 1px solid var(--frame); display: grid; gap: 6px; }
+.hp-stairs li:last-child { border-bottom: 3px double var(--frame); }
 .hp-stairs h3 { display: flex; align-items: baseline; gap: 14px; }
 .hp-stairs h3 span { font-family: "Imbue Variable", "Times New Roman", serif; font-weight: 480; font-size: 40px; line-height: 0.8; color: var(--accent); font-variant-numeric: tabular-nums; }
 .hp-stairs p { font-size: 17px; line-height: 1.5; max-width: 52ch; }
