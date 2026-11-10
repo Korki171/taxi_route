@@ -1322,8 +1322,8 @@ export const EN: Record<string, string> = {
   "Helle Ansicht": "Light view",
   "Steigen Sie ein.": "Get on board.",
   "Verschneite Straße im Schneetreiben in Mathon bei Ischgl, mit Bushaltestelle": "Snow-covered road during snowfall in Mathon near Ischgl, with a bus stop",
-  "Mathon bei Ischgl im Schneetreiben.": "Mathon near Ischgl in falling snow.",
   "Verschneite Passstraße mit Serpentinen bei Stuben am Arlberg, von oben": "Snow-covered mountain pass road with hairpin bends near Stuben am Arlberg, from above",
   "Die Passstraße bei Stuben am Arlberg im Winter.": "The pass road near Stuben am Arlberg in winter.",
   "Fotos via Wikimedia Commons: KrauS (CC BY 3.0), Herbert Heim (CC BY-SA 4.0).": "Photos via Wikimedia Commons: KrauS (CC BY 3.0), Herbert Heim (CC BY-SA 4.0).",
+  "Mathon bei Ischgl im Schneetreiben. An solchen Tagen zählen klare Regeln für Storno und Verspätung.": "Mathon near Ischgl in falling snow. On days like this, clear rules for cancellations and delays matter.",
 };

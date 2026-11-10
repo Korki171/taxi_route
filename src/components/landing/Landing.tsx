@@ -198,20 +198,14 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           </div>
         </section>
 
-        {/* Weitergabe: auf grauer Fläche, links eine verschneite Dorfstraße in Tirol, rechts die vier Punkte als Liste ohne Linien */}
-        <section className="hp-box hp-field hp-counts" aria-labelledby="hp-zaehlt">
-          <figure className="hp-photo">
-            <Photo src="/landing/welt/mathon-ischgl-winter.jpg" alt={t("Verschneite Straße im Schneetreiben in Mathon bei Ischgl, mit Bushaltestelle")} w={1920} h={1080} />
-            <figcaption>{t("Mathon bei Ischgl im Schneetreiben.")}</figcaption>
-          </figure>
-          <div>
-            <h2 id="hp-zaehlt">{t("Was bei einer Weitergabe zählt.")}</h2>
-            <dl className="hp-points">
-              {counts.map(([k, v]) => (
-                <div key={k}><dt>{t(k)}</dt><dd>{t(v)}</dd></div>
-              ))}
-            </dl>
-          </div>
+        {/* Weitergabe: auf grauer Fläche, die vier Punkte nebeneinander als Liste ohne Linien */}
+        <section className="hp-box hp-field" aria-labelledby="hp-zaehlt">
+          <h2 id="hp-zaehlt">{t("Was bei einer Weitergabe zählt.")}</h2>
+          <dl className="hp-points">
+            {counts.map(([k, v]) => (
+              <div key={k}><dt>{t(k)}</dt><dd>{t(v)}</dd></div>
+            ))}
+          </dl>
         </section>
 
         {/* Partner: wer die Fahrt zuerst sieht, als Treppe in drei Stufen; daneben dieselbe Fahrt als Staffel (PartnerRelay) */}
@@ -253,15 +247,22 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           </div>
         </section>
 
-        <section id="fragen" className="hp-box" aria-labelledby="hp-fragen">
-          <h2 id="hp-fragen">{t("Häufige Fragen")}</h2>
-          <table className="hp-facts hp-faq">
-            <tbody>
-              {FAQ.map(([q, a]) => (
-                <tr key={q}><th scope="row">{t(q)}</th><td>{t(a)}</td></tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Fragen: echte Tabelle, daneben Schneetreiben, wenn Storno und Verspätung zur Frage werden */}
+        <section id="fragen" className="hp-box hp-faq-box" aria-labelledby="hp-fragen">
+          <div>
+            <h2 id="hp-fragen">{t("Häufige Fragen")}</h2>
+            <table className="hp-facts hp-faq">
+              <tbody>
+                {FAQ.map(([q, a]) => (
+                  <tr key={q}><th scope="row">{t(q)}</th><td>{t(a)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <figure className="hp-photo">
+            <Photo src="/landing/welt/mathon-ischgl-winter.jpg" alt={t("Verschneite Straße im Schneetreiben in Mathon bei Ischgl, mit Bushaltestelle")} w={1920} h={1080} />
+            <figcaption>{t("Mathon bei Ischgl im Schneetreiben. An solchen Tagen zählen klare Regeln für Storno und Verspätung.")}</figcaption>
+          </figure>
         </section>
       </main>
 

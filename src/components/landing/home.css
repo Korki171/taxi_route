@@ -179,9 +179,9 @@
 .hp-facts thead + tbody tr:first-child, .hp-facts tbody tr:first-child { border-top: 3px double var(--frame); }
 .hp-facts tbody tr:last-child { border-bottom: 3px double var(--frame); }
 
-.hp-counts { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(28px, 4vw, 64px); align-items: center; }
-.hp-counts .hp-points { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.hp-photo img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.hp-faq-box { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: clamp(28px, 4vw, 64px); align-items: start; }
+.hp-faq-box .hp-photo { margin-top: 72px; }
+.hp-photo img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; }
 .hp-photo figcaption, .hp-band figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
 .hp-band img { width: 100%; aspect-ratio: 21 / 8; object-fit: cover; }
 .hp-points { margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px 28px; }
@@ -254,7 +254,9 @@
 }
 
 @media (max-width: 900px) {
-  .hp-counts { grid-template-columns: minmax(0, 1fr); }
+  .hp-faq-box { grid-template-columns: minmax(0, 1fr); }
+  .hp-faq-box .hp-photo { margin-top: 0; max-width: 420px; }
+  .hp-photo img { aspect-ratio: 4 / 3; }
   .hp-points { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hp-routes-box, .hp-price-grid, .hp-hero { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .hp-hero { min-height: 0; }
@@ -265,7 +267,6 @@
 
 /* Telefon: Tabellen werden zu Zeilenblöcken */
 @media (max-width: 760px) {
-  .hp-counts .hp-points { grid-template-columns: minmax(0, 1fr); }
   .hp-band img { aspect-ratio: 4 / 3; }
   .hp-points { grid-template-columns: minmax(0, 1fr); gap: 22px; }
   .hp { font-size: 16px; }
