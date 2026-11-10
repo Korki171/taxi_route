@@ -1,5 +1,10 @@
 /** Englische Texte. Schlüssel ist der deutsche Text (siehe src/lib/i18n.ts). */
 export const EN: Record<string, string> = {
+  "Unternehmen nicht gefunden.": "Company not found.",
+  "Das eigene Unternehmen kann nicht gesperrt werden.": "Your own company cannot be blocked.",
+  "Sperre aufheben": "Unblock",
+  "Gesperrte Unternehmen sehen keine Ihrer Aufträge.": "Blocked companies do not see any of your jobs.",
+  "Sperren": "Block",
   "Dieser Auftrag wurde soeben vergeben.": "This job was just assigned.",
   "Der Auftrag wurde soeben weitergegeben.": "The job was just passed on.",
   "Höchstens 100 Partner.": "At most 100 partners.",

@@ -6,6 +6,8 @@ import type { Prisma } from "@prisma/client";
  * Gezielte Anfragen sehen nur die eingeladenen, solange sie nicht abgelehnt haben.
  */
 export const VISIBLE_TO = (orgId: string): Prisma.TransferRequestWhereInput => ({
+  // Sperrliste des Auftraggebers gilt immer
+  requesterOrg: { blocks: { none: { blockedOrgId: orgId } } },
   OR: [
     { visibility: "MARKET", audience: "MARKET" },
     { visibility: "MARKET", audience: "PARTNERS", requesterOrg: { partners: { some: { partnerOrgId: orgId } } } },

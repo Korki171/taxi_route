@@ -4,10 +4,10 @@ import { Badge, Flash, type SP } from "@/components/ui";
 import { CAPABILITY_LABEL, VEHICLE_LABEL, VERIFICATION_LABEL } from "@/lib/labels";
 import { actorCan } from "@/server/authz/context";
 import { getOwnOrganization } from "@/server/services/organizations";
-import { listPartnerCandidates, listPartners } from "@/server/services/partners";
+import { listBlocked, listPartnerCandidates, listPartners } from "@/server/services/partners";
 import { requireOrgActor } from "@/server/web";
 import type { Capability, VehicleCategory } from "@prisma/client";
-import { addPartnerAction, removePartnerAction, requestCapabilityAction, updateProfileAction, updateTransportProfileAction } from "../actions";
+import { addPartnerAction, blockOrgAction, unblockOrgAction, removePartnerAction, requestCapabilityAction, updateProfileAction, updateTransportProfileAction } from "../actions";
 import { getI18n } from "@/server/i18n";
 import Link from "next/link";
 import { PLAN_BY_ID, planStatus } from "@/lib/plans";
@@ -27,7 +27,7 @@ export default async function OrganizationPage({ searchParams }: { searchParams:
   const plan = org.plan ? PLAN_BY_ID[org.plan] : null;
   const vehicles = org._count.vehicles;
   const canPartners = actorCan(actor, "transfers.request");
-  const [partners, candidates] = canPartners ? await Promise.all([listPartners(actor), listPartnerCandidates(actor)]) : [[], []];
+  const [partners, candidates, blocked] = canPartners ? await Promise.all([listPartners(actor), listPartnerCandidates(actor), listBlocked(actor)]) : [[], [], []];
 
   return (
     <AppShell actor={actor}>
@@ -111,10 +111,16 @@ export default async function OrganizationPage({ searchParams }: { searchParams:
               {partners.map((p) => (
                 <li key={p.id} className="actions-row spread">
                   <span>{p.name}, {p.city}</span>
-                  <form action={removePartnerAction}>
-                    <input type="hidden" name="partnerOrgId" value={p.id} />
-                    <button type="submit" className="secondary">{t("Entfernen")}</button>
-                  </form>
+                  <span className="actions-row">
+                    <form action={removePartnerAction}>
+                      <input type="hidden" name="partnerOrgId" value={p.id} />
+                      <button type="submit" className="secondary">{t("Entfernen")}</button>
+                    </form>
+                    <form action={blockOrgAction}>
+                      <input type="hidden" name="partnerOrgId" value={p.id} />
+                      <button type="submit" className="secondary">{t("Sperren")}</button>
+                    </form>
+                  </span>
                 </li>
               ))}
             </ul>
@@ -126,7 +132,25 @@ export default async function OrganizationPage({ searchParams }: { searchParams:
                 {candidates.map((c) => <option key={c.id} value={c.id}>{c.name}, {c.city}</option>)}
               </select>
               <button type="submit">{t("Hinzufügen")}</button>
+              <button type="submit" formAction={blockOrgAction} className="secondary">{t("Sperren")}</button>
             </form>
+          )}
+          {blocked.length > 0 && (
+            <>
+              <h3>{t("Gesperrt")}</h3>
+              <p className="muted">{t("Gesperrte Unternehmen sehen keine Ihrer Aufträge.")}</p>
+              <ul className="plain-list">
+                {blocked.map((b) => (
+                  <li key={b.id} className="actions-row spread">
+                    <span>{b.name}, {b.city}</span>
+                    <form action={unblockOrgAction}>
+                      <input type="hidden" name="partnerOrgId" value={b.id} />
+                      <button type="submit" className="secondary">{t("Sperre aufheben")}</button>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </section>
       )}

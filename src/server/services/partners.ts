@@ -34,6 +34,7 @@ export async function listPartnerCandidates(actor: Actor | null) {
       status: "ACTIVE",
       capabilities: { some: { capability: "TRANSPORT_PROVIDER", status: "VERIFIED" } },
       partnerOf: { none: { orgId: actor.org.id } },
+      blockedBy: { none: { orgId: actor.org.id } },
     },
     select: { id: true, name: true, city: true, country: true },
     orderBy: { name: "asc" },
@@ -50,6 +51,7 @@ export async function addPartner(actor: Actor | null, partnerOrgId: string) {
   });
   if (!org) throw invalid("Dieses Unternehmen ist nicht freigeschaltet.");
   if ((await db.partnerLink.count({ where: { orgId: actor.org.id } })) >= MAX_PARTNERS) throw invalid("Höchstens 100 Partner.");
+  await db.orgBlock.deleteMany({ where: { orgId: actor.org.id, blockedOrgId: partnerOrgId } });
   await db.partnerLink.upsert({
     where: { orgId_partnerOrgId: { orgId: actor.org.id, partnerOrgId } },
     create: { orgId: actor.org.id, partnerOrgId },
@@ -60,6 +62,40 @@ export async function addPartner(actor: Actor | null, partnerOrgId: string) {
 export async function removePartner(actor: Actor | null, partnerOrgId: string) {
   requirePermission(actor, "transfers.request");
   await db.partnerLink.deleteMany({ where: { orgId: actor.org.id, partnerOrgId } });
+}
+
+// ---------------------------------------------------------------------------
+// Sperrliste
+// ---------------------------------------------------------------------------
+
+export async function listBlocked(actor: Actor | null) {
+  requirePermission(actor, "org.read");
+  const rows = await db.orgBlock.findMany({
+    where: { orgId: actor.org.id },
+    include: { blockedOrg: { select: { id: true, name: true, city: true } } },
+    orderBy: { blockedOrg: { name: "asc" } },
+  });
+  return rows.map((r) => r.blockedOrg);
+}
+
+/** Sperrt ein Unternehmen: es sieht keine Aufträge mehr von uns und ist nicht mehr Partner. */
+export async function blockOrg(actor: Actor | null, blockedOrgId: string) {
+  requirePermission(actor, "transfers.request");
+  if (blockedOrgId === actor.org.id) throw invalid("Das eigene Unternehmen kann nicht gesperrt werden.");
+  if (!(await db.organization.findUnique({ where: { id: blockedOrgId }, select: { id: true } }))) throw notFound("Unternehmen nicht gefunden.");
+  await db.$transaction([
+    db.partnerLink.deleteMany({ where: { orgId: actor.org.id, partnerOrgId: blockedOrgId } }),
+    db.orgBlock.upsert({
+      where: { orgId_blockedOrgId: { orgId: actor.org.id, blockedOrgId } },
+      create: { orgId: actor.org.id, blockedOrgId },
+      update: {},
+    }),
+  ]);
+}
+
+export async function unblockOrg(actor: Actor | null, blockedOrgId: string) {
+  requirePermission(actor, "transfers.request");
+  await db.orgBlock.deleteMany({ where: { orgId: actor.org.id, blockedOrgId } });
 }
 
 // ---------------------------------------------------------------------------

@@ -7,7 +7,7 @@ import { AppError, invalid } from "@/server/errors";
 import { adminReviewCapability, adminReviewDocument, adminSetOrganizationPlan, adminSetOrganizationStatus } from "@/server/services/admin";
 import { login, switchActiveOrganization } from "@/server/services/auth";
 import { deleteDocument, uploadDocument } from "@/server/services/documents";
-import { addPartner, advanceAudience, removePartner, takeOwnRequest } from "@/server/services/partners";
+import { addPartner, advanceAudience, blockOrg, removePartner, takeOwnRequest, unblockOrg } from "@/server/services/partners";
 import {
   acceptInvitation,
   changeMemberRole,
@@ -319,6 +319,20 @@ export async function addPartnerAction(fd: FormData) {
   await runAction("/organization", async () => {
     await addPartner(await getActor(), str(fd, "partnerOrgId"));
     return withParam("/organization", "ok", "Partner hinzugefügt.");
+  });
+}
+
+export async function blockOrgAction(fd: FormData) {
+  await runAction("/organization", async () => {
+    await blockOrg(await getActor(), str(fd, "partnerOrgId"));
+    return withParam("/organization", "ok", "Unternehmen gesperrt.");
+  });
+}
+
+export async function unblockOrgAction(fd: FormData) {
+  await runAction("/organization", async () => {
+    await unblockOrg(await getActor(), str(fd, "partnerOrgId"));
+    return withParam("/organization", "ok", "Sperre aufgehoben.");
   });
 }
 

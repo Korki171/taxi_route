@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { createTransferRequest, getTransferRequest, searchBoard, takeFixedPriceRequest } from "@/server/services/marketplace";
-import { addPartner, advanceAudience, escalateDueRequests, listPartnerCandidates, listPartners, removePartner, takeOwnRequest } from "@/server/services/partners";
+import { addPartner, blockOrg, unblockOrg, advanceAudience, escalateDueRequests, listPartnerCandidates, listPartners, removePartner, takeOwnRequest } from "@/server/services/partners";
 import { requestInput, verifiedTaxi } from "./helpers";
 
 async function setup() {
@@ -71,5 +71,20 @@ describe("Partnernetzwerk und Veröffentlichungsstufen", () => {
     expect(b.requesterOrgId).toBe(poster.org.id);
     await expect(takeOwnRequest(poster.actor, req.id)).rejects.toMatchObject({ code: "NOT_FOUND" });
     await expect(takeOwnRequest(partner.actor, req.id)).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  it("Sperrliste: gesperrte Firmen sehen keine Aufträge und sind keine Partner mehr", async () => {
+    const { poster, partner, stranger } = await setup();
+    await blockOrg(poster.actor, partner.org.id);
+    await blockOrg(poster.actor, stranger.org.id);
+    expect(await listPartners(poster.actor)).toEqual([]);
+    const req = await createTransferRequest(poster.actor, requestInput());
+    expect(await searchBoard(stranger.actor, {})).toEqual([]);
+    expect(await searchBoard(partner.actor, {})).toEqual([]);
+    await expect(takeFixedPriceRequest(stranger.actor, req.id)).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await unblockOrg(poster.actor, stranger.org.id);
+    expect((await searchBoard(stranger.actor, {})).map((r) => r.id)).toEqual([req.id]);
+    await addPartner(poster.actor, partner.org.id); // Partner hinzufügen hebt die Sperre auf
+    expect((await searchBoard(partner.actor, {})).map((r) => r.id)).toEqual([req.id]);
   });
 });
