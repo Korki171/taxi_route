@@ -169,6 +169,18 @@ export async function notifyBookingStatus(bookingId: string, eventType: string, 
   ]);
 }
 
+/** Das ausführende Unternehmen hat einen übernommenen Auftrag zurückgegeben: an den Auftraggeber. */
+export async function notifyBookingReturned(requestId: string, providerOrgId: string, note: string) {
+  const req = await db.transferRequest.findUniqueOrThrow({ where: { id: requestId }, include: { requesterOrg: { select: orgSelect } } });
+  const provider = await db.organization.findUniqueOrThrow({ where: { id: providerOrgId }, select: orgSelect });
+  await sendAll([
+    mail(req.requesterOrg, req, "Auftrag {ref} zurückgegeben", [
+      "{actor} hat den übernommenen Auftrag {ref} ({route}, {pickup}) zurückgegeben. Er ist wieder offen und wird neu veröffentlicht.",
+      "Begründung: {note}",
+    ], { actor: provider.name, note }),
+  ]);
+}
+
 /** Zurückgezogener Auftrag: an Unternehmen, die ein Angebot abgegeben hatten. */
 export async function notifyRequestCancelled(requestId: string) {
   const req = await db.transferRequest.findUniqueOrThrow({

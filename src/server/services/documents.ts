@@ -28,14 +28,19 @@ const metaSchema = z.object({
 
 export type UploadFile = { name: string; mimeType: string; bytes: Uint8Array };
 
-export async function uploadDocument(actor: Actor | null, meta: unknown, file: UploadFile) {
-  requirePermission(actor, "documents.manage");
-  const data = parse(metaSchema, meta);
+/** Prüft Größe und Inhalt (nicht nur den vom Browser gemeldeten Typ) und liefert einen sicheren Dateinamen. */
+export function checkUpload(file: UploadFile) {
   if (file.bytes.byteLength === 0) throw invalid("Die Datei ist leer.");
   if (file.bytes.byteLength > MAX_DOCUMENT_BYTES) throw invalid("Die Datei ist größer als 5 MB.");
   const check = ALLOWED[file.mimeType];
-  // Inhalt prüfen, nicht nur den vom Browser gemeldeten Typ.
   if (!check || !check(file.bytes)) throw invalid("Erlaubt sind nur PDF-, PNG- und JPEG-Dateien.");
+  return file.name.replace(/[^\w.\- ]+/g, "_").slice(0, 200) || "dokument";
+}
+
+export async function uploadDocument(actor: Actor | null, meta: unknown, file: UploadFile) {
+  requirePermission(actor, "documents.manage");
+  const data = parse(metaSchema, meta);
+  checkUpload(file);
 
   const doc = await db.verificationDocument.create({
     data: {

@@ -21,6 +21,8 @@ export const EVENT_LABEL: Record<string, string> = {
   "request.invited": "Unternehmen gezielt angefragt",
   "request.opened_to_market": "Für die ganze Börse freigegeben",
   "request.audience_changed": "An die nächste Stufe weitergegeben",
+  "booking.returned": "Vom ausführenden Unternehmen zurückgegeben",
+  "booking.document_added": "Dokument hochgeladen",
   "booking.taken_by_own_fleet": "Vom eigenen Betrieb übernommen",
   "invitation.declined": "Anfrage abgelehnt",
   "quote.submitted": "Angebot abgegeben",
