@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "src/components/landing/Landing.tsx": {
-    "mtime": 1794343067.3855731,
-    "seen": 1794343118.045449,
-    "ast_hash": "483e594200ae24588d66269a8aaca19c",
+    "mtime": 1794343666.8991368,
+    "seen": 1794343717.18725,
+    "ast_hash": "60a9c53d45184cfb8807664b484bfe55",
     "semantic_hash": ""
   },
   "src/components/landing/Pricing.tsx": {
@@ -330,9 +330,9 @@
     "semantic_hash": ""
   },
   "src/lib/i18n-en.ts": {
-    "mtime": 1794343067.3996112,
-    "seen": 1794343118.045461,
-    "ast_hash": "3eadeb38c5de271160d5f5c7486d7961",
+    "mtime": 1794343666.9006908,
+    "seen": 1794343717.1872692,
+    "ast_hash": "b22ffe483661be04ec114e4b0faa15c8",
     "semantic_hash": ""
   },
   "src/lib/i18n.ts": {
