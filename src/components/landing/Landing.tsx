@@ -50,36 +50,6 @@ type T = (key: string, vars?: Record<string, string | number>) => string;
 
 /* ---------- Oberflächen als HTML, nicht als Bild: bleiben scharf und übersetzbar (data-ui) ---------- */
 
-/** Chat, wie er heute abläuft. */
-function ChatScene({ t }: { t: T }) {
-  const msgs: [string, string, string][] = [
-    ["me", "Sa 11:00 Flughafen München → Kitzbühel, 6 Personen, 6 Koffer. Wer kann?", "09:12"],
-    ["Hannes", "ich hätt nur einen Achter am Nachmittag", "09:14"],
-    ["Selim", "Preis?", "09:14"],
-    ["Marko", "bin ab 12 frei", "09:20"],
-    ["me", "Muss 11:00 sein, Flieger landet 10:05", "09:21"],
-    ["Selim", "wie viele Ski??", "09:35"],
-    ["Hannes", "frag mal Lukas, der hat den Kleinbus", "09:41"],
-  ];
-  return (
-    <figure className="hp-chat" data-ui aria-label={t("Beispiel: Fahrt in der Gruppe suchen")}>
-      <figcaption>
-        <b>{t("Fahrer Innsbruck")}</b>
-        <span>{t("Gruppenchat · 14 Mitglieder")}</span>
-      </figcaption>
-      <ol>
-        {msgs.map(([who, text, time], i) => (
-          <li key={i} className={who === "me" ? "me" : undefined}>
-            {who !== "me" && <b>{who}</b>}
-            <p>{t(text)}</p>
-            <time>{time}</time>
-          </li>
-        ))}
-      </ol>
-    </figure>
-  );
-}
-
 function Confirmation({ t }: { t: T }) {
   const rows: [string, string][] = [
     ["Strecke", "Flughafen München → Kitzbühel"],
@@ -136,12 +106,6 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
     ["Bestätigt", "Bestätigen", "Preis, Flug, Gepäck und Stornobedingungen stehen in einer Bestätigung als PDF.", "TB-2411-0187"],
     ["Erledigt", "Fahren", "Die Fahrt ist gefahren. Beide Seiten sehen denselben Stand.", "beide Seiten"],
   ];
-  const counts: [string, string][] = [
-    ["Festpreis oder Angebot", "Das erste geprüfte Unternehmen übernimmt direkt und verbindlich, oder Unternehmen geben Angebote ab."],
-    ["Nur geprüfte Unternehmen.", "Konzession, Versicherung und Firmendaten sind vorab geprüft."],
-    ["Fahrgastdaten bleiben privat", "Namen und Nummern sieht nur, wer die Fahrt übernimmt."],
-    ["Bestätigung als PDF", "Preis, Gepäck und Stornobedingungen stehen mit jeder Buchung schwarz auf weiß da."],
-  ];
   return (
     <div className="hp" data-theme={theme}>
       <header className="hp-head">
@@ -171,7 +135,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           <HeroClaim L={claim} />
         </section>
 
-        {/* Ablauf: dieselbe Fahrt in vier Zeilen, daneben das, was heute passiert, und das, was danach dasteht */}
+        {/* Ablauf: dieselbe Fahrt in vier Schildern, darunter die Bestätigung, die danach dasteht */}
         <section id="ablauf" className="hp-box" aria-labelledby="hp-ablauf">
           <h2 id="hp-ablauf">{t("So läuft eine Fahrt.")}</h2>
           <ol className="hp-steps">
@@ -184,28 +148,16 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
               </li>
             ))}
           </ol>
-          <div className="hp-pair">
-            <div>
-              <h3>{t("Bisher läuft es so.")}</h3>
-              <p>{t("Die Fahrt geht in die Gruppe, drei Kollegen antworten halb, Preis und Gepäck bleiben mündlich.")}</p>
-              <ChatScene t={t} />
-            </div>
+          <div className="hp-proof">
             <div>
               <h3>{t("Danach steht alles schriftlich da.")}</h3>
-              <p>{t("Beide Seiten haben dasselbe Dokument, auch bei Storno.")}</p>
-              <Confirmation t={t} />
+              <p>{t("Bisher geht die Fahrt in die Gruppe, drei Kollegen antworten halb, Preis und Gepäck bleiben mündlich. Hier haben beide Seiten dasselbe Dokument, auch bei Storno.")}</p>
+              <div className="hp-act">
+                <Link href={registerHref} className="hp-btn">{appHref ? t("Zur App") : t("Unternehmen registrieren")}</Link>
+              </div>
             </div>
+            <Confirmation t={t} />
           </div>
-        </section>
-
-        {/* Weitergabe: auf grauer Fläche, die vier Punkte nebeneinander als Liste ohne Linien */}
-        <section className="hp-box hp-field" aria-labelledby="hp-zaehlt">
-          <h2 id="hp-zaehlt">{t("Was bei einer Weitergabe zählt.")}</h2>
-          <dl className="hp-points">
-            {counts.map(([k, v]) => (
-              <div key={k}><dt>{t(k)}</dt><dd>{t(v)}</dd></div>
-            ))}
-          </dl>
         </section>
 
         {/* Partner: wer die Fahrt zuerst sieht, als Treppe in drei Stufen; daneben dieselbe Fahrt als Staffel (PartnerRelay) */}
@@ -225,12 +177,6 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           <PartnerRelay L={relay} />
         </section>
 
-        {/* Ruhepunkt: Serpentinen im Schnee am Arlberg, über die ganze Breite */}
-        <figure className="hp-band">
-          <Photo src="/landing/welt/stuben-arlberg-winter.jpg" alt={t("Verschneite Passstraße mit Serpentinen bei Stuben am Arlberg, von oben")} w={1920} h={1281} />
-          <figcaption>{t("Die Passstraße bei Stuben am Arlberg im Winter.")}</figcaption>
-        </figure>
-
         {/* Preis: die Zahl als Tafelziffern, auf grauer Fläche */}
         <section className="hp-box hp-field hp-price" aria-labelledby="hp-preis">
           <h2 id="hp-preis">{t("Ein Preis für alle Fahrten.")}</h2>
@@ -247,8 +193,8 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           </div>
         </section>
 
-        {/* Fragen: echte Tabelle, daneben Schneetreiben, wenn Storno und Verspätung zur Frage werden */}
-        <section id="fragen" className="hp-box hp-faq-box" aria-labelledby="hp-fragen">
+        {/* Fragen: auf derselben grauen Fläche wie der Preis; echte Tabelle, daneben Schneetreiben, wenn Storno und Verspätung zur Frage werden */}
+        <section id="fragen" className="hp-box hp-field hp-faq-box" aria-labelledby="hp-fragen">
           <div>
             <h2 id="hp-fragen">{t("Häufige Fragen")}</h2>
             <table className="hp-facts hp-faq">
