@@ -1,13 +1,13 @@
 import Link from "next/link";
 import "./footer.css";
 import { NightRoad } from "./NightRoad";
-import { TaxiSign } from "./TaxiSign";
+import { Logo } from "../Logo";
 
 type T = (key: string, vars?: Record<string, string | number>) => string;
 
 /**
  * Schluss der Startseite: Aufruf zur Anmeldung über einer Tiroler Nacht (Berge, Mond, Straße, ein Taxi mit leuchtendem Schild),
- * darunter Marke und Links auf Ruß. Nur die Szene ist ein Client-Baustein (NightRoad), alles andere rendert der Server.
+ * darunter Logo und Links auf Ruß. Nur die Szene ist ein Client-Baustein (NightRoad), alles andere rendert der Server.
  */
 export function SiteFooter({ t, loggedIn }: { t: T; loggedIn: boolean }) {
   const columns: { title: string; links: { label: string; href: string }[] }[] = [
@@ -55,10 +55,7 @@ export function SiteFooter({ t, loggedIn }: { t: T; loggedIn: boolean }) {
 
       <div className="mf-ground">
         <div className="mf-brand">
-          <Link href="/" className="mf-logo">
-            <TaxiSign label="TB" tone="free" size="s" className="mf-mark" />
-            <span>Transferborsa</span>
-          </Link>
+          <Link href="/" className="mf-logo" aria-label="Transferborsa"><Logo /></Link>
           <p>{t("Die Börse für Taxi- und Transferunternehmen in Tirol.")}</p>
         </div>
         <nav className="mf-cols" aria-label={t("Weitere Seiten")}>

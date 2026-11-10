@@ -139,7 +139,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
   return (
     <div className="hp">
       <header className="hp-head">
-        <Link href="/" className="hp-logo" aria-label="Transferborsa"><Logo mono /></Link>
+        <Link href="/" className="hp-logo" aria-label="Transferborsa"><Logo /></Link>
         <nav aria-label={t("Abschnitte")}>
           <a href="#ablauf">{t("Ablauf")}</a>
           <a href="#partner">{t("Partner")}</a>
