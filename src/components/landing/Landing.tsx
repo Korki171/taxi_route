@@ -228,7 +228,10 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           <p className="hh-a"><span>{t("Fahrten weitergeben, die Sie selbst nicht schaffen.")}</span></p>
           <p className="hh-b"><span>{t("Aufträge übernehmen, wenn Wagen frei sind.")}</span></p>
         </div>
-        <p className="hh-note"><span>{t("Das Transfernetzwerk für Taxi- und Mietwagenunternehmen.")}</span></p>
+        <div className="hh-foot">
+          <p className="hh-note"><span>{t("Das Transfernetzwerk für Taxi- und Mietwagenunternehmen.")}</span></p>
+          <Link href={appHref ?? "/register?type=TRANSPORT_COMPANY"} className="hp-btn hh-cta">{appHref ? t("Zur App") : t("Unternehmen registrieren")}</Link>
+        </div>
       </section>
 
       {/* Text: eine Lesespalte auf der Achse, jeder Absatz mit einem Beweis aus der App */}

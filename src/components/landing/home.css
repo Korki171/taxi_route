@@ -77,7 +77,9 @@
 .hh-halves span, .hh-note span { display: inline-block; background: var(--paper); padding: 8px 14px; }
 .hh-a { grid-column: 1 / 6; justify-self: end; text-align: right; }
 .hh-b { grid-column: 8 / 13; justify-self: start; }
-.hh-note { position: absolute; z-index: 1; left: var(--m); bottom: 32px; margin: 0; font-size: 16px; font-weight: 750; }
+.hh-foot { position: absolute; z-index: 1; left: var(--m); right: var(--m); bottom: 32px; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+.hh-note { margin: 0; font-size: 16px; font-weight: 750; }
+.hh-cta { flex: none; }
 /* ---------- Textseiten: Überschrift links, Lesespalte auf der Achse ---------- */
 .hp-text { display: grid; grid-template-columns: var(--m) minmax(0, calc(var(--axis) - var(--m) - 32px)) minmax(0, 1fr) var(--m); column-gap: 32px; padding: 128px 0; }
 .hp-axis-head { grid-column: 2; align-self: start; position: sticky; top: 24px; }
@@ -102,7 +104,7 @@
 .hp-swap .hp-shift s { grid-column: 1 / 5; }
 .hp-swap .hp-shift b { grid-column: 6 / 13; max-width: 24ch; font-size: clamp(26px, 2.6vw, 40px); line-height: 1.12; padding-left: 1.3em; }
 .hp-swap .hp-shift b::before { left: 0.1em; top: 0.3em; width: 0.5em; height: 0.28em; border-width: 0.12em; }
-.hp-shift s { color: var(--muted); font-size: 17px; line-height: 1.35; text-decoration-thickness: 1px; text-decoration-color: color-mix(in srgb, var(--muted) 60%, transparent); }
+.hp-shift s { color: var(--muted); font-size: 18px; line-height: 1.35; text-decoration-thickness: 1px; text-decoration-color: color-mix(in srgb, var(--muted) 60%, transparent); }
 .hp-shift b { font-size: 24px; line-height: 1.2; letter-spacing: -0.02em; padding-left: 28px; position: relative; max-width: 22ch; }
 .hp-shift b::before { content: ""; position: absolute; left: 2px; top: 0.32em; width: 14px; height: 8px; border-left: 3px solid var(--accent); border-bottom: 3px solid var(--accent); transform: rotate(-45deg) scale(0.9); transform-origin: left top; }
 .hp-col { grid-column: 3; max-width: 580px; }
@@ -122,9 +124,9 @@
 
 .hp-order { background: #fff; padding: 20px 22px; display: grid; gap: 6px; align-content: start; box-shadow: inset 0 0 0 1px var(--line); }
 .hp-order-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; font-size: 14px; }
-.hp-order-route { font-size: 21px; font-weight: 750; letter-spacing: -0.015em; line-height: 1.25; }
-.hp-order .hp-muted { font-size: 15px; }
-.hp-order-price { display: flex; align-items: baseline; gap: 10px; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+.hp-order-route { font-size: 20px; font-weight: 750; letter-spacing: -0.015em; line-height: 1.25; }
+.hp-order .hp-muted { font-size: 14px; }
+.hp-order-price { display: flex; align-items: baseline; gap: 10px; margin-top: 16px; }
 .hp-order-price b { font-size: 28px; letter-spacing: -0.02em; }
 .hp-order-price span { color: var(--muted); font-size: 14px; }
 .hp-order-by { font-size: 14px; font-weight: 750; }
@@ -134,7 +136,7 @@
 .hp-offers li:first-child { background: var(--ok-bg); }
 .hp-order-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .hp-fake {
-  font: inherit; font-weight: 750; font-size: 15px; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px;
+  font: inherit; font-weight: 750; font-size: 14px; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px;
   border: 0; background: var(--stone); color: var(--ink); cursor: pointer;
   transition: transform 160ms var(--out), background-color 160ms ease, opacity 160ms ease;
 }
@@ -167,10 +169,10 @@
 .hp-badges { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .hp-paper { background: #fff; padding: 22px 22px 12px; box-shadow: inset 0 0 0 1px var(--line); }
-.hp-paper-head { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 10px; padding-bottom: 10px; border-bottom: 2px solid var(--ink); font-size: 17px; }
+.hp-paper-head { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 10px; padding-bottom: 10px; border-bottom: 2px solid var(--ink); font-size: 18px; }
 .hp-paper-head span { color: var(--muted); font-size: 14px; }
 .hp-paper dl { margin: 0; }
-.hp-paper dl div { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+.hp-paper dl div { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 .hp-paper dt { color: var(--muted); }
 .hp-paper dd { margin: 0; font-weight: 750; text-align: right; }
 
@@ -246,7 +248,7 @@
 .hp-footer { background: var(--accent); color: var(--on-accent); min-height: 82svh; padding: 40px var(--m) 28px; display: flex; flex-direction: column; justify-content: space-between; gap: 40px; }
 .hp-foot-top { display: grid; grid-template-columns: 5fr 5fr 2fr; gap: 16px 32px; font-size: 18px; align-items: start; }
 .hp-foot-top a:last-child { justify-self: end; font-size: 16px; }
-.hp-mail { font-weight: 750; font-size: 22px; letter-spacing: -0.02em; text-decoration-thickness: 2px; text-underline-offset: 6px; overflow-wrap: anywhere; }
+.hp-mail { font-weight: 750; font-size: 24px; letter-spacing: -0.02em; text-decoration-thickness: 2px; text-underline-offset: 6px; overflow-wrap: anywhere; }
 .hp-wordmark { margin: 0; font-family: "Imbue Variable", "Times New Roman", serif; font-weight: 480; text-transform: uppercase; font-size: clamp(48px, 15.2vw, 270px); line-height: 0.86; letter-spacing: -0.02em; margin-left: -0.03em; white-space: nowrap; }
 .hp-foot-meta { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px 32px; font-size: 14px; align-items: start; }
 .hp-foot-meta ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 20px; }
@@ -288,7 +290,7 @@
 
 /* ---------- Telefon: die Achse fällt auf den linken Rand ---------- */
 @media (max-width: 900px) {
-  .hp { font-size: 17px; }
+  .hp { font-size: 18px; }
   .hh-nav { display: none; }
   .hh-end { margin-left: auto; gap: 16px; }
   .hh-end > a.hh-login { display: none; }
@@ -297,8 +299,11 @@
   .hh-title { top: 14svh; font-size: 21vw; }
   .hh-halves { top: 50%; grid-template-columns: 1fr; justify-items: center; gap: 8px; text-align: center; }
   .hh-a, .hh-b { grid-column: 1; justify-self: center; text-align: center; }
-  .hh-halves p { font-size: 17px; }
-  .hh-note { display: none; }
+  .hh-halves p { font-size: 18px; }
+  .hh-foot { flex-direction: column; align-items: stretch; gap: 12px; bottom: 24px; }
+  .hh-note { text-align: center; }
+  .hh-note span { display: block; }
+  .hh-cta { width: 100%; }
   .hp-text { grid-template-columns: var(--m) minmax(0, 1fr) var(--m); column-gap: 0; padding: 72px 0; }
   .hp-axis-head, .hp-col { grid-column: 2; position: static; }
   .hp-aside { max-width: none; }
@@ -314,7 +319,7 @@
   .hp-swap .hp-shift { margin-top: 48px; }
   .hp-swap .hp-shift li { grid-template-columns: 1fr; }
   .hp-swap .hp-shift s, .hp-swap .hp-shift b { grid-column: 1; }
-  .hp-swap .hp-shift b { font-size: 22px; }
+  .hp-swap .hp-shift b { font-size: 20px; }
   .hp-state-text { left: var(--m); right: var(--m); max-width: none; font-size: 16px; }
   .hp .hp-state h2 { font-size: 13vw; max-width: none; }
   .hp-flow-head { padding: 56px var(--m) 24px; }
