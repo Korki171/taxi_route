@@ -4,7 +4,7 @@
 .mf-sky { position: relative; min-height: clamp(560px, 80svh, 760px); overflow: hidden; }
 .mf-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .mf-call { position: relative; z-index: 1; display: grid; justify-items: center; text-align: center; padding: clamp(64px, 10vh, 112px) 16px 0; }
-.mf-call h2 { font-size: clamp(48px, 7vw, 112px); max-width: 12ch; text-wrap: balance; }
+.mf-call h2 { font-size: clamp(56px, 7.6vw, 128px); max-width: 12ch; text-wrap: balance; }
 .hp .mf-call p { margin-top: 24px; max-width: 46ch; font-size: 20px; line-height: 1.45; text-wrap: pretty; }
 .mf-call .hp-act { justify-content: center; }
 
@@ -26,7 +26,7 @@
 }
 @media (max-width: 760px) {
   .mf-sky { min-height: 620px; }
-  .mf-call h2 { font-size: 13vw; }
+  .mf-call h2 { font-size: 15vw; }
   .hp .mf-call p { font-size: 16px; }
   .mf-ground { grid-template-columns: minmax(0, 1fr); }
   .mf-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }

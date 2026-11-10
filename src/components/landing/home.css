@@ -128,8 +128,8 @@
 .hp-sign.is-free .hp-sign-face { background: var(--taxi); color: var(--taxi-ink); }
 .hp-sign.is-busy .hp-sign-face { background: var(--busy); color: var(--busy-ink); }
 .hp-sign .hp-d { line-height: 0.95; letter-spacing: 0.02em; white-space: nowrap; }
-.hp-sign-l { max-width: 380px; font-size: clamp(64px, 7vw, 108px); }
-.hp-sign-m { max-width: 560px; font-size: clamp(56px, 8.4vw, 132px); }
+.hp-sign-l { max-width: 380px; font-size: clamp(56px, 7.6vw, 128px); }
+.hp-sign-m { max-width: 560px; font-size: clamp(56px, 7.6vw, 128px); }
 .hp-sign-s { max-width: 150px; font-size: 30px; }
 .hp-sign-s .hp-sign-cap { height: 7px; }
 .hp-sign-s .hp-sign-face { border-radius: 12px 12px 4px 4px; }
@@ -139,13 +139,14 @@
 .hp-hero { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: clamp(28px, 4vw, 64px); align-items: center; min-height: min(72vh, 700px); }
 .hp-hero h1 { font-size: clamp(56px, 7.6vw, 128px); text-wrap: balance; }
 .hp .hp-lead { margin-top: 32px; max-width: 46ch; font-size: 20px; line-height: 1.45; }
-.hp-stage { display: grid; justify-items: center; }
+.hp-stage { display: grid; justify-items: end; }
+.hp-stage .hp-sign { justify-items: center; }
 .hp-ride { width: 100%; max-width: 480px; margin-top: 18px; background: var(--surface); padding: 26px 28px; box-shadow: inset 0 0 0 1px var(--line); display: grid; gap: 6px; }
 .hp-ride-chip { justify-self: start; font-size: 14px; font-weight: 650; padding: 2px 10px; background: var(--open-bg); color: var(--open); transition: background-color 300ms ease, color 300ms ease; }
 .hp-ride-chip[data-state="taken"] { background: var(--navy); color: var(--paper); }
 .hp-ride-route { font-size: 26px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.15; margin-top: 8px !important; }
 .hp-ride-meta { font-size: 16px; color: var(--muted); }
-.hp-ride-price { font-size: 40px; font-weight: 650; letter-spacing: -0.03em; margin: 10px 0 8px !important; font-variant-numeric: tabular-nums; }
+.hp-ride-price { font-size: 30px; font-weight: 650; letter-spacing: -0.03em; margin: 10px 0 8px !important; font-variant-numeric: tabular-nums; }
 .hp-ride-price span { font-size: 16px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
 .hp-ride-claim { width: 100%; }
 .hp-ride-hint { font-size: 14px; color: var(--muted); margin-top: 10px !important; }
@@ -196,7 +197,7 @@
 .hp-relay-card .hp-ride-meta { font-size: 16px; }
 .hp-relay-card .hp-ride-meta b { color: var(--ink); }
 .hp-relay-board { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 10px; }
-.hp-relay-board .hp-sign { font-size: clamp(14px, 1.3vw, 17px); }
+.hp-relay-board .hp-sign { font-size: 16px; }
 .hp-relay-board .hp-sign-cap { height: 4px; }
 .hp-relay-board .hp-sign-face { border-radius: 8px 8px 3px 3px; }
 /* Partner tragen eine feine Linie darunter, damit man sie in der vollen Börse wiedererkennt */
@@ -209,7 +210,7 @@
 .hp-stairs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .hp-stairs li { margin-left: calc(var(--i, 0) * clamp(20px, 5vw, 72px)); padding: 14px 0; display: grid; gap: 6px; }
 .hp-stairs h3 { display: flex; align-items: baseline; gap: 14px; }
-.hp-stairs h3 span { font-family: "Imbue Variable", "Times New Roman", serif; font-weight: 480; font-size: 40px; line-height: 0.8; color: var(--accent-text); font-variant-numeric: tabular-nums; }
+.hp-stairs h3 span { font-family: "Imbue Variable", "Times New Roman", serif; font-weight: 480; font-size: 30px; line-height: 0.8; color: var(--accent-text); font-variant-numeric: tabular-nums; }
 .hp-stairs p { font-size: 16px; line-height: 1.5; max-width: 52ch; }
 .hp-stairs-note { margin-top: 22px !important; font-size: 16px; color: var(--muted); max-width: 60ch; }
 
@@ -251,6 +252,7 @@
   .hp-points { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hp-routes-box, .hp-price-grid, .hp-hero { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .hp-hero { min-height: 0; }
+  .hp-stage { justify-items: start; }
   .hp-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hp-relay { max-width: 460px; }
 }
