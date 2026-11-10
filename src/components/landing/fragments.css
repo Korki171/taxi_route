@@ -53,7 +53,9 @@
 .hp-badges { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .hp-paper { background: #fff; padding: 22px 22px 12px; box-shadow: inset 0 0 0 1px var(--line); }
-.hp-paper-head { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 10px; padding-bottom: 10px; border-bottom: 2px solid var(--ink); font-size: 17px; }
+/* Briefkopf wie im echten PDF: Logo, darunter Titel über einer gelben Linie in Schildfarbe */
+.hp .hp-paper-logo { display: block; height: 30px; width: auto; margin-bottom: 14px; }
+.hp-paper-head { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 10px; padding-bottom: 10px; border-bottom: 3px solid #f5c518; font-size: 17px; }
 .hp-paper-head span { color: var(--muted); font-size: 14px; }
 .hp-paper dl { margin: 0; }
 .hp-paper dl div { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 15px; }

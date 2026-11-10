@@ -91,6 +91,7 @@ function Confirmation({ t }: { t: T }) {
   ];
   return (
     <div className="hp-paper" data-ui aria-label={t("Beispiel: Bestätigung als PDF")}>
+      <Logo className="hp-paper-logo" aria-hidden="true" />
       <p className="hp-paper-head"><b>{t("Buchungsbestätigung")}</b><span>TB-2411-0187</span></p>
       <dl>
         {rows.map(([k, v]) => (

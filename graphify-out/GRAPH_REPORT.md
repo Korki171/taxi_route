@@ -1,17 +1,17 @@
 # Graph Report - taxi_route-hero  (2026-11-10)
 
 ## Corpus Check
-- 142 files · ~80,081 words
+- 142 files · ~80,085 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 12 file(s) not represented in the graph (top: .css 5, (none) 3, .example 1)
 
 ## Summary
-- 925 nodes · 3484 edges · 32 communities (25 shown, 7 thin omitted)
+- 925 nodes · 3485 edges · 31 communities (24 shown, 7 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 24 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a0f23bce`
+- Built from commit: `d4627547`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -35,7 +35,6 @@
 - messages.ts
 - Transferborsa
 - audit
-- layout.tsx
 - dispatch.ts
 - Startseite (/)
 - test
@@ -73,7 +72,7 @@
 ## Import Cycles
 - 2-file cycle: `src/server/notifications.ts -> src/server/services/marketplace.ts -> src/server/notifications.ts`
 
-## Communities (32 total, 7 thin omitted)
+## Communities (31 total, 7 thin omitted)
 
 ### Community 0 - "20261026102414_phase3_marketplace/migration.sql"
 Cohesion: 0.05
@@ -84,8 +83,8 @@ Cohesion: 0.21
 Nodes (19): requirePlatformAdmin(), notFound(), adminGetOrganization(), adminListOrganizations(), adminReviewCapability(), adminReviewDocument(), adminSetOrganizationPlan(), adminSetOrganizationStatus() (+11 more)
 
 ### Community 2 - "LiveMap.tsx"
-Cohesion: 0.12
-Nodes (21): leaflet@^1.9.4, leaflet, ago(), AUSTRIA, Basemap, duration(), esc(), headingOf() (+13 more)
+Cohesion: 0.13
+Nodes (19): ago(), AUSTRIA, Basemap, duration(), esc(), headingOf(), legLabels(), legRoles() (+11 more)
 
 ### Community 3 - "marketplace.ts"
 Cohesion: 0.06
@@ -97,11 +96,11 @@ Nodes (64): acceptInvitationAction(), acceptQuoteAction(), addPartnerAction(), a
 
 ### Community 5 - "getI18n"
 Cohesion: 0.06
-Nodes (112): nextConfig, next, AdminOrgPage(), AdminPage(), PlanCell(), STATUSES, TYPES, RequestDetailPage() (+104 more)
+Nodes (115): nextConfig, next, server-only, AdminOrgPage(), AdminPage(), PlanCell(), STATUSES, TYPES (+107 more)
 
 ### Community 7 - "Landing.tsx"
 Cohesion: 0.05
-Nodes (44): react, Datenschutz(), metadata, Impressum(), metadata, NotFound(), metadata, Nutzungsbedingungen() (+36 more)
+Nodes (48): @fontsource-variable/albert-sans, @fontsource-variable/imbue, react, Datenschutz(), metadata, Impressum(), metadata, NotFound() (+40 more)
 
 ### Community 8 - "invalid"
 Cohesion: 0.16
@@ -109,7 +108,7 @@ Nodes (15): POST(), invalid(), driverOverview(), endShift(), openShift(), pointS
 
 ### Community 11 - "organizations/[id]/page.tsx"
 Cohesion: 0.06
-Nodes (48): GET(), EN, Locale, LOCALE_COOKIE, LOCALES, makeT(), pickLocale(), T (+40 more)
+Nodes (47): GET(), EN, Locale, LOCALE_COOKIE, LOCALES, makeT(), T, translate() (+39 more)
 
 ### Community 13 - "requirePermission"
 Cohesion: 0.40
@@ -147,13 +146,9 @@ Nodes (27): Berechtigungsmodell, Datenmodelle, Gewählte Architektur, Implementi
 Cohesion: 0.10
 Nodes (20): zod, audit(), Tx, capacitySchema, listMarketCapacity(), listOwnCapacity(), place, publishCapacity() (+12 more)
 
-### Community 28 - "layout.tsx"
-Cohesion: 0.25
-Nodes (6): @fontsource-variable/albert-sans@^5.3.0, @fontsource-variable/imbue@^5.3.0, @fontsource-variable/albert-sans, @fontsource-variable/imbue, generateMetadata(), RootLayout()
-
 ### Community 30 - "dispatch.ts"
-Cohesion: 0.09
-Nodes (29): GET(), BY_ID, getPlace(), haversineKm(), nearestPlace(), Place, Point, REGION_LABEL (+21 more)
+Cohesion: 0.10
+Nodes (28): GET(), BY_ID, getPlace(), haversineKm(), nearestPlace(), Place, Point, ROAD_FACTOR (+20 more)
 
 ### Community 35 - "test"
 Cohesion: 0.08
@@ -168,8 +163,8 @@ Cohesion: 0.11
 Nodes (18): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+10 more)
 
 ### Community 62 - "dependencies"
-Cohesion: 0.13
-Nodes (15): dependencies, maplibre-gl@^4.7.1, @maplibre/maplibre-gl-leaflet@^0.0.22, next@^15.5.28, pdf-lib@^1.17.1, @prisma/client@^6.19.3, react@^19.1.1, react-dom@^19.1.1 (+7 more)
+Cohesion: 0.11
+Nodes (18): dependencies, @fontsource-variable/albert-sans@^5.3.0, @fontsource-variable/imbue@^5.3.0, leaflet@^1.9.4, maplibre-gl@^4.7.1, @maplibre/maplibre-gl-leaflet@^0.0.22, next@^15.5.28, pdf-lib@^1.17.1 (+10 more)
 
 ### Community 76 - "scripts"
 Cohesion: 0.15
@@ -181,15 +176,15 @@ Nodes (13): scripts, build, db:demo, db:deploy, db:migrate, db:seed, dev, lint (
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `next` connect `getI18n` to `marketplace.ts`, `actions.ts`, `package.json`, `Landing.tsx`, `organizations/[id]/page.tsx`, `layout.tsx`, `dependencies`?**
+- **Why does `next` connect `getI18n` to `marketplace.ts`, `actions.ts`, `package.json`, `Landing.tsx`, `organizations/[id]/page.tsx`, `dependencies`?**
   _High betweenness centrality (0.061) - this node is a cross-community bridge._
 - **Should `20261026102414_phase3_marketplace/migration.sql` be split into smaller, more focused modules?**
   _Cohesion score 0.0528169014084507 - nodes in this community are weakly interconnected._
-- **Why does `getI18n` connect `getI18n` to `organizations/[id]/page.tsx`, `layout.tsx`, `dispatch.ts`, `Landing.tsx`?**
+- **Why does `getI18n` connect `getI18n` to `organizations/[id]/page.tsx`, `dispatch.ts`, `Landing.tsx`?**
   _High betweenness centrality (0.047) - this node is a cross-community bridge._
 - **Should `LiveMap.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.12307692307692308 - nodes in this community are weakly interconnected._
-- **Why does `@prisma/client` connect `context.ts` to `notFound`, `marketplace.ts`, `actions.ts`, `getI18n`, `package.json`, `organizations/[id]/page.tsx`, `requirePermission`, `db.ts`, `members.ts`, `dispatch.ts`, `messages.ts`, `audit`, `dependencies`?**
+  _Cohesion score 0.13405797101449277 - nodes in this community are weakly interconnected._
+- **Why does `@prisma/client` connect `context.ts` to `notFound`, `marketplace.ts`, `actions.ts`, `getI18n`, `package.json`, `Landing.tsx`, `organizations/[id]/page.tsx`, `requirePermission`, `db.ts`, `members.ts`, `dispatch.ts`, `messages.ts`, `audit`, `dependencies`?**
   _High betweenness centrality (0.039) - this node is a cross-community bridge._
 - **Should `marketplace.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.06098901098901099 - nodes in this community are weakly interconnected._
