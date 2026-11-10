@@ -1,13 +1,13 @@
 import Link from "next/link";
 import "./footer.css";
 import { NightRoad } from "./NightRoad";
-import { TaxiSign } from "./TaxiSign";
+import { Logo } from "../Logo";
 
 type T = (key: string, vars?: Record<string, string | number>) => string;
 
 /**
- * Schluss der Startseite: Aufruf zur Anmeldung über einer Tiroler Nacht (Berge, Mond, Straße, ein Taxi mit leuchtendem Schild),
- * darunter Marke und Links auf Ruß. Nur die Szene ist ein Client-Baustein (NightRoad), alles andere rendert der Server.
+ * Schluss der Startseite: Aufruf zur Anmeldung über Tiroler Bergen (Tag im hellen, Nacht im dunklen Modus; Straße, ein Taxi mit gelbem Schild),
+ * darunter Logo und Links. Nur die Szene ist ein Client-Baustein (NightRoad), alles andere rendert der Server.
  */
 export function SiteFooter({ t, loggedIn }: { t: T; loggedIn: boolean }) {
   const columns: { title: string; links: { label: string; href: string }[] }[] = [
@@ -44,7 +44,7 @@ export function SiteFooter({ t, loggedIn }: { t: T; loggedIn: boolean }) {
       <div className="mf-sky">
         <NightRoad />
         <div className="mf-call">
-          <h2 id="mf-title" className="hp-d">{t("Melden Sie Ihr Unternehmen an.")}</h2>
+          <h2 id="mf-title" className="hp-d">{t("Steigen Sie ein.")}</h2>
           <p>{t("Die Anmeldung ist kostenlos. Sobald wir Ihr Unternehmen geprüft haben, können Sie Fahrten abgeben und übernehmen.")}</p>
           <div className="hp-act">
             <Link href="/register?type=TRANSPORT_COMPANY" className="hp-btn">{t("Unternehmen registrieren")}</Link>
@@ -55,10 +55,7 @@ export function SiteFooter({ t, loggedIn }: { t: T; loggedIn: boolean }) {
 
       <div className="mf-ground">
         <div className="mf-brand">
-          <Link href="/" className="mf-logo">
-            <TaxiSign label="TB" tone="free" size="s" className="mf-mark" />
-            <span>Transferborsa</span>
-          </Link>
+          <Link href="/" className="mf-logo" aria-label="Transferborsa"><Logo /></Link>
           <p>{t("Die Börse für Taxi- und Transferunternehmen in Tirol.")}</p>
         </div>
         <nav className="mf-cols" aria-label={t("Weitere Seiten")}>

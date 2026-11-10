@@ -4,12 +4,12 @@
 .hp-chip { display: inline-block; font-size: 14px; font-weight: 750; padding: 2px 8px; line-height: 1.4; }
 .hp-chip-open { background: var(--open-bg); color: var(--open); }
 .hp-chip-ok { background: var(--ok-bg); color: var(--ok); }
-.hp-chip-taken { background: var(--navy); color: #fff; }
+.hp-chip-taken { background: var(--navy); color: var(--paper); }
 
-.hp-order { background: #fff; padding: 20px 22px; display: grid; gap: 6px; align-content: start; box-shadow: inset 0 0 0 1px var(--line); }
+.hp-order { background: var(--surface); padding: 20px 22px; display: grid; gap: 6px; align-content: start; box-shadow: inset 0 0 0 1px var(--line); }
 .hp-order-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; font-size: 14px; }
-.hp-order-route { font-size: 21px; font-weight: 750; letter-spacing: -0.015em; line-height: 1.25; }
-.hp-order .hp-muted { font-size: 15px; }
+.hp-order-route { font-size: 20px; font-weight: 750; letter-spacing: -0.015em; line-height: 1.25; }
+.hp-order .hp-muted { font-size: 16px; }
 .hp-order-price { display: flex; align-items: baseline; gap: 10px; margin-top: 16px; }
 .hp-order-price b { font-size: 28px; letter-spacing: -0.02em; }
 .hp-order-price span { color: var(--muted); font-size: 14px; }
@@ -20,7 +20,7 @@
 .hp-offers li:first-child { background: var(--ok-bg); }
 .hp-order-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .hp-fake {
-  font: inherit; font-weight: 750; font-size: 15px; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px;
+  font: inherit; font-weight: 750; font-size: 16px; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px;
   border: 0; background: var(--stone); color: var(--ink); cursor: pointer;
   transition: transform 160ms var(--out), background-color 160ms ease, opacity 160ms ease;
 }
@@ -40,23 +40,25 @@
   @keyframes hp-chip { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 }
 
-.hp-chat { background: var(--stone); overflow: hidden; }
-.hp-chat figcaption { display: grid; padding: 12px 16px; background: #fff; line-height: 1.3; }
+.hp-chat { background: var(--chat-bg); overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); }
+.hp-chat figcaption { display: grid; padding: 12px 16px; background: var(--surface); line-height: 1.3; }
 .hp-chat figcaption span { font-size: 14px; color: var(--muted); }
 .hp-chat ol { list-style: none; margin: 0; padding: 14px 14px 18px; display: grid; gap: 7px; }
-.hp-chat li { justify-self: start; max-width: 88%; background: #fff; border-radius: 3px 10px 10px 10px; padding: 7px 11px 5px; font-size: 16px; line-height: 1.35; }
-.hp-chat li.me { justify-self: end; background: #d9f0cf; border-radius: 10px 3px 10px 10px; }
+.hp-chat li { justify-self: start; max-width: 88%; background: var(--bubble); border-radius: 3px 10px 10px 10px; padding: 7px 11px 5px; font-size: 16px; line-height: 1.35; }
+.hp-chat li.me { justify-self: end; background: var(--bubble-me); border-radius: 10px 3px 10px 10px; }
 .hp-chat li b { display: block; font-size: 14px; color: var(--navy); }
 .hp-chat li p { margin: 0; }
 .hp-chat time { display: block; text-align: right; font-size: 14px; color: var(--muted); margin-top: 1px; }
 
 .hp-badges { display: flex; flex-wrap: wrap; gap: 6px; }
 
-.hp-paper { background: #fff; padding: 22px 22px 12px; box-shadow: inset 0 0 0 1px var(--line); }
-.hp-paper-head { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 10px; padding-bottom: 10px; border-bottom: 2px solid var(--ink); font-size: 17px; }
+.hp-paper { background: var(--surface); padding: 22px 22px 12px; box-shadow: inset 0 0 0 1px var(--line); }
+/* Briefkopf wie im echten PDF: Logo, darunter Titel über einer gelben Linie in Schildfarbe */
+.hp .hp-paper-logo { display: block; height: 30px; width: auto; margin-bottom: 14px; }
+.hp-paper-head { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 10px; padding-bottom: 10px; border-bottom: 3px solid #f5c518; font-size: 16px; }
 .hp-paper-head span { color: var(--muted); font-size: 14px; }
 .hp-paper dl { margin: 0; }
-.hp-paper dl div { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+.hp-paper dl div { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 16px; }
 .hp-paper dt { color: var(--muted); }
 .hp-paper dd { margin: 0; font-weight: 750; text-align: right; }
 

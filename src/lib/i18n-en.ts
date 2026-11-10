@@ -1313,10 +1313,12 @@ export const EN: Record<string, string> = {
   "Alle Geprüften": "All verified companies",
   "Übernimmt kein Partner, geht die Fahrt an alle geprüften Unternehmen der Börse. Auf Wunsch sofort.": "If no partner takes it, the ride goes to every verified company on the exchange. Right away if you like.",
   "Wen Sie sperren, der sieht Ihre Fahrten nicht mehr. Und vor der Übernahme sieht niemand Namen, Adressen oder Telefonnummern Ihrer Fahrgäste.": "Companies you block no longer see your rides. And before a ride is taken, nobody sees your passengers' names, addresses or phone numbers.",
-  "Melden Sie Ihr Unternehmen an.": "Sign up your company.",
   "Die Anmeldung ist kostenlos. Sobald wir Ihr Unternehmen geprüft haben, können Sie Fahrten abgeben und übernehmen.": "Signing up is free. Once we have verified your company, you can hand off and take on rides.",
   "Produkt": "Product",
   "Konto": "Account",
   "Weitere Seiten": "More pages",
   "Beispiel: Die Fahrt geht zuerst an die eigenen Fahrer, dann an drei Partner, dann an alle geprüften Unternehmen. Eines übernimmt.": "Example: the ride goes first to your own drivers, then to three partners, then to all verified companies. One of them takes it.",
+  "Dunkle Ansicht": "Dark view",
+  "Helle Ansicht": "Light view",
+  "Steigen Sie ein.": "Get on board.",
 };
