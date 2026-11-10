@@ -14,7 +14,7 @@ export function HeroClaim({ L }: { L: Labels }) {
   const [taken, setTaken] = useState(false);
   return (
     <div className="hp-stage">
-      <TaxiSign label={taken ? L.busy : L.free} on={!taken} />
+      <TaxiSign label={taken ? L.busy : L.free} tone={taken ? "busy" : "free"} />
       <div className="hp-ride" data-ui>
         <p className="hp-ride-chip" data-state={taken ? "taken" : "open"}>{taken ? L.taken : L.open}</p>
         <p className="hp-ride-route">{L.route}</p>

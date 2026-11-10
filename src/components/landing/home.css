@@ -1,6 +1,6 @@
 /* Startseite „Das Taxischild“: Wer frei hat, übernimmt. Das gelbe Dachschild leuchtet FREI und geht auf BESETZT, sobald jemand übernimmt.
    Doppelrahmen und Linien nur um Abschnitte und in echten Tabellen.
-   Farbe (impeccable): kühles Papier, Navy als einzige Tinte, Zirbengrün nur auf Handlung und dem Zustand „Offen“, Taxigelb nur auf dem leuchtenden Schild.
+   Farbe (impeccable): kühles Papier, Navy als einzige Tinte, Zirbengrün nur auf Handlung und dem Zustand „Offen“, Taxigelb nur auf dem freien Schild, Rot nur auf dem besetzten.
    Schrift: Imbue für Ziffern und Wörter in Tafelgröße, Albert Sans zum Lesen; Stufen 14 / 16 / 18 / 28 / Display.
    Bewegung (emil-design-eng): Zeilen kommen nacheinander, Zustandswechsel überblendet, Druck auf Knöpfen; alles aus bei reduzierter Bewegung. */
 .hp {
@@ -22,6 +22,8 @@
   --taxi-ink: #111111;
   --sign-off: #1f2b4d;
   --sign-off-ink: #8e9ab8;
+  --busy: #c4161c;
+  --busy-ink: #ffffff;
   --out: cubic-bezier(0.23, 1, 0.32, 1);
 
   max-width: 1360px;
@@ -82,7 +84,8 @@
   width: 100%; display: grid; place-items: center; padding: 0.22em 0.4em 0.14em; border-radius: 22px 22px 6px 6px;
   background: var(--sign-off); color: var(--sign-off-ink); transition: background-color 420ms var(--out), color 420ms var(--out);
 }
-.hp-sign.is-on .hp-sign-face { background: var(--taxi); color: var(--taxi-ink); }
+.hp-sign.is-free .hp-sign-face { background: var(--taxi); color: var(--taxi-ink); }
+.hp-sign.is-busy .hp-sign-face { background: var(--busy); color: var(--busy-ink); }
 .hp-sign .hp-d { line-height: 0.95; letter-spacing: 0.02em; white-space: nowrap; }
 .hp-sign-l { max-width: 380px; font-size: clamp(64px, 7vw, 108px); }
 .hp-sign-m { max-width: 560px; font-size: clamp(56px, 8.4vw, 132px); }
