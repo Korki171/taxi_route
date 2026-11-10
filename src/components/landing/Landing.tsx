@@ -164,7 +164,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           <ol className="hp-steps">
             {steps.map(([sign, s, what, who], i) => (
               <li key={s}>
-                <TaxiSign label={t(sign)} on={i === 0} size="s" />
+                <TaxiSign label={t(sign)} tone={i === 0 ? "free" : i === 1 ? "busy" : "off"} size="s" />
                 <h3>{i + 1} {t(s)}</h3>
                 <p>{t(what)}</p>
                 <p className="hp-steps-who">{t(who)}</p>
@@ -226,7 +226,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
         <section className="hp-box hp-price" aria-labelledby="hp-preis">
           <h2 id="hp-preis">{t("Ein Preis für alle Fahrten.")}</h2>
           <div className="hp-price-grid">
-            <p className="hp-price-sign"><span className="hp-sr">{t("Ab")} {figure} € {t("im Monat.")}</span><span aria-hidden="true"><TaxiSign label={`${figure} €`} on size="m" /></span></p>
+            <p className="hp-price-sign"><span className="hp-sr">{t("Ab")} {figure} € {t("im Monat.")}</span><span aria-hidden="true"><TaxiSign label={`${figure} €`} tone="free" size="m" /></span></p>
             <div>
               <p><b>{t("Ab")} {t("im Monat.")}</b> {t("Ohne Provision.")} {t("Fester Monatspreis per Rechnung für Taxi- und Transferunternehmen. Für Reisebüros und Hotels ist die Nutzung kostenlos.")}</p>
               <ul>{plan.features.slice(0, 4).map((f) => <li key={f}>{t(f)}</li>)}</ul>
@@ -252,7 +252,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
         <section className="hp-box hp-ask" aria-labelledby="hp-wer">
           <div className="hp-ask-head">
             <h2 id="hp-wer" className="hp-d">{t("Ist Ihr Wagen frei?")}</h2>
-            <TaxiSign label={t("Frei")} on size="s" />
+            <TaxiSign label={t("Frei")} tone="free" size="s" />
           </div>
           <p className="hp-ask-lead">{t("Dann übernehmen Sie Fahrten von Kollegen. Und wenn nicht, geben Sie Ihre ab.")}</p>
           <div className="hp-act">
