@@ -104,6 +104,11 @@ function Confirmation({ t }: { t: T }) {
   );
 }
 
+/** Gefundene Bilder aus der Welt der Taxler (Wikimedia Commons, Nachweis im Footer). */
+function Photo({ src, alt, w, h }: { src: string; alt: string; w: number; h: number }) {
+  return <img src={src} width={w} height={h} alt={alt} loading="lazy" decoding="async" />;
+}
+
 export async function Landing({ appHref }: { appHref?: string } = {}) {
   const { t, locale } = await getI18n();
   // Hell ist Standard; „Ruß bei Nacht“ nur, wenn der Besucher es oben umgeschaltet hat.
@@ -220,6 +225,12 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           <PartnerRelay L={relay} />
         </section>
 
+        {/* Ruhepunkt: Serpentinen im Schnee am Arlberg, über die ganze Breite */}
+        <figure className="hp-band">
+          <Photo src="/landing/welt/stuben-arlberg-winter.jpg" alt={t("Verschneite Passstraße mit Serpentinen bei Stuben am Arlberg, von oben")} w={1920} h={1281} />
+          <figcaption>{t("Die Passstraße bei Stuben am Arlberg im Winter.")}</figcaption>
+        </figure>
+
         {/* Preis: die Zahl als Tafelziffern, auf grauer Fläche */}
         <section className="hp-box hp-field hp-price" aria-labelledby="hp-preis">
           <h2 id="hp-preis">{t("Ein Preis für alle Fahrten.")}</h2>
@@ -236,15 +247,22 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           </div>
         </section>
 
-        <section id="fragen" className="hp-box" aria-labelledby="hp-fragen">
-          <h2 id="hp-fragen">{t("Häufige Fragen")}</h2>
-          <table className="hp-facts hp-faq">
-            <tbody>
-              {FAQ.map(([q, a]) => (
-                <tr key={q}><th scope="row">{t(q)}</th><td>{t(a)}</td></tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Fragen: echte Tabelle, daneben Schneetreiben, wenn Storno und Verspätung zur Frage werden */}
+        <section id="fragen" className="hp-box hp-faq-box" aria-labelledby="hp-fragen">
+          <div>
+            <h2 id="hp-fragen">{t("Häufige Fragen")}</h2>
+            <table className="hp-facts hp-faq">
+              <tbody>
+                {FAQ.map(([q, a]) => (
+                  <tr key={q}><th scope="row">{t(q)}</th><td>{t(a)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <figure className="hp-photo">
+            <Photo src="/landing/welt/mathon-ischgl-winter.jpg" alt={t("Verschneite Straße im Schneetreiben in Mathon bei Ischgl, mit Bushaltestelle")} w={1920} h={1080} />
+            <figcaption>{t("Mathon bei Ischgl im Schneetreiben. An solchen Tagen zählen klare Regeln für Storno und Verspätung.")}</figcaption>
+          </figure>
         </section>
       </main>
 

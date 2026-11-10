@@ -1,0 +1,48 @@
+[
+ {
+  "file": "public/landing/welt/mathon-ischgl-winter.jpg",
+  "media": "image",
+  "ref": "commons:60256214",
+  "title": "Ski Bus - Mathon - Ischgl - Austria - Tirol - panoramio",
+  "creator": "KrauS",
+  "creatorUrl": null,
+  "date": "Taken on 13 January 2016",
+  "license": "CC BY 3.0",
+  "licenseCode": "by",
+  "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+  "creditRequired": true,
+  "page": "https://commons.wikimedia.org/wiki/File:Ski_Bus_-_Mathon_-_Ischgl_-_Austria_-_Tirol_-_panoramio.jpg",
+  "via": "Wikimedia Commons",
+  "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/86/Ski_Bus_-_Mathon_-_Ischgl_-_Austria_-_Tirol_-_panoramio.jpg/1920px-Ski_Bus_-_Mathon_-_Ischgl_-_Austria_-_Tirol_-_panoramio.jpg",
+  "width": 1920,
+  "height": 1080,
+  "bytes": 323824,
+  "credit": "\"Ski Bus - Mathon - Ischgl - Austria - Tirol - panoramio\" by KrauS, CC BY 3.0, via Wikimedia Commons",
+  "notes": [],
+  "saved": "2026-11-10T20:33:29.927Z"
+ },
+ {
+  "file": "public/landing/welt/stuben-arlberg-winter.jpg",
+  "media": "image",
+  "ref": "commons:122997494",
+  "title": "Klösterle Stuben Vogelperspektive",
+  "creator": "Herbert Heim",
+  "creatorUrl": null,
+  "date": "2022-02-12",
+  "license": "CC BY-SA 4.0",
+  "licenseCode": "by-sa",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "creditRequired": true,
+  "page": "https://commons.wikimedia.org/wiki/File:Kl%C3%B6sterle_Stuben_Vogelperspektive.jpg",
+  "via": "Wikimedia Commons",
+  "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Kl%C3%B6sterle_Stuben_Vogelperspektive.jpg/1920px-Kl%C3%B6sterle_Stuben_Vogelperspektive.jpg",
+  "width": 1920,
+  "height": 1281,
+  "bytes": 1009845,
+  "credit": "\"Klösterle Stuben Vogelperspektive\" by Herbert Heim, CC BY-SA 4.0, via Wikimedia Commons",
+  "notes": [
+   "Share-alike: an altered version (recoloured, combined with other pictures) must be shared under the same licence."
+  ],
+  "saved": "2026-11-10T20:33:31.977Z"
+ }
+]
