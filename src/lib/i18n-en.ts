@@ -1326,4 +1326,5 @@ export const EN: Record<string, string> = {
   "Die Passstraße bei Stuben am Arlberg im Winter.": "The pass road near Stuben am Arlberg in winter.",
   "Fotos via Wikimedia Commons: KrauS (CC BY 3.0), Herbert Heim (CC BY-SA 4.0).": "Photos via Wikimedia Commons: KrauS (CC BY 3.0), Herbert Heim (CC BY-SA 4.0).",
   "Mathon bei Ischgl im Schneetreiben. An solchen Tagen zählen klare Regeln für Storno und Verspätung.": "Mathon near Ischgl in falling snow. On days like this, clear rules for cancellations and delays matter.",
+  "Beide Seiten haben dasselbe Dokument, auch bei Storno.": "Both sides hold the same document, including on cancellation.",
 };

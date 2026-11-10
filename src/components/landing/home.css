@@ -154,10 +154,11 @@
 
 /* Ablauf: dieselbe Fahrt, vier Schilder */
 .hp-steps { list-style: none; margin: 0; padding: 28px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; }
-.hp-steps li { display: grid; gap: 10px; align-content: start; }
+.hp-steps li { display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; }
 .hp-steps .hp-sign { justify-items: start; }
 .hp-steps .hp-sign-cap { margin-left: 28%; }
 .hp-steps h3 { margin-top: 10px; }
+.hp-steps-n { color: var(--accent-text); margin-right: 4px; }
 .hp-steps p { font-size: 16px; line-height: 1.5; }
 .hp-steps .hp-steps-who { font-size: 14px; color: var(--muted); font-weight: 600; }
 
@@ -168,8 +169,8 @@
 .hp tbody tr { border-bottom: 1px solid var(--frame); }
 .hp tbody tr:last-child { border-bottom: 0; }
 
-.hp-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; margin-top: 56px; }
-.hp-pair > div { display: grid; gap: 12px; align-content: start; }
+.hp-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(24px, 4vw, 56px); row-gap: 12px; grid-template-rows: auto auto 1fr; margin-top: clamp(56px, 7vw, 96px); padding: clamp(20px, 3vw, 40px); background: var(--stone); }
+.hp-pair > div { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 12px; }
 .hp-pair p { font-size: 16px; line-height: 1.5; color: var(--muted); max-width: 46ch; }
 .hp-pair .hp-chat, .hp-pair .hp-paper { margin-top: 8px; }
 

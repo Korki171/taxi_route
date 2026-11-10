@@ -178,7 +178,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
             {steps.map(([sign, s, what, who], i) => (
               <li key={s}>
                 <TaxiSign label={t(sign)} tone={i === 0 ? "free" : i === 1 ? "busy" : "off"} size="s" />
-                <h3>{i + 1} {t(s)}</h3>
+                <h3><span className="hp-steps-n">{i + 1}</span> {t(s)}</h3>
                 <p>{t(what)}</p>
                 <p className="hp-steps-who">{t(who)}</p>
               </li>
@@ -192,7 +192,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
             </div>
             <div>
               <h3>{t("Danach steht alles schriftlich da.")}</h3>
-              <p>{t("Preis, Flug, Gepäck und Stornobedingungen in einer Bestätigung als PDF.")}</p>
+              <p>{t("Beide Seiten haben dasselbe Dokument, auch bei Storno.")}</p>
               <Confirmation t={t} />
             </div>
           </div>
