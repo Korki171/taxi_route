@@ -1,6 +1,6 @@
-/* Startseite „Die Tafel“, Richtung L aus zwölf Entwürfen nach Awwwards-Gewinnern (Le Petit Bleu: eine Tinte, Doppelrahmen).
-   Die Börse ist eine Abflugtafel: Fahrten als Zeilen, Zustände als Wörter. Doppelrahmen und Linien nur um Abschnitte und in echten Tabellen.
-   Farbe (impeccable): kühles Papier, Navy als einzige Tinte, Zirbengrün nur auf Handlung und dem Zustand „Offen“.
+/* Startseite „Das Taxischild“: Wer frei hat, übernimmt. Das gelbe Dachschild leuchtet FREI und geht auf BESETZT, sobald jemand übernimmt.
+   Doppelrahmen und Linien nur um Abschnitte und in echten Tabellen.
+   Farbe (impeccable): kühles Papier, Navy als einzige Tinte, Zirbengrün nur auf Handlung und dem Zustand „Offen“, Taxigelb nur auf dem leuchtenden Schild.
    Schrift: Imbue für Ziffern und Wörter in Tafelgröße, Albert Sans zum Lesen; Stufen 14 / 16 / 18 / 28 / Display.
    Bewegung (emil-design-eng): Zeilen kommen nacheinander, Zustandswechsel überblendet, Druck auf Knöpfen; alles aus bei reduzierter Bewegung. */
 .hp {
@@ -18,6 +18,10 @@
   --open-bg: #fff1d6;
   --open: #7a4a00;
   --line: #dfe3ea;
+  --taxi: #f5c518;
+  --taxi-ink: #111111;
+  --sign-off: #1f2b4d;
+  --sign-off-ink: #8e9ab8;
   --out: cubic-bezier(0.23, 1, 0.32, 1);
 
   max-width: 1360px;
@@ -69,9 +73,48 @@
 .hp-box h2:not(.hp-d) { font-size: clamp(26px, 3vw, 40px); line-height: 1.1; letter-spacing: -0.03em; font-weight: 600; text-wrap: balance; margin-bottom: 28px; }
 .hp-box h3 { font-size: 22px; line-height: 1.2; letter-spacing: -0.02em; font-weight: 600; }
 
-.hp-hero h1 { font-size: clamp(56px, 9vw, 150px); }
-.hp-hero h1 span { display: inline; }
-.hp-lead { margin-top: 24px; max-width: 56ch; font-size: 20px; line-height: 1.45; }
+.hp-textbtn { border: 0; background: none; padding: 0; font: inherit; font-weight: 600; color: var(--navy); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+
+/* Das Taxischild: gelb leuchtend = frei, dunkel = besetzt */
+.hp-sign { display: inline-grid; justify-items: center; width: 100%; }
+.hp-sign-cap { width: 44%; height: 14px; background: var(--navy); border-radius: 3px 3px 0 0; }
+.hp-sign-face {
+  width: 100%; display: grid; place-items: center; padding: 0.22em 0.4em 0.14em; border-radius: 22px 22px 6px 6px;
+  background: var(--sign-off); color: var(--sign-off-ink); transition: background-color 420ms var(--out), color 420ms var(--out);
+}
+.hp-sign.is-on .hp-sign-face { background: var(--taxi); color: var(--taxi-ink); }
+.hp-sign .hp-d { line-height: 0.95; letter-spacing: 0.02em; white-space: nowrap; }
+.hp-sign-l { max-width: 380px; font-size: clamp(64px, 7vw, 108px); }
+.hp-sign-m { max-width: 560px; font-size: clamp(56px, 8.4vw, 132px); }
+.hp-sign-s { max-width: 150px; font-size: 30px; }
+.hp-sign-s .hp-sign-cap { height: 7px; }
+.hp-sign-s .hp-sign-face { border-radius: 12px 12px 4px 4px; }
+.hp-sign-m .hp-sign-face { border-radius: 28px 28px 8px 8px; }
+
+/* Erste Seite */
+.hp-hero { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: clamp(28px, 4vw, 64px); align-items: center; min-height: min(72vh, 700px); }
+.hp-hero h1 { font-size: clamp(56px, 7.6vw, 128px); text-wrap: balance; }
+.hp .hp-lead { margin-top: 32px; max-width: 46ch; font-size: 20px; line-height: 1.45; }
+.hp-stage { display: grid; justify-items: center; }
+.hp-ride { width: 100%; max-width: 480px; margin-top: 18px; background: #fff; padding: 26px 28px; box-shadow: inset 0 0 0 1px var(--line); display: grid; gap: 6px; }
+.hp-ride-chip { justify-self: start; font-size: 14px; font-weight: 650; padding: 2px 10px; background: var(--open-bg); color: var(--open); transition: background-color 300ms ease, color 300ms ease; }
+.hp-ride-chip[data-state="taken"] { background: var(--navy); color: #fff; }
+.hp-ride-route { font-size: 26px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.15; margin-top: 8px !important; }
+.hp-ride-meta { font-size: 16px; color: var(--muted); }
+.hp-ride-price { font-size: 40px; font-weight: 650; letter-spacing: -0.03em; margin: 10px 0 8px !important; font-variant-numeric: tabular-nums; }
+.hp-ride-price span { font-size: 16px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.hp-ride-claim { width: 100%; }
+.hp-ride-hint { font-size: 14px; color: var(--muted); margin-top: 10px !important; }
+.hp-ride-by { font-size: 16px; }
+
+/* Ablauf: dieselbe Fahrt, vier Schilder */
+.hp-steps { list-style: none; margin: 0; padding: 28px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; border-top: 3px double var(--navy); }
+.hp-steps li { display: grid; gap: 10px; align-content: start; }
+.hp-steps .hp-sign { justify-items: start; }
+.hp-steps .hp-sign-cap { margin-left: 28%; }
+.hp-steps h3 { margin-top: 10px; }
+.hp-steps p { font-size: 16px; line-height: 1.5; }
+.hp-steps .hp-steps-who { font-size: 14px; color: var(--muted); font-weight: 600; }
 
 /* Tabellen: echte Tabellen, die Tafel */
 .hp table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
@@ -79,15 +122,6 @@
 .hp thead th { font-size: 16px; font-weight: 600; padding-bottom: 10px; border-bottom: 3px double var(--navy); }
 .hp tbody tr { border-bottom: 1px solid var(--navy); }
 .hp tbody tr:last-child { border-bottom: 0; }
-.hp-board { margin-top: 36px; }
-.hp-board td:first-child, .hp-board td:nth-child(4) { white-space: nowrap; }
-.hp-st { font-weight: 650; }
-.hp-st-open { color: var(--accent); }
-.hp-st-taken { color: var(--navy); }
-.hp-st-ok { color: var(--muted); font-weight: 450; }
-.hp-board-act { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 24px; }
-.hp-board-act p { font-size: 16px; color: var(--muted); }
-.hp-flow td:first-child { white-space: nowrap; }
 
 .hp-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; margin-top: 56px; }
 .hp-pair > div { display: grid; gap: 12px; align-content: start; }
@@ -110,12 +144,16 @@
 .hp-pic figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
 
 .hp-price-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 40px; align-items: end; }
-.hp-fig { font-size: clamp(72px, 15vw, 230px); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.hp-price-grid p:not(.hp-fig) { font-size: 18px; max-width: 46ch; }
+.hp-price-sign { display: block; }
+.hp-price-sign .hp-sign { justify-items: start; }
+.hp-price-sign .hp-sign-cap { margin-left: 28%; }
+.hp-price-grid p:not(.hp-price-sign) { font-size: 18px; max-width: 46ch; }
 .hp-price-grid ul { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 2px; font-size: 18px; }
 
-.hp-ask h2 { font-size: clamp(56px, 9vw, 150px); }
-.hp-ask h2 span { display: inline; }
+.hp-ask-head { display: flex; flex-wrap: wrap; align-items: end; gap: 16px 40px; }
+.hp-ask h2 { font-size: clamp(56px, 8vw, 132px); text-wrap: balance; }
+.hp-ask-head .hp-sign { width: 150px; margin-bottom: 0.6vw; }
+.hp-ask-lead { margin-top: 24px !important; font-size: 20px; max-width: 46ch; }
 .hp-ask .hp-small { margin-top: 20px; }
 .hp-ask .hp-act > span { font-size: 16px; color: var(--muted); }
 
@@ -127,29 +165,31 @@
   .hp-btn:hover:not(:disabled) { background: var(--accent-hover); }
   .hp-btn-ghost:hover:not(:disabled) { background: var(--stone); }
   .hp-head nav a:hover, .hp-foot nav a:hover { text-decoration: underline; }
-  .hp-board tbody tr:hover { background: var(--stone); }
 }
 
 /* Bewegung */
 @media (prefers-reduced-motion: no-preference) {
-  .hp-board tbody tr { animation: hp-rise 700ms var(--out) both; animation-delay: calc(240ms + var(--i, 0) * 90ms); }
   .hp-hero h1, .hp-hero .hp-lead { animation: hp-rise 800ms var(--out) both; }
+  .hp-stage .hp-sign { animation: hp-light 900ms 300ms var(--out) both; }
+  @keyframes hp-light { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
   .hp-hero .hp-lead { animation-delay: 120ms; }
-  .hp-st-taken { animation: hp-fade 240ms var(--out) both; }
   @keyframes hp-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
   @keyframes hp-fade { from { opacity: 0; } to { opacity: 1; } }
   @supports (animation-timeline: view()) {
-    .hp-box:not(.hp-hero) > h2, .hp-flow, .hp-pair > div, .hp-facts, .hp-pic, .hp-fig, .hp-ask h2 { animation: hp-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 35%; }
+    .hp-box:not(.hp-hero) > h2, .hp-steps li, .hp-pair > div, .hp-facts, .hp-pic, .hp-price-sign, .hp-ask h2 { animation: hp-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 35%; }
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .hp { scroll-behavior: auto; }
   .hp-btn { transition: none; }
   .hp-xf img { transition: none; }
+  .hp-sign-face, .hp-ride-chip { transition: none; }
 }
 
 @media (max-width: 900px) {
-  .hp-routes-box, .hp-price-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .hp-routes-box, .hp-price-grid, .hp-hero { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .hp-hero { min-height: 0; }
+  .hp-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hp-pic { max-width: 340px; }
 }
 
@@ -158,11 +198,10 @@
   .hp { font-size: 17px; }
   .hp-head nav { gap: 0 16px; }
   .hp-hero h1, .hp-ask h2 { font-size: 15vw; }
-  .hp-hero h1 span, .hp-ask h2 span { display: block; }
-  .hp-lead { font-size: 18px; }
-  .hp-hero { display: flex; flex-direction: column; }
-  .hp-hero .hp-act { order: 2; margin: 20px 0 0; }
-  .hp-hero .hp-board { order: 3; }
+  .hp-lead, .hp-ask-lead { font-size: 18px; }
+  .hp-sign-l { max-width: 300px; }
+  .hp-ride { padding: 22px 20px; }
+  .hp-steps { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .hp table, .hp tbody, .hp tr, .hp td, .hp th { display: block; }
   .hp thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .hp tbody tr { padding: 14px 0; }
@@ -172,7 +211,6 @@
   .hp-routes td:last-child { text-align: left; }
   .hp-pair, .hp-routes-box, .hp-price-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .hp-pair { margin-top: 40px; }
-  .hp-fig { font-size: 19vw; }
   .hp-foot { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .hp-foot nav { justify-content: flex-start; }
   .hp-foot-end { text-align: left; }

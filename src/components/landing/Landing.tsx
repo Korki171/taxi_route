@@ -5,13 +5,15 @@ import "@fontsource-variable/imbue";
 import "./fragments.css";
 import "./home.css";
 import { LangSwitch } from "../LangSwitch";
-import { Board } from "./Board";
+import { HeroClaim } from "./HeroClaim";
+import { TaxiSign } from "./TaxiSign";
 import { Crossfade } from "./Crossfade";
 import { getI18n } from "@/server/i18n";
 import { PLANS } from "@/lib/plans";
 
-// Startseite „Die Tafel“ (2026-11-10). Richtung gewählt aus zwölf Entwürfen nach Awwwards-Gewinnern: Le Petit Bleu (eine Tinte, Doppelrahmen).
-// Idee: Die Börse ist eine Abflugtafel der Fahrten. Jede Fahrt ist eine Zeile, jeder Zustand ein Wort. Tabellen sind echte Tabellen.
+// Startseite „Das Taxischild“ (2026-11-10). Gewählt aus vier Hero-Varianten (Taxischild, Fahrtenbuch, Funk, Fallblatt-Tafel).
+// Idee: Wer frei hat, übernimmt. Das gelbe Dachschild leuchtet FREI, solange eine Fahrt offen ist, und geht auf BESETZT, sobald jemand übernimmt.
+// Gelb nur auf dem Schild, Zirbengrün auf Handlungen. Welt der Live-Seite: Papier, Navy, Doppelrahmen, echte Tabellen.
 // Alle Namen und Fahrten in den Beispielen sind erfunden.
 
 /** Strecken mit ungefährer Fahrzeit ab Flughafen München (Werte wie in der App). */
@@ -109,24 +111,18 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
   const figure = (plan.priceCents / 100).toLocaleString(locale === "en" ? "en-GB" : "de-AT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const rt = (s: string) => s.split(" → ").map((x) => t(x)).join(" → ");
   const registerHref = appHref ?? "/register?type=TRANSPORT_COMPANY";
-  const rows = [
-    { time: "11:00", route: rt("Flughafen München → Kitzbühel"), persons: "6", price: "310 €", status: t("Offen"), tone: "open" as const },
-    { time: "12:15", route: rt("Flughafen München → Mayrhofen"), persons: "3", price: t("offen"), status: t("3 Angebote"), tone: "open" as const },
-    { time: "14:30", route: rt("Innsbruck → St. Anton"), persons: "4", price: "180 €", status: t("Vergeben"), tone: "taken" as const },
-    { time: "16:00", route: rt("Flughafen München → Sölden"), persons: "7", price: "420 €", status: t("Erledigt"), tone: "ok" as const },
-  ];
-  const board = {
-    caption: t("Fahrten heute in der Börse"),
-    head: [t("Zeit"), t("Strecke"), t("Personen"), t("Preis"), t("Stand")],
-    claim: t("Zum Festpreis übernehmen"), reset: t("Zurücksetzen"), taken: t("Vergeben"),
-    by: t("Übernommen von {name}", { name: "Alpen Taxi Innsbruck" }),
-    hint: t("Probieren Sie es aus: Die Fahrt übernehmen."),
+  const claim = {
+    free: t("Frei"), busy: t("Besetzt"), open: t("Offen"), taken: t("Vergeben"),
+    route: rt("Flughafen München → Kitzbühel"), when: `${t("Sa 15.11.")} · ${t("11:00 Uhr")} · ${t("Flug OS 112")}`,
+    load: t("6 Personen · 6 Koffer · 4 Paar Ski · Kleinbus"), price: "310 €", fixed: t("Festpreis"),
+    claim: t("Zum Festpreis übernehmen"), by: t("Übernommen von {name}.", { name: "Alpen Taxi Innsbruck" }),
+    gone: t("Für alle anderen ist die Fahrt weg."), reset: t("Zurücksetzen"), hint: t("Probieren Sie es aus: Die Fahrt übernehmen."),
   };
   const steps: [string, string, string, string][] = [
-    ["Abgeben", "Erst wird sie eingestellt.", "Offen", "310 € Festpreis"],
-    ["Übernehmen", "Dann übernimmt jemand.", "Vergeben", "Alpen Taxi Innsbruck"],
-    ["Bestätigen", "Dann steht alles schriftlich da.", "PDF", "TB-2411-0187"],
-    ["Erledigt", "Dann ist die Fahrt erledigt.", "Erledigt", "beide Seiten"],
+    ["Frei", "Abgeben", "Sie stellen die Fahrt einmal ein, mit Zeit, Gepäck und Festpreis. Alle geprüften Kollegen sehen sie.", "Taxi Hofer · 310 € Festpreis"],
+    ["Besetzt", "Übernehmen", "Der erste Kollege mit freiem Wagen übernimmt. Für alle anderen ist die Fahrt weg.", "Alpen Taxi Innsbruck"],
+    ["Bestätigt", "Bestätigen", "Preis, Flug, Gepäck und Stornobedingungen stehen in einer Bestätigung als PDF.", "TB-2411-0187"],
+    ["Erledigt", "Fahren", "Die Fahrt ist gefahren. Beide Seiten sehen denselben Stand.", "beide Seiten"],
   ];
   const counts: [string, string][] = [
     ["Festpreis oder Angebot", "Das erste geprüfte Unternehmen übernimmt direkt und verbindlich, oder Unternehmen geben Angebote ab."],
@@ -149,32 +145,32 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
       </header>
 
       <main>
-        {/* Erste Seite: der Satz und die Tafel von heute, die erste Zeile lässt sich übernehmen */}
+        {/* Erste Seite: der Satz, daneben das Schild über einer echten Fahrt. Übernehmen schaltet das Schild auf BESETZT. */}
         <section className="hp-box hp-hero" aria-labelledby="hp-title">
-          <h1 id="hp-title" className="hp-d"><span>{t("Abgeben.")}</span> <span>{t("Übernehmen.")}</span></h1>
-          <p className="hp-lead">{t("Geprüfte Unternehmen in Tirol übernehmen die Fahrten, die Sie nicht schaffen.")} {t("Das Transfernetzwerk für Taxi- und Mietwagenunternehmen.")}</p>
-          <Board rows={rows} L={board} />
-          <div className="hp-act">
-            <Link href={registerHref} className="hp-btn">{appHref ? t("Zur App") : t("Unternehmen registrieren")}</Link>
+          <div className="hp-hero-copy">
+            <h1 id="hp-title" className="hp-d">{t("Wer frei hat, übernimmt.")}</h1>
+            <p className="hp-lead">{t("Taxi- und Mietwagenunternehmen in Tirol geben Fahrten ab, die sie nicht schaffen. Das erste geprüfte Unternehmen mit freiem Wagen übernimmt zum Festpreis.")}</p>
+            <div className="hp-act">
+              <Link href={registerHref} className="hp-btn">{appHref ? t("Zur App") : t("Unternehmen registrieren")}</Link>
+              <a href="#ablauf" className="hp-link">{t("So läuft eine Fahrt")}</a>
+            </div>
           </div>
+          <HeroClaim L={claim} />
         </section>
 
         {/* Ablauf: dieselbe Fahrt in vier Zeilen, daneben das, was heute passiert, und das, was danach dasteht */}
         <section id="ablauf" className="hp-box" aria-labelledby="hp-ablauf">
           <h2 id="hp-ablauf">{t("So läuft eine Fahrt.")}</h2>
-          <table className="hp-flow">
-            <thead><tr><th scope="col">{t("Schritt")}</th><th scope="col">{t("Was passiert")}</th><th scope="col">{t("Stand")}</th><th scope="col">{t("Wer")}</th></tr></thead>
-            <tbody>
-              {steps.map(([s, what, state, who], i) => (
-                <tr key={s}>
-                  <td data-label={t("Schritt")}><b>{i + 1} {t(s)}</b></td>
-                  <td data-label={t("Was passiert")}>{t(what)}</td>
-                  <td data-label={t("Stand")}>{t(state)}</td>
-                  <td data-label={t("Wer")}>{t(who)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ol className="hp-steps">
+            {steps.map(([sign, s, what, who], i) => (
+              <li key={s}>
+                <TaxiSign label={t(sign)} on={i === 0} size="s" />
+                <h3>{i + 1} {t(s)}</h3>
+                <p>{t(what)}</p>
+                <p className="hp-steps-who">{t(who)}</p>
+              </li>
+            ))}
+          </ol>
           <div className="hp-pair">
             <div>
               <h3>{t("Bisher läuft es so.")}</h3>
@@ -230,7 +226,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
         <section className="hp-box hp-price" aria-labelledby="hp-preis">
           <h2 id="hp-preis">{t("Ein Preis für alle Fahrten.")}</h2>
           <div className="hp-price-grid">
-            <p className="hp-d hp-fig" aria-label={`${t("Ab")} ${figure} € ${t("im Monat.")}`}><span aria-hidden="true">{figure} €</span></p>
+            <p className="hp-price-sign"><span className="hp-sr">{t("Ab")} {figure} € {t("im Monat.")}</span><span aria-hidden="true"><TaxiSign label={`${figure} €`} on size="m" /></span></p>
             <div>
               <p><b>{t("Ab")} {t("im Monat.")}</b> {t("Ohne Provision.")} {t("Fester Monatspreis per Rechnung für Taxi- und Transferunternehmen. Für Reisebüros und Hotels ist die Nutzung kostenlos.")}</p>
               <ul>{plan.features.slice(0, 4).map((f) => <li key={f}>{t(f)}</li>)}</ul>
@@ -254,7 +250,11 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
         </section>
 
         <section className="hp-box hp-ask" aria-labelledby="hp-wer">
-          <h2 id="hp-wer" className="hp-d"><span>{t("Taxi oder")}</span> <span>{t("Reisebüro?")}</span></h2>
+          <div className="hp-ask-head">
+            <h2 id="hp-wer" className="hp-d">{t("Ist Ihr Wagen frei?")}</h2>
+            <TaxiSign label={t("Frei")} on size="s" />
+          </div>
+          <p className="hp-ask-lead">{t("Dann übernehmen Sie Fahrten von Kollegen. Und wenn nicht, geben Sie Ihre ab.")}</p>
           <div className="hp-act">
             <Link href="/register?type=TRANSPORT_COMPANY" className="hp-btn">{t("Unternehmen registrieren")}</Link>
             <span>{t("oder")}</span>
