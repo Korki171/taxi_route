@@ -6,8 +6,8 @@ import { Logo } from "../Logo";
 type T = (key: string, vars?: Record<string, string | number>) => string;
 
 /**
- * Schluss der Startseite: Aufruf zur Anmeldung über einer Tiroler Nacht (Berge, Mond, Straße, ein Taxi mit leuchtendem Schild),
- * darunter Logo und Links auf Ruß. Nur die Szene ist ein Client-Baustein (NightRoad), alles andere rendert der Server.
+ * Schluss der Startseite: Aufruf zur Anmeldung über Tiroler Bergen (Tag im hellen, Nacht im dunklen Modus; Straße, ein Taxi mit gelbem Schild),
+ * darunter Logo und Links. Nur die Szene ist ein Client-Baustein (NightRoad), alles andere rendert der Server.
  */
 export function SiteFooter({ t, loggedIn }: { t: T; loggedIn: boolean }) {
   const columns: { title: string; links: { label: string; href: string }[] }[] = [
