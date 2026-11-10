@@ -8,7 +8,7 @@ import "./home.css";
 import { LangSwitch } from "../LangSwitch";
 import { HeroClaim } from "./HeroClaim";
 import { TaxiSign } from "./TaxiSign";
-import { Crossfade } from "./Crossfade";
+import { PartnerRelay } from "./PartnerRelay";
 import { SiteFooter } from "./SiteFooter";
 import { getI18n } from "@/server/i18n";
 import { PLANS } from "@/lib/plans";
@@ -118,6 +118,12 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
     claim: t("Zum Festpreis übernehmen"), by: t("Übernommen von {name}.", { name: "Alpen Taxi Innsbruck" }),
     gone: t("Für alle anderen ist die Fahrt weg."), reset: t("Zurücksetzen"), hint: t("Probieren Sie es aus: Die Fahrt übernehmen."),
   };
+  const relay = {
+    stages: AUDIENCE.map(([who]) => t(who)) as [string, string, string],
+    route: claim.route, when: `${t("Sa 15.11.")} · ${t("11:00 Uhr")}`, price: "310 €",
+    open: t("Offen"), taken: t("Vergeben"), free: t("Frei"), busy: t("Besetzt"),
+    summary: t("Beispiel: Die Fahrt geht zuerst an die eigenen Fahrer, dann an drei Partner, dann an alle geprüften Unternehmen. Eines übernimmt."),
+  };
   const steps: [string, string, string, string][] = [
     ["Frei", "Abgeben", "Sie stellen die Fahrt einmal ein, mit Zeit, Gepäck und Festpreis. Alle geprüften Kollegen sehen sie.", "Taxi Hofer · 310 € Festpreis"],
     ["Besetzt", "Übernehmen", "Der erste Kollege mit freiem Wagen übernimmt. Für alle anderen ist die Fahrt weg.", "Alpen Taxi Innsbruck"],
@@ -196,7 +202,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           </table>
         </section>
 
-        {/* Partner: wer die Fahrt zuerst sieht, als Treppe in drei Stufen; daneben ein Foto im Rahmen */}
+        {/* Partner: wer die Fahrt zuerst sieht, als Treppe in drei Stufen; daneben dieselbe Fahrt als Staffel (PartnerRelay) */}
         <section id="partner" className="hp-box hp-routes-box" aria-labelledby="hp-partner">
           <div>
             <h2 id="hp-partner">{t("Erst Ihre Partner, dann alle.")}</h2>
@@ -210,17 +216,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
             </ol>
             <p className="hp-stairs-note">{t("Wen Sie sperren, der sieht Ihre Fahrten nicht mehr. Und vor der Übernahme sieht niemand Namen, Adressen oder Telefonnummern Ihrer Fahrgäste.")}</p>
           </div>
-          <figure className="hp-pic">
-            <Crossfade
-              w={1100} h={1400}
-              images={[
-                { src: "/landing/tirol/arlberg-gipfel.jpg", alt: t("Verschneiter Gipfel am Arlberg") },
-                { src: "/landing/tirol/mayrhofen-abend.jpg", alt: t("Abendlicht über dem Zillertal bei Mayrhofen") },
-                { src: "/landing/tirol/innsbruck-hofgasse.jpg", alt: t("Die Hofgasse in der Innsbrucker Altstadt") },
-              ]}
-            />
-            <figcaption>{t("Fotos: Erich Fend, Linas Bam, Leonhard Lenz (Unsplash, alle CC0)")}</figcaption>
-          </figure>
+          <PartnerRelay L={relay} />
         </section>
 
         {/* Preis: die Zahl als Tafelziffern */}

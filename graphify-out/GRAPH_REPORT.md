@@ -1,17 +1,17 @@
 # Graph Report - taxi_route-hero  (2026-11-10)
 
 ## Corpus Check
-- 142 files · ~79,690 words
+- 142 files · ~79,906 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 12 file(s) not represented in the graph (top: .css 5, (none) 3, .example 1)
 
 ## Summary
-- 925 nodes · 3481 edges · 34 communities (27 shown, 7 thin omitted)
+- 925 nodes · 3484 edges · 32 communities (25 shown, 7 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 24 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c54ecbc6`
+- Built from commit: `b682d6a5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -36,7 +36,6 @@
 - Transferborsa
 - audit
 - layout.tsx
-- ShellNav.tsx
 - dispatch.ts
 - Startseite (/)
 - test
@@ -44,7 +43,6 @@
 - compilerOptions
 - dependencies
 - scripts
-- ShiftTracker.tsx
 - CLAUDE.md
 - BILDNACHWEISE.md
 
@@ -61,21 +59,21 @@
 10. `parse()` - 38 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `driver()` --calls--> `hashPassword()`  [EXTRACTED]
-  prisma/demo-boerse.ts → src/server/auth/password.ts
+- `liveFleetDemo()` --calls--> `assignBooking()`  [EXTRACTED]
+  prisma/demo-boerse.ts → src/server/services/dispatch.ts
 - `main()` --calls--> `hashPassword()`  [EXTRACTED]
   prisma/seed.ts → src/server/auth/password.ts
+- `driver()` --calls--> `hashPassword()`  [EXTRACTED]
+  prisma/demo-boerse.ts → src/server/auth/password.ts
 - `addMember()` --calls--> `hashPassword()`  [EXTRACTED]
   tests/helpers.ts → src/server/auth/password.ts
 - `createAdmin()` --calls--> `hashPassword()`  [EXTRACTED]
   tests/helpers.ts → src/server/auth/password.ts
-- `liveFleetDemo()` --calls--> `assignBooking()`  [EXTRACTED]
-  prisma/demo-boerse.ts → src/server/services/dispatch.ts
 
 ## Import Cycles
 - 2-file cycle: `src/server/notifications.ts -> src/server/services/marketplace.ts -> src/server/notifications.ts`
 
-## Communities (34 total, 7 thin omitted)
+## Communities (32 total, 7 thin omitted)
 
 ### Community 0 - "20261026102414_phase3_marketplace/migration.sql"
 Cohesion: 0.05
@@ -98,12 +96,12 @@ Cohesion: 0.10
 Nodes (64): acceptInvitationAction(), acceptQuoteAction(), addPartnerAction(), adminReviewCapabilityAction(), adminReviewDocumentAction(), adminSetOrgPlanAction(), adminSetOrgStatusAction(), advanceAudienceAction() (+56 more)
 
 ### Community 5 - "getI18n"
-Cohesion: 0.06
-Nodes (112): nextConfig, next, AdminOrgPage(), AdminPage(), PlanCell(), STATUSES, TYPES, RequestDetailPage() (+104 more)
+Cohesion: 0.05
+Nodes (122): nextConfig, next, AdminOrgPage(), AdminPage(), PlanCell(), STATUSES, TYPES, RequestDetailPage() (+114 more)
 
 ### Community 7 - "Landing.tsx"
 Cohesion: 0.07
-Nodes (33): Datenschutz(), metadata, Impressum(), metadata, NotFound(), metadata, Nutzungsbedingungen(), Home() (+25 more)
+Nodes (34): react, Home(), Labels, HeroClaim(), Labels, AUDIENCE, ChatScene(), Confirmation() (+26 more)
 
 ### Community 8 - "invalid"
 Cohesion: 0.16
@@ -153,10 +151,6 @@ Nodes (20): zod, audit(), Tx, capacitySchema, listMarketCapacity(), listOwnCapac
 Cohesion: 0.25
 Nodes (6): @fontsource-variable/albert-sans@^5.3.0, @fontsource-variable/imbue@^5.3.0, @fontsource-variable/albert-sans, @fontsource-variable/imbue, generateMetadata(), RootLayout()
 
-### Community 29 - "ShellNav.tsx"
-Cohesion: 0.20
-Nodes (6): react@^19.1.1, react, Labels, currentHref(), NavItem, ShellNav()
-
 ### Community 30 - "dispatch.ts"
 Cohesion: 0.09
 Nodes (29): GET(), BY_ID, getPlace(), haversineKm(), nearestPlace(), Place, Point, REGION_LABEL (+21 more)
@@ -174,16 +168,12 @@ Cohesion: 0.11
 Nodes (18): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+10 more)
 
 ### Community 62 - "dependencies"
-Cohesion: 0.14
-Nodes (14): dependencies, maplibre-gl@^4.7.1, @maplibre/maplibre-gl-leaflet@^0.0.22, next@^15.5.28, pdf-lib@^1.17.1, @prisma/client@^6.19.3, react-dom@^19.1.1, server-only@^0.0.1 (+6 more)
+Cohesion: 0.13
+Nodes (15): dependencies, maplibre-gl@^4.7.1, @maplibre/maplibre-gl-leaflet@^0.0.22, next@^15.5.28, pdf-lib@^1.17.1, @prisma/client@^6.19.3, react@^19.1.1, react-dom@^19.1.1 (+7 more)
 
 ### Community 76 - "scripts"
 Cohesion: 0.15
 Nodes (13): scripts, build, db:demo, db:deploy, db:migrate, db:seed, dev, lint (+5 more)
-
-### Community 123 - "ShiftTracker.tsx"
-Cohesion: 0.38
-Nodes (6): Fix, ShiftTracker(), flush(), keepAwake(), onVisible(), TrackerText
 
 ## Knowledge Gaps
 - **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
@@ -191,7 +181,7 @@ Nodes (6): Fix, ShiftTracker(), flush(), keepAwake(), onVisible(), TrackerText
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `next` connect `getI18n` to `marketplace.ts`, `actions.ts`, `package.json`, `Landing.tsx`, `organizations/[id]/page.tsx`, `ShiftTracker.tsx`, `layout.tsx`, `ShellNav.tsx`, `dependencies`?**
+- **Why does `next` connect `getI18n` to `marketplace.ts`, `actions.ts`, `package.json`, `Landing.tsx`, `organizations/[id]/page.tsx`, `layout.tsx`, `dependencies`?**
   _High betweenness centrality (0.062) - this node is a cross-community bridge._
 - **Should `20261026102414_phase3_marketplace/migration.sql` be split into smaller, more focused modules?**
   _Cohesion score 0.0528169014084507 - nodes in this community are weakly interconnected._

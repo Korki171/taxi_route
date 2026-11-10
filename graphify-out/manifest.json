@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "src/components/landing/Landing.tsx": {
-    "mtime": 1794339459.2342505,
-    "seen": 1794339462.7719,
-    "ast_hash": "a6c6301ce65bba8d77d67f6253fb8270",
+    "mtime": 1794339616.4380558,
+    "seen": 1794339701.006388,
+    "ast_hash": "5b5b478ee8691857fe2896a42b117040",
     "semantic_hash": ""
   },
   "src/components/landing/Pricing.tsx": {
@@ -330,9 +330,9 @@
     "semantic_hash": ""
   },
   "src/lib/i18n-en.ts": {
-    "mtime": 1794339386.428044,
-    "seen": 1794339462.7719092,
-    "ast_hash": "e0f44a13f302bd884a9e046129a0174b",
+    "mtime": 1794339625.5042183,
+    "seen": 1794339701.006399,
+    "ast_hash": "8a59cbe5d7050111dd6a85d995f2c760",
     "semantic_hash": ""
   },
   "src/lib/i18n.ts": {
@@ -821,12 +821,6 @@
     "ast_hash": "eeccf7c3277973aead8a975683c3f0cb",
     "semantic_hash": ""
   },
-  "src/components/landing/Crossfade.tsx": {
-    "mtime": 1794336722.1976306,
-    "seen": 1794337507.0459368,
-    "ast_hash": "7606695d09f56271976ec2cb7004aaa6",
-    "semantic_hash": ""
-  },
   "src/components/landing/HeroClaim.tsx": {
     "mtime": 1794338534.1121159,
     "seen": 1794339462.771899,
@@ -861,6 +855,12 @@
     "mtime": 1794339274.767293,
     "seen": 1794339462.771903,
     "ast_hash": "3b849d0bc9624285059e4f4c17480cb6",
+    "semantic_hash": ""
+  },
+  "src/components/landing/PartnerRelay.tsx": {
+    "mtime": 1794339596.9642048,
+    "seen": 1794339701.006391,
+    "ast_hash": "38e56cb620e16303d27f4da89864a525",
     "semantic_hash": ""
   },
   "package-lock.json": {
