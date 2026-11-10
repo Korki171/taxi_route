@@ -1319,4 +1319,6 @@ export const EN: Record<string, string> = {
   "Konto": "Account",
   "Weitere Seiten": "More pages",
   "Beispiel: Die Fahrt geht zuerst an die eigenen Fahrer, dann an drei Partner, dann an alle geprüften Unternehmen. Eines übernimmt.": "Example: the ride goes first to your own drivers, then to three partners, then to all verified companies. One of them takes it.",
+  "Dunkle Ansicht": "Dark view",
+  "Helle Ansicht": "Light view",
 };

@@ -1,17 +1,17 @@
 # Graph Report - taxi_route-hero  (2026-11-10)
 
 ## Corpus Check
-- 142 files · ~80,085 words
+- 143 files · ~80,319 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 12 file(s) not represented in the graph (top: .css 5, (none) 3, .example 1)
 
 ## Summary
-- 925 nodes · 3485 edges · 31 communities (24 shown, 7 thin omitted)
+- 928 nodes · 3491 edges · 31 communities (24 shown, 7 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 24 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d4627547`
+- Built from commit: `3169ece6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -25,16 +25,16 @@
 - Landing.tsx
 - invalid
 - organizations/[id]/page.tsx
+- matching.ts
 - requirePermission
 - Product
-- db.ts
-- members.ts
+- LegalPage
+- layout.tsx
 - vercel.json
-- errors.ts
 - context.ts
 - messages.ts
 - Transferborsa
-- audit
+- validation.ts
 - dispatch.ts
 - Startseite (/)
 - test
@@ -64,10 +64,10 @@
   prisma/seed.ts → src/server/auth/password.ts
 - `driver()` --calls--> `hashPassword()`  [EXTRACTED]
   prisma/demo-boerse.ts → src/server/auth/password.ts
-- `addMember()` --calls--> `hashPassword()`  [EXTRACTED]
-  tests/helpers.ts → src/server/auth/password.ts
-- `createAdmin()` --calls--> `hashPassword()`  [EXTRACTED]
-  tests/helpers.ts → src/server/auth/password.ts
+- `main()` --calls--> `publishCapacity()`  [EXTRACTED]
+  prisma/demo-boerse.ts → src/server/services/fleet.ts
+- `main()` --calls--> `setCapacityStatus()`  [EXTRACTED]
+  prisma/demo-boerse.ts → src/server/services/fleet.ts
 
 ## Import Cycles
 - 2-file cycle: `src/server/notifications.ts -> src/server/services/marketplace.ts -> src/server/notifications.ts`
@@ -79,76 +79,76 @@ Cohesion: 0.05
 Nodes (63): "AuditEvent", AuditEvent_organizationId_createdAt_idx, "Invitation", Invitation_organizationId_idx, Invitation_tokenHash_key, "Membership", Membership_organizationId_idx, Membership_userId_organizationId_key (+55 more)
 
 ### Community 1 - "notFound"
-Cohesion: 0.21
-Nodes (19): requirePlatformAdmin(), notFound(), adminGetOrganization(), adminListOrganizations(), adminReviewCapability(), adminReviewDocument(), adminSetOrganizationPlan(), adminSetOrganizationStatus() (+11 more)
+Cohesion: 0.15
+Nodes (30): zod, requirePlatformAdmin(), notFound(), adminListOrganizations(), adminReviewCapability(), adminReviewDocument(), adminSetOrganizationPlan(), adminSetOrganizationStatus() (+22 more)
 
 ### Community 2 - "LiveMap.tsx"
-Cohesion: 0.13
-Nodes (19): ago(), AUSTRIA, Basemap, duration(), esc(), headingOf(), legLabels(), legRoles() (+11 more)
+Cohesion: 0.12
+Nodes (21): leaflet@^1.9.4, leaflet, ago(), AUSTRIA, Basemap, duration(), esc(), headingOf() (+13 more)
 
 ### Community 3 - "marketplace.ts"
-Cohesion: 0.06
-Nodes (87): at(), driver(), liveFleetDemo(), main(), org(), trail(), vitest, bookingTransitionAction() (+79 more)
+Cohesion: 0.10
+Nodes (46): at(), driver(), liveFleetDemo(), main(), trail(), fromLocalInput(), HANDOFF_SHARE_OPTIONS, HandoffSplit (+38 more)
 
 ### Community 4 - "actions.ts"
-Cohesion: 0.10
-Nodes (64): acceptInvitationAction(), acceptQuoteAction(), addPartnerAction(), adminReviewCapabilityAction(), adminReviewDocumentAction(), adminSetOrgPlanAction(), adminSetOrgStatusAction(), advanceAudienceAction() (+56 more)
+Cohesion: 0.06
+Nodes (99): acceptInvitationAction(), acceptQuoteAction(), addPartnerAction(), adminReviewCapabilityAction(), adminReviewDocumentAction(), adminSetOrgPlanAction(), adminSetOrgStatusAction(), advanceAudienceAction() (+91 more)
 
 ### Community 5 - "getI18n"
 Cohesion: 0.06
-Nodes (115): nextConfig, next, server-only, AdminOrgPage(), AdminPage(), PlanCell(), STATUSES, TYPES (+107 more)
+Nodes (123): nextConfig, next, AdminOrgPage(), AdminPage(), PlanCell(), STATUSES, TYPES, RequestDetailPage() (+115 more)
 
 ### Community 7 - "Landing.tsx"
-Cohesion: 0.05
-Nodes (48): @fontsource-variable/albert-sans, @fontsource-variable/imbue, react, Datenschutz(), metadata, Impressum(), metadata, NotFound() (+40 more)
+Cohesion: 0.06
+Nodes (36): react, Home(), Labels, HeroClaim(), Labels, AUDIENCE, ChatScene(), Confirmation() (+28 more)
 
 ### Community 8 - "invalid"
-Cohesion: 0.16
-Nodes (15): POST(), invalid(), driverOverview(), endShift(), openShift(), pointSchema, pointsSchema, POSITION_RETENTION_DAYS (+7 more)
+Cohesion: 0.18
+Nodes (12): driverOverview(), endShift(), openShift(), pointSchema, pointsSchema, POSITION_RETENTION_DAYS, POSITION_STALE_SECONDS, purgeOldPositions() (+4 more)
 
 ### Community 11 - "organizations/[id]/page.tsx"
 Cohesion: 0.06
-Nodes (47): GET(), EN, Locale, LOCALE_COOKIE, LOCALES, makeT(), T, translate() (+39 more)
+Nodes (45): GET(), EN, Locale, LOCALE_COOKIE, LOCALES, makeT(), T, translate() (+37 more)
+
+### Community 12 - "matching.ts"
+Cohesion: 0.15
+Nodes (21): estimateMinutes(), returnBooking(), createVehicle(), listMarketCapacity(), categoryFits(), findMatchesForCapacity(), listCapacityWithMatches(), matchCapacity() (+13 more)
 
 ### Community 13 - "requirePermission"
-Cohesion: 0.40
-Nodes (9): requirePermission(), agencyOverview(), listInvitations(), getOwnOrganization(), getPublicOrganizationProfile(), requestCapabilityReview(), updateOrganizationProfile(), updateTransportProfile() (+1 more)
+Cohesion: 0.19
+Nodes (20): dynamic, GET(), requirePermission(), setVehicleActive(), getTransferRequest(), ownVehicleId(), addPartner(), advance() (+12 more)
 
 ### Community 14 - "Product"
 Cohesion: 0.20
 Nodes (9): Brand Commitments, Capabilities and Constraints, Evidence on Hand, Operating Context, Platform, Positioning, Product, Product Purpose (+1 more)
 
-### Community 15 - "db.ts"
+### Community 15 - "LegalPage"
 Cohesion: 0.18
-Nodes (21): db, main(), derive(), hashPassword(), verifyPassword(), createSession(), invalidateAllSessions(), invalidateSession() (+13 more)
+Nodes (9): Datenschutz(), metadata, Impressum(), metadata, NotFound(), metadata, Nutzungsbedingungen(), BackLink() (+1 more)
 
-### Community 16 - "members.ts"
-Cohesion: 0.29
-Nodes (16): assignableRoles(), conflict(), forbidden(), acceptInvitation(), changeMemberRole(), consumeInvitation(), ensureNotLastOwner(), findOpenInvitation() (+8 more)
-
-### Community 18 - "errors.ts"
-Cohesion: 0.33
-Nodes (6): GET(), GET(), AppError, AppErrorCode, getBookingDocumentForDownload(), getDocumentForDownload()
+### Community 16 - "layout.tsx"
+Cohesion: 0.25
+Nodes (6): @fontsource-variable/albert-sans@^5.3.0, @fontsource-variable/imbue@^5.3.0, @fontsource-variable/albert-sans, @fontsource-variable/imbue, generateMetadata(), RootLayout()
 
 ### Community 23 - "context.ts"
-Cohesion: 0.16
-Nodes (15): @prisma/client, db, globalForPrisma, Actor, OrgActor, transferInclude, TransferRow, listBookingDocuments() (+7 more)
+Cohesion: 0.10
+Nodes (36): org(), db, main(), @prisma/client, vitest, db, globalForPrisma, derive() (+28 more)
 
 ### Community 25 - "messages.ts"
-Cohesion: 0.17
-Nodes (15): isPlaceId(), findMatchesForCapacity(), listCapacityWithMatches(), MatchInput, MatchResult, RequestForMatch, SIZE_ORDER, access() (+7 more)
+Cohesion: 0.35
+Nodes (8): access(), alertSchema, canWrite(), listThreads(), MAX_MESSAGE_LENGTH, sendMessage(), updateJobAlerts(), VISIBLE_TO()
 
 ### Community 26 - "Transferborsa"
 Cohesion: 0.07
 Nodes (27): Berechtigungsmodell, Datenmodelle, Gewählte Architektur, Implementierungsplan, Live-Flottenkarte und Fahrer, Offene Fragen (Annahmen getroffen, reversibel), Phase 1: Ist-Zustand (26.10.2026), Phase 4: Reisebüros (Szenario B) (+19 more)
 
-### Community 27 - "audit"
-Cohesion: 0.10
-Nodes (20): zod, audit(), Tx, capacitySchema, listMarketCapacity(), listOwnCapacity(), place, publishCapacity() (+12 more)
+### Community 27 - "validation.ts"
+Cohesion: 0.18
+Nodes (8): countrySchema, emailSchema, memberRoleSchema, orgProfileSchema, passwordSchema, registrationSchema, transportProfileSchema, userInputSchema
 
 ### Community 30 - "dispatch.ts"
-Cohesion: 0.10
-Nodes (28): GET(), BY_ID, getPlace(), haversineKm(), nearestPlace(), Place, Point, ROAD_FACTOR (+20 more)
+Cohesion: 0.09
+Nodes (29): GET(), BY_ID, getPlace(), haversineKm(), isPlaceId(), nearestPlace(), Place, Point (+21 more)
 
 ### Community 35 - "test"
 Cohesion: 0.08
@@ -163,8 +163,8 @@ Cohesion: 0.11
 Nodes (18): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+10 more)
 
 ### Community 62 - "dependencies"
-Cohesion: 0.11
-Nodes (18): dependencies, @fontsource-variable/albert-sans@^5.3.0, @fontsource-variable/imbue@^5.3.0, leaflet@^1.9.4, maplibre-gl@^4.7.1, @maplibre/maplibre-gl-leaflet@^0.0.22, next@^15.5.28, pdf-lib@^1.17.1 (+10 more)
+Cohesion: 0.13
+Nodes (15): dependencies, maplibre-gl@^4.7.1, @maplibre/maplibre-gl-leaflet@^0.0.22, next@^15.5.28, pdf-lib@^1.17.1, @prisma/client@^6.19.3, react@^19.1.1, react-dom@^19.1.1 (+7 more)
 
 ### Community 76 - "scripts"
 Cohesion: 0.15
@@ -176,17 +176,17 @@ Nodes (13): scripts, build, db:demo, db:deploy, db:migrate, db:seed, dev, lint (
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `next` connect `getI18n` to `marketplace.ts`, `actions.ts`, `package.json`, `Landing.tsx`, `organizations/[id]/page.tsx`, `dependencies`?**
+- **Why does `next` connect `getI18n` to `actions.ts`, `package.json`, `Landing.tsx`, `organizations/[id]/page.tsx`, `requirePermission`, `LegalPage`, `layout.tsx`, `dependencies`?**
   _High betweenness centrality (0.061) - this node is a cross-community bridge._
 - **Should `20261026102414_phase3_marketplace/migration.sql` be split into smaller, more focused modules?**
   _Cohesion score 0.0528169014084507 - nodes in this community are weakly interconnected._
-- **Why does `getI18n` connect `getI18n` to `organizations/[id]/page.tsx`, `dispatch.ts`, `Landing.tsx`?**
-  _High betweenness centrality (0.047) - this node is a cross-community bridge._
+- **Why does `getI18n` connect `getI18n` to `actions.ts`, `Landing.tsx`, `organizations/[id]/page.tsx`, `LegalPage`, `layout.tsx`, `dispatch.ts`?**
+  _High betweenness centrality (0.048) - this node is a cross-community bridge._
+- **Should `notFound` be split into smaller, more focused modules?**
+  _Cohesion score 0.14714714714714713 - nodes in this community are weakly interconnected._
+- **Why does `@prisma/client` connect `context.ts` to `notFound`, `marketplace.ts`, `actions.ts`, `getI18n`, `package.json`, `organizations/[id]/page.tsx`, `matching.ts`, `requirePermission`, `dispatch.ts`, `messages.ts`, `dependencies`?**
+  _High betweenness centrality (0.038) - this node is a cross-community bridge._
 - **Should `LiveMap.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.13405797101449277 - nodes in this community are weakly interconnected._
-- **Why does `@prisma/client` connect `context.ts` to `notFound`, `marketplace.ts`, `actions.ts`, `getI18n`, `package.json`, `Landing.tsx`, `organizations/[id]/page.tsx`, `requirePermission`, `db.ts`, `members.ts`, `dispatch.ts`, `messages.ts`, `audit`, `dependencies`?**
-  _High betweenness centrality (0.039) - this node is a cross-community bridge._
+  _Cohesion score 0.12307692307692308 - nodes in this community are weakly interconnected._
 - **Should `marketplace.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.06098901098901099 - nodes in this community are weakly interconnected._
-- **Should `actions.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.09883449883449884 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.102322206095791 - nodes in this community are weakly interconnected._

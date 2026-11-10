@@ -10,6 +10,8 @@ import { HeroClaim } from "./HeroClaim";
 import { TaxiSign } from "./TaxiSign";
 import { PartnerRelay } from "./PartnerRelay";
 import { SiteFooter } from "./SiteFooter";
+import { ThemeToggle } from "./ThemeToggle";
+import { cookies } from "next/headers";
 import { getI18n } from "@/server/i18n";
 import { PLANS } from "@/lib/plans";
 
@@ -108,6 +110,8 @@ function Photo({ src, alt = "", w, h, eager, className }: { src: string; alt?: s
 
 export async function Landing({ appHref }: { appHref?: string } = {}) {
   const { t, locale } = await getI18n();
+  // Hell ist Standard; „Ruß bei Nacht“ nur, wenn der Besucher es oben umgeschaltet hat.
+  const theme = (await cookies()).get("hp-theme")?.value === "dark" ? "dark" : "light";
   const plan = PLANS[0];
   const figure = (plan.priceCents / 100).toLocaleString(locale === "en" ? "en-GB" : "de-AT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const rt = (s: string) => s.split(" → ").map((x) => t(x)).join(" → ");
@@ -138,7 +142,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
     ["Bestätigung als PDF", "Preis, Gepäck und Stornobedingungen stehen mit jeder Buchung schwarz auf weiß da."],
   ];
   return (
-    <div className="hp">
+    <div className="hp" data-theme={theme}>
       <header className="hp-head">
         <Link href="/" className="hp-logo" aria-label="Transferborsa"><Logo /></Link>
         <nav aria-label={t("Abschnitte")}>
@@ -147,6 +151,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           <Link href="/preise">{t("Preise")}</Link>
           <a href="#fragen">{t("Fragen")}</a>
           <LangSwitch path="/" className="hp-lang" />
+          <ThemeToggle initial={theme} labels={{ toDark: t("Dunkle Ansicht"), toLight: t("Helle Ansicht") }} />
           {!appHref && <Link href="/login">{t("Anmelden")}</Link>}
         </nav>
       </header>
