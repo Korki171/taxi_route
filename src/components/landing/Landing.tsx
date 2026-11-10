@@ -1,6 +1,5 @@
 import { Logo } from "../Logo";
 import Link from "next/link";
-import { Fragment } from "react";
 import "@fontsource-variable/albert-sans";
 import "@fontsource-variable/imbue";
 import "./home.css";
@@ -134,16 +133,6 @@ const FLOWS: Flow[] = [
       ["Dann ist die Fahrt gefahren.", { chip: [OK, "Erledigt"], when: "Sa 15.11. · 12:15 Uhr", route: RUN, load: LOAD, price: ["310 €", "Festpreis"], lines: ["Flug OS 112, Landung 11:40"], doc: true }],
     ],
   },
-  {
-    id: "leerfahrt",
-    title: "Wenn der Bus leer zurückfährt.",
-    steps: [
-      ["Erst fährt er leer zurück.", { chip: [OK, "Frei"], when: "Sa 15.11. · ab 15:00 Uhr", route: "Kitzbühel → Flughafen München", load: "Kleinbus · 8 Plätze · Skiträger", price: ["", ""], lines: ["Angeboten von Alpen Taxi Innsbruck"] }],
-      ["Dann fragt jemand an.", { chip: [OPEN, "Angefragt"], when: "Sa 15.11. · 15:00 Uhr", route: "Kitzbühel → Flughafen München", load: "5 Personen · 5 Koffer", price: ["", ""], lines: ["Anfrage von Hotel Alpenrose"] }],
-      ["Dann ist er gebucht.", { chip: [TAKEN, "Vergeben"], when: "Sa 15.11. · 15:00 Uhr", route: "Kitzbühel → Flughafen München", load: "5 Personen · 5 Koffer", price: ["190 €", "Festpreis"], lines: ["Übernommen von Alpen Taxi Innsbruck"], doc: true }],
-      ["Dann fährt er nicht mehr leer.", { chip: [OK, "Erledigt"], when: "Sa 15.11. · 15:00 Uhr", route: "Kitzbühel → Flughafen München", load: "5 Personen · 5 Koffer", price: ["190 €", "Festpreis"], lines: ["Übernommen von Alpen Taxi Innsbruck"], doc: true }],
-    ],
-  },
 ];
 
 function FlowCard({ t, c }: { t: T; c: CardSpec }) {
@@ -190,67 +179,6 @@ function Confirmation({ t }: { t: T }) {
   );
 }
 
-/**
- * Eine Auftragsansicht in sechs Feldern, wie eine Tafel im Handbuch. Rechts und links stehen die Randnotizen,
- * jede auf Höhe ihres Feldes (gleiche Gitterzeile).
- */
-function Plate({ t }: { t: T }) {
-  const notes: [string, string][] = [
-    ["Strecke, Zeit, Gepäck", "Alles, was ein Kollege wissen muss, steht in der Anzeige."],
-    ["Festpreis oder Angebot", "Das erste geprüfte Unternehmen übernimmt direkt und verbindlich, oder Unternehmen geben Angebote ab."],
-    ["Geprüfter Auftraggeber", "Konzession, Versicherung und Firmendaten sind vorab geprüft."],
-    ["Fahrgastdaten bleiben privat", "Namen und Nummern sieht nur, wer die Fahrt übernimmt."],
-    ["Flugdaten im Auftrag", "Landung und Abholzeit stehen im selben Auftrag, Änderungen sehen beide Seiten."],
-    ["Bestätigung als PDF", "Preis, Gepäck und Stornobedingungen stehen mit jeder Buchung schwarz auf weiß da."],
-  ];
-  const seg = [
-    <div key="1" className="hp-seg">
-      <div className="hp-order-top"><span className="hp-chip hp-chip-open">{t("Offen")}</span><span className="hp-muted">{t("Sa 15.11.")} · {t("11:00 Uhr")}</span></div>
-      <p className="hp-order-route">{t("Flughafen München")} → Kitzbühel</p>
-      <p className="hp-muted">{t("6 Personen · 6 Koffer · 4 Paar Ski · Kleinbus")}</p>
-    </div>,
-    <div key="2" className="hp-seg">
-      <div className="hp-order-price"><b>310 €</b><span>{t("Festpreis")}</span></div>
-      <div className="hp-order-actions">
-        <span className="hp-fake hp-fake-primary">{t("Zum Festpreis übernehmen")}</span>
-        <span className="hp-fake">{t("Angebot abgeben")}</span>
-      </div>
-    </div>,
-    <div key="3" className="hp-seg">
-      <p className="hp-key">{t("Auftraggeber")}</p>
-      <p><b>Alpen Taxi Innsbruck</b></p>
-      <div className="hp-badges"><span className="hp-chip hp-chip-ok">{t("Konzession geprüft")}</span><span className="hp-chip hp-chip-ok">{t("Versicherung geprüft")}</span></div>
-    </div>,
-    <div key="4" className="hp-seg">
-      <p className="hp-key">{t("Fahrgast")}</p>
-      <p className="hp-masked" aria-hidden="true">●●●●●● ●●●●●●●</p>
-      <p className="hp-muted">{t("Nach der Übernahme sichtbar")}</p>
-    </div>,
-    <div key="5" className="hp-seg">
-      <p className="hp-key">{t("Flug")}</p>
-      <p><b>OS 112</b> · {t("Landung 10:05")} · {t("Abholung 11:00")}</p>
-    </div>,
-    <div key="6" className="hp-seg">
-      <p className="hp-key">{t("Bestätigung")}</p>
-      <p className="hp-order-doc">TB-2411-0187.pdf</p>
-      <p className="hp-muted">{t("Storno bis 24 h vorher kostenlos")}</p>
-    </div>,
-  ];
-  return (
-    <div className="hp-plate" data-ui>
-      {notes.map(([name, text], i) => (
-        <Fragment key={name}>
-          <div className={`hp-note ${i % 2 === 0 ? "n-l" : "n-r"}`} data-n={i + 1} style={{ gridRow: i + 1 }} tabIndex={0}>
-            <b>{t(name)}</b>
-            <p>{t(text)}</p>
-          </div>
-          <div className="hp-seg-wrap" data-n={i + 1} style={{ gridRow: i + 1 }}>{seg[i]}</div>
-        </Fragment>
-      ))}
-    </div>
-  );
-}
-
 function Photo({ src, alt = "", w, h, eager, className }: { src: string; alt?: string; w: number; h: number; eager?: boolean; className?: string }) {
   return <img className={className} src={src} width={w} height={h} alt={alt} loading={eager ? undefined : "lazy"} decoding="async" />;
 }
@@ -265,38 +193,42 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
     by: t("Übernommen von {name}", { name: "Alpen Taxi Innsbruck" }), hint: t("Probieren Sie es aus: Die Fahrt übernehmen."),
   };
   const email = "transferborsatirol@gmail.com";
+  const statements: [string, string, string, string][] = [
+    ["Festpreis oder Angebot", "Das erste geprüfte Unternehmen übernimmt direkt und verbindlich, oder Unternehmen geben Angebote ab.", "st-1", ""],
+    ["Nur geprüfte Unternehmen.", "Konzession, Versicherung und Firmendaten sind vorab geprüft.", "st-2", "mirror"],
+    ["Fahrgastdaten bleiben privat", "Namen und Nummern sieht nur, wer die Fahrt übernimmt.", "st-3", ""],
+    ["Bestätigung als PDF", "Preis, Gepäck und Stornobedingungen stehen mit jeder Buchung schwarz auf weiß da.", "st-4", "mirror"],
+  ];
+  const verbs: [string, string, string, string][] = [
+    ["Abgeben.", "Ein Kollege hat die Fahrt, aber keinen Wagen frei. Er stellt sie einmal in die Börse.", "/landing/tirol/arlberg-gipfel.jpg", "vb-ink"],
+    ["Übernehmen.", "Wer frei hat, übernimmt zum Festpreis. Für alle anderen ist die Fahrt weg.", "/landing/tirol/mayrhofen-abend.jpg", "vb-paper"],
+    ["Bestätigen.", "Preis, Flug und Gepäck stehen in der Bestätigung. Dann wird gefahren.", "/landing/tirol/innsbruck-hofgasse.jpg", "vb-paper vb-dim"],
+  ];
   return (
     <div className="hp">
-      {/* Erste Seite: Brett aus zwei mal zwei, oben eine Zeile aus Kacheln */}
+      {/* Erste Seite: ein Foto, der Titel im Himmel, der Satz in zwei Hälften um den Gipfel */}
       <section className="hp-hero" aria-labelledby="hp-title">
-        <div className="hb-top">
-          <Link href="/" className="hb-logo" aria-label="Transferborsa"><Logo /></Link>
-          <nav className="hb-nav" aria-label={t("Abschnitte")}>
+        <Photo className="hp-hero-img hp-shutter" src="/landing/tirol/st-anton-gipfel.jpg" alt={t("Schneebedeckte Gipfel über den Wolken in den Tiroler Alpen")} w={1800} h={1440} eager />
+        <header className="hh-bar">
+          <Link href="/" className="hh-logo" aria-label="Transferborsa"><Logo mono /></Link>
+          <nav className="hh-nav" aria-label={t("Abschnitte")}>
             <a href="#ablauf">{t("Ablauf")}</a>
             <a href="#strecken">{t("Strecken")}</a>
             <Link href="/preise">{t("Preise")}</Link>
             <a href="#fragen">{t("Fragen")}</a>
-            <span className="hb-nav-end">
-              <LangSwitch path="/" className="hp-lang" />
-              {!appHref && <Link href="/login">{t("Anmelden")}</Link>}
-            </span>
           </nav>
-          {appHref
-            ? <Link href={appHref} className="hb-action">{t("Zur App")}</Link>
-            : <Link href="/register?type=TRANSPORT_COMPANY" className="hb-action">{t("Registrieren")}</Link>}
+          <div className="hh-end">
+            <LangSwitch path="/" className="hp-lang" />
+            {!appHref && <Link href="/login" className="hh-login">{t("Anmelden")}</Link>}
+            <Link href={appHref ?? "/register?type=TRANSPORT_COMPANY"} className="hh-action">{appHref ? t("Zur App") : t("Registrieren")}</Link>
+          </div>
+        </header>
+        <h1 id="hp-title" className="hh-title"><span>{t("Abgeben.")}</span><span>{t("Übernehmen.")}</span></h1>
+        <div className="hh-halves">
+          <p className="hh-a"><span>{t("Fahrten weitergeben, die Sie selbst nicht schaffen.")}</span></p>
+          <p className="hh-b"><span>{t("Aufträge übernehmen, wenn Wagen frei sind.")}</span></p>
         </div>
-        <div className="hb-name">
-          <h1 id="hp-title"><span>{t("Abgeben.")}</span> <span>{t("Übernehmen.")}</span></h1>
-        </div>
-        <div className="hb-photo hb-photo-a"><Photo className="hp-shutter" src="/landing/kitzbuehel.webp" alt={t("Die Vorderstadt von Kitzbühel im Winter")} w={1600} h={1067} eager /></div>
-        <div className="hb-photo hb-photo-b"><Photo src="/landing/alpen.webp" alt={t("Eine Passstraße in den Tiroler Alpen")} w={1600} h={1067} eager /></div>
-        <div className="hb-dark">
-          <p>{t("Das Transfernetzwerk für Taxi- und Mietwagenunternehmen.")}</p>
-        </div>
-        <div className="hb-accent">
-          <p>{t("Fahrten weitergeben, die Sie selbst nicht schaffen. Aufträge übernehmen, wenn Wagen frei sind.")}</p>
-          <Link href="/register?type=TRAVEL_AGENCY" className="hp-link">{t("Reisebüro oder Hotel? Kostenlos registrieren")}</Link>
-        </div>
+        <p className="hh-note"><span>{t("Das Transfernetzwerk für Taxi- und Mietwagenunternehmen.")}</span></p>
       </section>
 
       {/* Text: eine Lesespalte auf der Achse, jeder Absatz mit einem Beweis aus der App */}
@@ -325,15 +257,29 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
         </div>
       </section>
 
-      {FLOWS.slice(0, 1).map((f) => <FlowBand key={f.id} f={f} t={t} />)}
-
-      {/* Tafel: eine Auftragsansicht mit Randnotizen */}
-      <section className="hp-text hp-plate-sec" aria-labelledby="hp-tafel">
-        <div className="hp-axis-head hp-center"><h2 id="hp-tafel">{t("Jedes Feld hat seinen Zweck.")}</h2></div>
-        <Plate t={t} />
+      {/* Drei Verben, ein Foto je Schritt; das Verb bleibt in der Mitte, während das Bild vorbeizieht */}
+      <section className="hp-verbs" aria-label={t("So läuft eine Fahrt.")}>
+        {verbs.map(([verb, text, src, cls]) => (
+          <div key={verb} className={`hp-verb ${cls}`}>
+            <Photo src={src} w={1800} h={1200} />
+            <div className="hp-verb-word"><p aria-hidden="true">{t(verb)}</p></div>
+            <h2 className="hp-sr">{t(verb)}</h2>
+            <p className="hp-verb-text">{t(text)}</p>
+          </div>
+        ))}
       </section>
 
-      {FLOWS.slice(1).map((f) => <FlowBand key={f.id} f={f} t={t} />)}
+      {/* Vier Aussagen auf Farbfeldern, fast leer */}
+      <section className="hp-states" aria-label={t("Funktionen")}>
+        {statements.map(([phrase, text, id, mirror]) => (
+          <div key={id} className={`hp-state ${id} ${mirror}`}>
+            <p className="hp-state-text">{t(text)}</p>
+            <h2>{t(phrase)}</h2>
+          </div>
+        ))}
+      </section>
+
+      {FLOWS.map((f) => <FlowBand key={f.id} f={f} t={t} />)}
 
       <section id="strecken" className="hp-text" aria-labelledby="hp-strecken">
         <div className="hp-axis-head"><h2 id="hp-strecken">{t("Die Strecken, auf denen wir anfangen")}</h2></div>
@@ -349,22 +295,16 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
         </div>
       </section>
 
-      {/* Zwei Felder, wo sonst Tarife stünden: für wen und was es kostet */}
-      <section className="hp-fields" aria-label={t("Für beide Seiten der Fahrt.")}>
-        <div className="hp-field hp-field-a">
-          <h2>{t("Reisebüros und Hotels")}</h2>
-          <p>{t("Transfers für Ihre Gäste einstellen und sehen, wer sie übernimmt. Mit Bestätigung für jede Buchung.")}</p>
-          <div className="hp-field-foot">
-            <p className="hp-figure">{t("Kostenlos")}</p>
-            <Link href="/register?type=TRAVEL_AGENCY" className="hp-btn">{t("Registrieren")}</Link>
-          </div>
-        </div>
-        <div className="hp-field hp-field-b">
-          <h2>{t("Taxi- und Transferunternehmen")}</h2>
-          <p>{t("Fahrten weitergeben, die Sie nicht schaffen. Aufträge übernehmen, wenn Wagen frei sind. Leerfahrten füllen.")}</p>
-          <div className="hp-field-foot">
-            <p className="hp-figure">{t("Ab {price}", { price })}<small>{t("im Monat, ohne Provision pro Fahrt")}</small></p>
-            <Link href="/register?type=TRANSPORT_COMPANY" className="hp-btn hp-btn-navy">{t("Unternehmen registrieren")}</Link>
+      {/* Der Preis als Satz: die Zahl ist ein Körper in der Zeile */}
+      <section className="hp-price" aria-labelledby="hp-preis">
+        <h2 id="hp-preis" className="hp-sentence">
+          {t("Ab")} <mark>{price}</mark><br />{t("im Monat.")} {t("Ohne Provision.")}
+        </h2>
+        <div className="hp-price-foot">
+          <p>{t("Fester Monatspreis per Rechnung für Taxi- und Transferunternehmen. Für Reisebüros und Hotels ist die Nutzung kostenlos.")}</p>
+          <div>
+            <Link href="/register?type=TRANSPORT_COMPANY" className="hp-btn">{t("Unternehmen registrieren")}</Link>
+            <Link href="/register?type=TRAVEL_AGENCY" className="hp-link">{t("Reisebüro oder Hotel? Kostenlos registrieren")}</Link>
           </div>
         </div>
       </section>
@@ -378,26 +318,26 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
         </div>
       </section>
 
+      {/* Fragen groß links, Antworten daneben, alles offen */}
       <section id="fragen" className="hp-faq" aria-labelledby="hp-fragen">
-        <div className="hp-faq-head"><h2 id="hp-fragen">{t("Häufige Fragen")}</h2></div>
+        <div className="hp-faq-row hp-faq-head"><h2 id="hp-fragen">{t("Häufige Fragen")}</h2></div>
         {FAQ.map(([q, a]) => (
-          <div key={q} className="hp-faq-band">
+          <div key={q} className="hp-faq-row">
             <h3>{t(q)}</h3>
             <p>{t(a)}</p>
           </div>
         ))}
       </section>
 
-      <section className="hp-close" aria-labelledby="hp-kontakt">
-        <div className="hp-strip">
-          <Photo src="/landing/kitzbuehel.webp" w={1600} h={1067} />
-          <Photo src="/landing/innsbruck.webp" w={1280} h={720} />
-          <Photo src="/landing/alpen.webp" w={1600} h={1067} />
+      {/* Schluss: eine Frage an beiden Rändern, dazwischen die Wahl */}
+      <section className="hp-ask" aria-labelledby="hp-wer">
+        <h2 id="hp-wer"><span>{t("Taxi oder")}</span><span>{t("Reisebüro?")}</span></h2>
+        <div className="hp-ask-row">
+          <Link href="/register?type=TRANSPORT_COMPANY" className="hp-btn">{t("Unternehmen registrieren")}</Link>
+          <span>{t("oder")}</span>
+          <Link href="/register?type=TRAVEL_AGENCY" className="hp-btn hp-btn-paper">{t("Reisebüro oder Hotel registrieren")}</Link>
         </div>
-        <div className="hp-close-band">
-          <h2 id="hp-kontakt" className="hp-lede">{t("Wir sind im Pilotbetrieb rund um Innsbruck und melden uns persönlich.")} <a href={`mailto:${email}?subject=Transferborsa`}>{t("Schreiben Sie uns.")}</a></h2>
-          <p className="hp-small">{t("Fragen zur Börse, zur Prüfung oder zu den Strecken beantworten wir gern.")}</p>
-        </div>
+        <p className="hp-ask-note">{t("Wir sind im Pilotbetrieb rund um Innsbruck und melden uns persönlich.")}</p>
       </section>
 
       <footer className="hp-footer">
@@ -414,7 +354,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
             <li><Link href="/datenschutz">{t("Datenschutz")}</Link></li>
             <li><Link href="/nutzungsbedingungen">{t("Nutzungsbedingungen")}</Link></li>
           </ul>
-          <p>{t("Fotos: Shpetim Ujkani, Jonas Tebbe (Unsplash), TheTokl (CC BY-SA 4.0)")}</p>
+          <p>{t("Fotos: Erich Fend, Jonathan Bean, Linas Bam (Unsplash), Leonhard Lenz (alle CC0)")}</p>
           <p>Innsbruck · 2026</p>
         </div>
       </footer>
