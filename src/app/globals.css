@@ -559,3 +559,4 @@ label.check input { width: 20px; height: 20px; margin-top: 2px; flex: none; }
 /* Auftrag einstellen: Flugfelder nur bei „Ja, mit dem Flieger“ */
 .order-form .flight-fields { display: none; }
 .order-form:has(input[name="byPlane"][value="yes"]:checked) .flight-fields { display: grid; }
+.plain-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }

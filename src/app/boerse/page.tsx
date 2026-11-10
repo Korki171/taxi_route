@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { escalateDueRequests } from "@/server/services/partners";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { Empty, Load, PlaceSelect, Route, VehicleSelect } from "@/components/market";
@@ -70,6 +71,7 @@ export default async function BoersePage({ searchParams }: { searchParams: SP })
   const { t, f } = await getI18n();
   const sp = await searchParams;
   const actor = await requireOrgActor();
+  await escalateDueRequests().catch(() => 0);
   const views = VIEWS.filter((v) => v.allowed(actor));
   if (views.length === 0) redirect("/dashboard");
   const view = views.find((v) => v.id === sp.view) ?? views[0];

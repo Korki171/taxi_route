@@ -190,6 +190,21 @@ model Organization {
   providerBookings  Booking[]         @relation("ProviderBookings")
   capacityOffers    CapacityOffer[]
   driverShifts      DriverShift[]
+  partners          PartnerLink[]     @relation("OwnPartners")
+  partnerOf         PartnerLink[]     @relation("PartnerOf")
+}
+
+/// Eigenes Partnernetzwerk: Unternehmen, die ein Betrieb in Stufe 2 zuerst sehen lässt (einseitig, ohne Zustimmung).
+model PartnerLink {
+  id           String       @id @default(cuid())
+  orgId        String
+  org          Organization @relation("OwnPartners", fields: [orgId], references: [id], onDelete: Cascade)
+  partnerOrgId String
+  partnerOrg   Organization @relation("PartnerOf", fields: [partnerOrgId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
+
+  @@unique([orgId, partnerOrgId])
+  @@index([partnerOrgId])
 }
 
 model OrganizationCapability {
@@ -316,6 +331,13 @@ enum RequestVisibility {
   INVITED
 }
 
+/// Stufe der Veröffentlichung: erst der eigene Betrieb, dann ausgewählte Partner, dann die gesamte Börse.
+enum Audience {
+  OWN
+  PARTNERS
+  MARKET
+}
+
 enum InvitationStatus {
   /// Eingeladen, noch keine Reaktion
   PENDING
@@ -396,19 +418,24 @@ model TransferRequest {
   flightArrivalAt DateTime?
   pickupNotes     String?
 
-  priceMode           PriceMode
+  priceMode            PriceMode
   /// Festpreis bzw. unverbindlicher Richtpreis/Budget in Cent
-  priceCents          Int?
-  currency            String            @default("EUR")
+  priceCents           Int?
+  currency             String            @default("EUR")
   /// Anteil in Prozent, den das abgebende Unternehmen vom Fahrpreis behält (0 = keiner).
   /// Abrechnung direkt zwischen den Unternehmen, die Plattform erhält nichts davon.
-  handoffSharePercent Int               @default(0)
-  quoteDeadline       DateTime?
-  bookingTerms        String?
-  cancellationTerms   String?
-  clientReference     String?
+  handoffSharePercent  Int               @default(0)
+  quoteDeadline        DateTime?
+  bookingTerms         String?
+  cancellationTerms    String?
+  clientReference      String?
   /// MARKET: in der Börse; INVITED: nur für die Unternehmen in QuoteInvitation sichtbar
-  visibility          RequestVisibility @default(MARKET)
+  visibility           RequestVisibility @default(MARKET)
+  /// Aktuelle Stufe (nur bei MARKET-Aufträgen): OWN nur eigener Betrieb, PARTNERS eigene Partner, MARKET alle.
+  audience             Audience          @default(MARKET)
+  audienceSince        DateTime          @default(now())
+  /// Nach so vielen Minuten ohne Übernahme geht der Auftrag automatisch zur nächsten Stufe (null = nie)
+  escalateAfterMinutes Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

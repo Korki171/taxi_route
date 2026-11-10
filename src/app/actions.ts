@@ -7,6 +7,7 @@ import { AppError, invalid } from "@/server/errors";
 import { adminReviewCapability, adminReviewDocument, adminSetOrganizationPlan, adminSetOrganizationStatus } from "@/server/services/admin";
 import { login, switchActiveOrganization } from "@/server/services/auth";
 import { deleteDocument, uploadDocument } from "@/server/services/documents";
+import { addPartner, advanceAudience, removePartner, takeOwnRequest } from "@/server/services/partners";
 import {
   acceptInvitation,
   changeMemberRole,
@@ -290,9 +291,41 @@ export async function createTransferRequestAction(fd: FormData) {
       quoteDeadline: localDate(fd, "quoteDeadline"),
       priceCents: cents(fd, "price"),
       visibility: str(fd, "visibility"),
+      audience: str(fd, "audience"),
+      escalateAfterMinutes: str(fd, "escalateAfterMinutes"),
       invitedOrgIds: fd.getAll("invitedOrgIds").map(String),
     });
     return withParam(`/boerse/auftrag/${req.id}`, "ok", req.visibility === "INVITED" ? "Anfrage an die ausgewählten Unternehmen geschickt." : "Auftrag veröffentlicht.");
+  });
+}
+
+export async function takeOwnRequestAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await takeOwnRequest(await getActor(), id, { vehicleId: str(fd, "vehicleId") || undefined });
+    return withParam(`/boerse/auftrag/${id}`, "ok", "Auftrag für den eigenen Betrieb übernommen.");
+  });
+}
+
+export async function advanceAudienceAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await advanceAudience(await getActor(), id);
+    return withParam(`/boerse/auftrag/${id}`, "ok", "Auftrag an die nächste Stufe weitergegeben.");
+  });
+}
+
+export async function addPartnerAction(fd: FormData) {
+  await runAction("/organization", async () => {
+    await addPartner(await getActor(), str(fd, "partnerOrgId"));
+    return withParam("/organization", "ok", "Partner hinzugefügt.");
+  });
+}
+
+export async function removePartnerAction(fd: FormData) {
+  await runAction("/organization", async () => {
+    await removePartner(await getActor(), str(fd, "partnerOrgId"));
+    return withParam("/organization", "ok", "Partner entfernt.");
   });
 }
 

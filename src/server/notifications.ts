@@ -49,16 +49,22 @@ const orgSelect = { email: true, name: true, country: true } as const;
  * Neuer Auftrag: eingeladene Unternehmen erhalten eine Direktanfrage. Börsenaufträge gehen zusätzlich
  * an alle übrigen geprüften, aktiven Beförderungsunternehmen außer dem Auftraggeber.
  */
-export async function notifyNewRequest(requestId: string) {
+export async function notifyNewRequest(requestId: string, skipOrgIds: string[] = []) {
   const req = await db.transferRequest.findUniqueOrThrow({
     where: { id: requestId },
     include: { requesterOrg: { select: orgSelect }, invitations: { select: { providerOrgId: true } } },
   });
   const invited = req.invitations.map((i) => i.providerOrgId);
   if (req.visibility === "INVITED") return notifyInvited(requestId, invited);
+  // Stufe 1: nur der eigene Betrieb, kein Versand. Stufe 2: nur die Partner des Auftraggebers.
+  if (req.audience === "OWN") return;
+  const partnerIds =
+    req.audience === "PARTNERS"
+      ? (await db.partnerLink.findMany({ where: { orgId: req.requesterOrgId }, select: { partnerOrgId: true } })).map((l) => l.partnerOrgId)
+      : null;
   const providers = await db.organization.findMany({
     where: {
-      id: { notIn: [req.requesterOrgId, ...invited] },
+      id: { notIn: [req.requesterOrgId, ...invited, ...skipOrgIds], ...(partnerIds ? { in: partnerIds } : {}) },
       status: "ACTIVE",
       capabilities: { some: { capability: "TRANSPORT_PROVIDER", status: "VERIFIED" } },
     },
