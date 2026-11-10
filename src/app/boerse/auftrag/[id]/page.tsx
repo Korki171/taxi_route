@@ -22,6 +22,7 @@ import { actorCan } from "@/server/authz/context";
 import { AppError } from "@/server/errors";
 import { listVehicles } from "@/server/services/fleet";
 import { escalateDueRequests } from "@/server/services/partners";
+import { listBookingDocuments } from "@/server/services/booking-extras";
 import { getTransferRequest, listProviderDirectory, MAX_INVITATIONS, referenceOf } from "@/server/services/marketplace";
 import { EVENT_LABEL } from "@/server/services/transfer-events";
 import { requireOrgActor } from "@/server/web";
@@ -38,6 +39,7 @@ import {
   submitQuoteAction,
   takeFixedPriceAction,
   takeOwnRequestAction,
+  uploadBookingDocumentAction,
   withdrawQuoteAction,
 } from "../../../actions";
 
@@ -79,6 +81,8 @@ export default async function RequestDetailPage({ params, searchParams }: { para
       : orgId && orgId === booking?.providerOrgId ? booking.providerOrg.name
       : quotes.find((q) => q.providerOrgId === orgId)?.providerOrg.name
         ?? invitations.find((i) => i.providerOrgId === orgId)?.providerOrg.name ?? t("Anbieter");
+  const bookingDocs = booking && booking.status !== "CANCELLED" ? await listBookingDocuments(actor, booking.id) : [];
+  const canDocs = !!booking && booking.status !== "CANCELLED" && (actorCan(actor, "bookings.manage") || actorCan(actor, "jobs.accept"));
   const scope = booking?.scope as { vehicleCategory?: VehicleCategory | null } | undefined;
   const share = r.handoffSharePercent;
   const giver = role === "requester" ? t("Ihr Unternehmen") : r.requesterOrg.name;
@@ -349,7 +353,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
             {role === "provider" && (
               <><dt>{t("Fahrer")}</dt><dd>{booking.driver?.name ?? <span className="muted">{t("noch nicht zugewiesen")}</span>}{actorCan(actor, "fleet.manage") && (booking.status === "CONFIRMED" || booking.status === "IN_PROGRESS") && <> · <Link href="/flotte/live#disposition">{t("Disposition")}</Link></>}</dd></>
             )}
-            {role === "provider" && booking.tripStage && <><dt>{t("Fortschritt")}</dt><dd>{t(TRIP_STAGE_LABEL[booking.tripStage])}</dd></>}
+            {booking.tripStage && <><dt>{t("Fortschritt")}</dt><dd>{t(TRIP_STAGE_LABEL[booking.tripStage])}</dd></>}
             <dt>{t("Storno")}</dt><dd>{booking.cancellationTerms ?? "keine gesonderten Bedingungen"}</dd>
             <dt>{t("Vereinbart")}</dt><dd>{f.dateTime(booking.acceptedAt)}{" "}{booking.quoteId ? t("durch Annahme eines Angebots") : t("durch Übernahme zum Festpreis")}</dd>
             {booking.completedAt && <><dt>{t("Abgeschlossen")}</dt><dd>{f.dateTime(booking.completedAt)}{booking.completionNote ? `, ${booking.completionNote}` : ""}</dd></>}
@@ -379,6 +383,15 @@ export default async function RequestDetailPage({ params, searchParams }: { para
             <details className="more-actions gap-top">
               <summary>{t("Stornieren oder Problem melden")}</summary>
               <div className="stack gap-top">
+                {role === "provider" && booking.status === "CONFIRMED" && r.pickupAt > new Date() && (
+                  <form action={bookingTransitionAction} className="inline">
+                    <input type="hidden" name="requestId" value={r.id} />
+                    <input type="hidden" name="bookingId" value={booking.id} />
+                    <input type="hidden" name="to" value="return" />
+                    <input name="note" required placeholder={t("Grund der Rückgabe")} aria-label={t("Grund der Rückgabe")} />
+                    <button type="submit" className="danger">{t("Auftrag zurückgeben")}</button>
+                  </form>
+                )}
                 {booking.status === "CONFIRMED" && (
                   <form action={bookingTransitionAction} className="inline">
                     <input type="hidden" name="requestId" value={r.id} />
@@ -434,6 +447,33 @@ export default async function RequestDetailPage({ params, searchParams }: { para
           <input type="hidden" name="requestId" value={r.id} />
           <button type="submit" className="danger">{t("Auftrag zurückziehen")}</button>
         </form>
+      )}
+
+      {booking && (bookingDocs.length > 0 || canDocs) && (
+        <section className="card stack">
+          <h2>{t("Dokumente")}</h2>
+          {bookingDocs.length > 0 && (
+            <ul className="plain-list">
+              {bookingDocs.map((d) => (
+                <li key={d.id}>
+                  <a href={`/api/booking-documents/${d.id}`}>{d.title}</a>{" "}
+                  <small className="muted">{orgName(d.uploadedOrgId)} · {f.dateTime(d.createdAt)}</small>
+                </li>
+              ))}
+            </ul>
+          )}
+          {canDocs && bookingDocs.length < 10 && (
+            <form action={uploadBookingDocumentAction} className="stack">
+              <input type="hidden" name="requestId" value={r.id} />
+              <input type="hidden" name="bookingId" value={booking.id} />
+              <div className="fields">
+                <label>{t("Bezeichnung")}<input name="title" maxLength={160} placeholder={t("z. B. Voucher, Flugticket")} /></label>
+                <label>{t("Datei")}{" "}<small>{t("PDF, PNG oder JPEG, max. 5 MB")}</small><input name="file" type="file" accept=".pdf,.png,.jpg,.jpeg" required /></label>
+              </div>
+              <div><button type="submit" className="secondary">{t("Hochladen")}</button></div>
+            </form>
+          )}
+        </section>
       )}
 
       {events.length > 0 && (

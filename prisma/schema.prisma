@@ -548,9 +548,28 @@ model Booking {
   completedAt         DateTime?
   completionNote      String?
 
+  documents BookingDocument[]
+
   @@index([providerOrgId])
   @@index([requesterOrgId])
   @@index([driverId])
+}
+
+/// Dokument zu einer Buchung (z. B. Voucher, Flugticket, Beleg), sichtbar für beide beteiligten Unternehmen.
+model BookingDocument {
+  id            String   @id @default(cuid())
+  bookingId     String
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  uploadedOrgId String
+  uploadedById  String
+  title         String
+  fileName      String
+  mimeType      String
+  sizeBytes     Int
+  content       Bytes
+  createdAt     DateTime @default(now())
+
+  @@index([bookingId])
 }
 
 /// Nachvollziehbare Ereignisse je Auftrag (Erstellung, Angebote, Vergabe, Statuswechsel).

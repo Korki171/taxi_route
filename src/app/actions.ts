@@ -7,6 +7,7 @@ import { AppError, invalid } from "@/server/errors";
 import { adminReviewCapability, adminReviewDocument, adminSetOrganizationPlan, adminSetOrganizationStatus } from "@/server/services/admin";
 import { login, switchActiveOrganization } from "@/server/services/auth";
 import { deleteDocument, uploadDocument } from "@/server/services/documents";
+import { returnBooking, uploadBookingDocument } from "@/server/services/booking-extras";
 import { addPartner, advanceAudience, blockOrg, removePartner, takeOwnRequest, unblockOrg } from "@/server/services/partners";
 import {
   acceptInvitation,
@@ -405,8 +406,23 @@ export async function bookingTransitionAction(fd: FormData) {
       case "complete": await completeTrip(actor, bookingId, note); break;
       case "cancel": await cancelBooking(actor, bookingId, note); break;
       case "dispute": await disputeBooking(actor, bookingId, note); break;
+      case "return": await returnBooking(actor, bookingId, note); break;
       default: throw invalid("Unbekannte Aktion.");
     }
+  });
+}
+
+export async function uploadBookingDocumentAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    const file = fd.get("file");
+    if (!(file instanceof File) || file.size === 0) throw invalid("Bitte eine Datei auswählen.");
+    await uploadBookingDocument(await getActor(), str(fd, "bookingId"), str(fd, "title") || file.name, {
+      name: file.name,
+      mimeType: file.type,
+      bytes: new Uint8Array(await file.arrayBuffer()),
+    });
+    return withParam(`/boerse/auftrag/${id}`, "ok", "Dokument hochgeladen.");
   });
 }
 
