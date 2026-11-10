@@ -1321,4 +1321,11 @@ export const EN: Record<string, string> = {
   "Dunkle Ansicht": "Dark view",
   "Helle Ansicht": "Light view",
   "Steigen Sie ein.": "Get on board.",
+  "Schwarzes Mercedes-Taxi von 1965 mit Taxischild auf dem Dach": "Black 1965 Mercedes taxi with a taxi sign on the roof",
+  "Das Schild auf dem Dach gibt es seit Jahrzehnten: Mercedes 190 Dc als Taxi, 1965.": "The roof sign has been around for decades: a Mercedes 190 Dc taxi, 1965.",
+  "Elektronische Verkehrszeichen über einer österreichischen Autobahn zeigen Tempo 100 nach IG-L": "Electronic signs over an Austrian motorway showing a 100 km/h IG-L limit",
+  "Tempo 100 nach IG-L, wie es Fahrer auf Österreichs Autobahnen kennen.": "The 100 km/h IG-L limit drivers know from Austria's motorways.",
+  "Gelbes Taxi-Schild mit Pfeil an einer Einfahrt in Wien": "Yellow taxi sign with an arrow at an entrance in Vienna",
+  "Taxi-Wegweiser am Großmarkt Wien-Inzersdorf.": "Taxi sign at the Vienna-Inzersdorf wholesale market.",
+  "Fotos via Wikimedia Commons: Andreas Kurz (gemeinfrei), Hermann Hammer (CC0), Herzi Pinki (CC BY-SA 4.0).": "Photos via Wikimedia Commons: Andreas Kurz (public domain), Hermann Hammer (CC0), Herzi Pinki (CC BY-SA 4.0).",
 };

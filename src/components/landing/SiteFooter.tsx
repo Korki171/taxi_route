@@ -71,6 +71,7 @@ export function SiteFooter({ t, loggedIn }: { t: T; loggedIn: boolean }) {
           ))}
         </nav>
         <p className="mf-end">© 2026 Transferborsa · Innsbruck</p>
+        <p className="mf-credits">{t("Fotos via Wikimedia Commons: Andreas Kurz (gemeinfrei), Hermann Hammer (CC0), Herzi Pinki (CC BY-SA 4.0).")}</p>
       </div>
     </footer>
   );

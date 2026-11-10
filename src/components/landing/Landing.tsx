@@ -104,6 +104,11 @@ function Confirmation({ t }: { t: T }) {
   );
 }
 
+/** Gefundene Bilder aus der Welt der Taxler (Wikimedia Commons, Nachweis im Footer). */
+function Photo({ src, alt, w, h }: { src: string; alt: string; w: number; h: number }) {
+  return <img src={src} width={w} height={h} alt={alt} loading="lazy" decoding="async" />;
+}
+
 export async function Landing({ appHref }: { appHref?: string } = {}) {
   const { t, locale } = await getI18n();
   // Hell ist Standard; „Ruß bei Nacht“ nur, wenn der Besucher es oben umgeschaltet hat.
@@ -193,14 +198,20 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           </div>
         </section>
 
-        {/* Weitergabe: auf grauer Fläche, die vier Punkte nebeneinander als Liste ohne Linien */}
-        <section className="hp-box hp-field" aria-labelledby="hp-zaehlt">
-          <h2 id="hp-zaehlt">{t("Was bei einer Weitergabe zählt.")}</h2>
-          <dl className="hp-points">
-            {counts.map(([k, v]) => (
-              <div key={k}><dt>{t(k)}</dt><dd>{t(v)}</dd></div>
-            ))}
-          </dl>
+        {/* Weitergabe: auf grauer Fläche, links ein Taxi mit Dachschild von 1965, rechts die vier Punkte als Liste ohne Linien */}
+        <section className="hp-box hp-field hp-counts" aria-labelledby="hp-zaehlt">
+          <figure className="hp-photo">
+            <Photo src="/landing/welt/mercedes190dctaxi-1965.jpg" alt={t("Schwarzes Mercedes-Taxi von 1965 mit Taxischild auf dem Dach")} w={1920} h={1289} />
+            <figcaption>{t("Das Schild auf dem Dach gibt es seit Jahrzehnten: Mercedes 190 Dc als Taxi, 1965.")}</figcaption>
+          </figure>
+          <div>
+            <h2 id="hp-zaehlt">{t("Was bei einer Weitergabe zählt.")}</h2>
+            <dl className="hp-points">
+              {counts.map(([k, v]) => (
+                <div key={k}><dt>{t(k)}</dt><dd>{t(v)}</dd></div>
+              ))}
+            </dl>
+          </div>
         </section>
 
         {/* Partner: wer die Fahrt zuerst sieht, als Treppe in drei Stufen; daneben dieselbe Fahrt als Staffel (PartnerRelay) */}
@@ -220,6 +231,12 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           <PartnerRelay L={relay} />
         </section>
 
+        {/* Ruhepunkt: Verkehrszeichen über der Autobahn, über die ganze Breite */}
+        <figure className="hp-band">
+          <Photo src="/landing/welt/vba-showing-100-kilometers-per-hour-limit.jpg" alt={t("Elektronische Verkehrszeichen über einer österreichischen Autobahn zeigen Tempo 100 nach IG-L")} w={1920} h={1285} />
+          <figcaption>{t("Tempo 100 nach IG-L, wie es Fahrer auf Österreichs Autobahnen kennen.")}</figcaption>
+        </figure>
+
         {/* Preis: die Zahl als Tafelziffern, auf grauer Fläche */}
         <section className="hp-box hp-field hp-price" aria-labelledby="hp-preis">
           <h2 id="hp-preis">{t("Ein Preis für alle Fahrten.")}</h2>
@@ -236,15 +253,22 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           </div>
         </section>
 
-        <section id="fragen" className="hp-box" aria-labelledby="hp-fragen">
-          <h2 id="hp-fragen">{t("Häufige Fragen")}</h2>
-          <table className="hp-facts hp-faq">
-            <tbody>
-              {FAQ.map(([q, a]) => (
-                <tr key={q}><th scope="row">{t(q)}</th><td>{t(a)}</td></tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Fragen: echte Tabelle, daneben ein Taxi-Wegweiser */}
+        <section id="fragen" className="hp-box hp-faq-box" aria-labelledby="hp-fragen">
+          <div>
+            <h2 id="hp-fragen">{t("Häufige Fragen")}</h2>
+            <table className="hp-facts hp-faq">
+              <tbody>
+                {FAQ.map(([q, a]) => (
+                  <tr key={q}><th scope="row">{t(q)}</th><td>{t(a)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <figure className="hp-photo hp-photo-tall">
+            <Photo src="/landing/welt/taxi-sign-inzersdorf.jpg" alt={t("Gelbes Taxi-Schild mit Pfeil an einer Einfahrt in Wien")} w={1920} h={1314} />
+            <figcaption>{t("Taxi-Wegweiser am Großmarkt Wien-Inzersdorf.")}</figcaption>
+          </figure>
         </section>
       </main>
 
