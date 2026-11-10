@@ -1,28 +1,30 @@
 /* Startseite „Das Taxischild“: Wer frei hat, übernimmt. Das gelbe Dachschild leuchtet FREI und geht auf BESETZT, sobald jemand übernimmt.
    Doppelrahmen und Linien nur um Abschnitte und in echten Tabellen.
-   Farbe (impeccable): kühles Papier, Navy als einzige Tinte, Zirbengrün nur auf Handlung und dem Zustand „Offen“, Taxigelb nur auf dem freien Schild, Rot nur auf dem besetzten.
+   Farbe „Ruß bei Nacht“ (taste-skill, Palette „Soot and lime“ mit Taxigelb statt Limette): Rußschwarz als Grund, helle Schrift, Taxigelb auf dem freien Schild und den Buttons, Rot nur auf dem besetzten Schild.
+   App-Ausschnitte (data-ui: Fahrtkarte, Chat, Bestätigung) bleiben hell wie echte Bildschirme.
    Schrift: Imbue für Ziffern und Wörter in Tafelgröße, Albert Sans zum Lesen; Stufen 14 / 16 / 18 / 28 / Display.
    Bewegung (emil-design-eng): Zeilen kommen nacheinander, Zustandswechsel überblendet, Druck auf Knöpfen; alles aus bei reduzierter Bewegung. */
 .hp {
-  --paper: #f3f5f9;
-  --stone: #e6edf5;
-  --stone-2: #d0deed;
-  --navy: #1f2b4d;
-  --ink: #0f1a33;
-  --muted: #4d566e;
-  --accent: #2c5a4b;
-  --accent-hover: #244c40;
-  --on-accent: #ffffff;
-  --ok-bg: #dcf3e3;
-  --ok: #145c32;
-  --open-bg: #fff1d6;
-  --open: #7a4a00;
-  --line: #dfe3ea;
+  --paper: #0f0f0f;
+  --stone: #1a1a1a;
+  --stone-2: #262626;
+  --navy: #f2f2f2;
+  --ink: #f2f2f2;
+  --muted: #a3a3a3;
+  --accent: #f5c518;
+  --accent-hover: #ffd43b;
+  --on-accent: #0f0f0f;
+  --ok-bg: #16331f;
+  --ok: #8fd6a4;
+  --open-bg: #3b3210;
+  --open: #f5d65c;
+  --line: #2c2c2c;
   --taxi: #f5c518;
   --taxi-ink: #111111;
-  --sign-off: #1f2b4d;
-  --sign-off-ink: #8e9ab8;
-  --busy: #c4161c;
+  --sign-off: #2a2a2a;
+  --sign-off-ink: #8a8a8a;
+  --sign-cap: #3a3a3a;
+  --busy: #d92b21;
   --busy-ink: #ffffff;
   --out: cubic-bezier(0.23, 1, 0.32, 1);
 
@@ -36,7 +38,7 @@
   font-size: 18px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  color-scheme: light;
+  color-scheme: dark;
   scroll-behavior: smooth;
 }
 .hp *, .hp *::before, .hp *::after { box-sizing: border-box; }
@@ -50,6 +52,10 @@
 .hp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .hp-small { font-size: 14px; color: var(--muted); }
 .hp-d { font-family: "Imbue Variable", "Times New Roman", serif; font-weight: 480; text-transform: uppercase; letter-spacing: -0.02em; line-height: 0.9; }
+
+/* App-Ausschnitte bleiben hell, wie echte Bildschirme auf der dunklen Seite */
+.hp [data-ui] { --ink: #0f1a33; --muted: #4d566e; --navy: #1f2b4d; --stone: #e6edf5; --line: #dfe3ea; --open-bg: #fff4c2; --open: #5c4a00; --ok-bg: #dcf3e3; --ok: #145c32; color: var(--ink); }
+.hp [data-ui] .hp-btn { --accent: #1f2b4d; --accent-hover: #0f1a33; --on-accent: #ffffff; }
 
 /* Knopf: eckig, eine Form */
 .hp-btn {
@@ -79,7 +85,7 @@
 
 /* Das Taxischild: gelb leuchtend = frei, dunkel = besetzt */
 .hp-sign { display: inline-grid; justify-items: center; width: 100%; }
-.hp-sign-cap { width: 44%; height: 14px; background: var(--navy); border-radius: 3px 3px 0 0; }
+.hp-sign-cap { width: 44%; height: 14px; background: var(--sign-cap); border-radius: 3px 3px 0 0; }
 .hp-sign-face {
   width: 100%; display: grid; place-items: center; padding: 0.22em 0.4em 0.14em; border-radius: 22px 22px 6px 6px;
   background: var(--sign-off); color: var(--sign-off-ink); transition: background-color 420ms var(--out), color 420ms var(--out);
@@ -218,3 +224,6 @@
   .hp-foot nav { justify-content: flex-start; }
   .hp-foot-end { text-align: left; }
 }
+
+/* Dunkle Seite bis an den Rand */
+body:has(> .hp), body:has(.hp) { background: #0f0f0f; }
