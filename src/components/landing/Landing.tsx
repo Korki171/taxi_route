@@ -117,7 +117,8 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           <a href="#fragen" className="hp-nav-sec">{t("Fragen")}</a>
           <LangSwitch path="/" className="hp-lang" />
           <ThemeToggle initial={theme} labels={{ toDark: t("Dunkle Ansicht"), toLight: t("Helle Ansicht") }} />
-          {!appHref && <Link href="/login">{t("Anmelden")}</Link>}
+          {/* Immer sichtbar, auch am Handy: angemeldet direkt in die App, sonst zur Anmeldung */}
+          <Link href={appHref ?? "/login"} className="hp-btn hp-btn-head">{t("Zur App")}</Link>
         </nav>
       </header>
 

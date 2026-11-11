@@ -503,7 +503,7 @@ export const EN: Record<string, string> = {
   "← Zur Börse": "← Back to the exchange",
   "← Zur Startseite": "← Back to the website",
   "← Zurück": "← Back",
-  "Zur App": "Open the app",
+  "Zur App": "Open app",
   "Zur Website": "Website",
   "Startseite": "Home",
   "Website und Rechtliches": "Website and legal",

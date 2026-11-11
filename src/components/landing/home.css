@@ -100,7 +100,13 @@
 .hp-act { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin-top: 28px; }
 
 /* Kopf */
-.hp-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; padding: 8px 4px 20px; }
+.hp-head {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; padding: 8px 4px 12px; margin-bottom: 8px;
+  /* Bleibt beim Scrollen oben, damit „Zur App“ nie gesucht werden muss */
+  position: sticky; top: 0; z-index: 20; background: var(--paper);
+}
+.hp-head nav .hp-btn-head { min-height: 44px; padding: 0 18px; text-decoration: none; }
+.hp [id] { scroll-margin-top: 84px; }
 .hp-logo { color: var(--navy); }
 .hp-logo svg { display: block; height: 40px; width: auto; }
 .hp-head nav { display: flex; flex-wrap: wrap; align-items: center; gap: 0 24px; font-size: 16px; font-weight: 600; }
@@ -227,7 +233,7 @@
 @media (hover: hover) and (pointer: fine) {
   .hp-btn:hover:not(:disabled) { background: var(--accent-hover); }
   .hp-btn-ghost:hover:not(:disabled) { background: var(--stone); }
-  .hp-head nav a:hover { text-decoration: underline; }
+  .hp-head nav a:not(.hp-btn):hover { text-decoration: underline; }
   .hp-theme:hover { background: var(--stone); }
 }
 
@@ -283,4 +289,12 @@
 /* Grund bis an den Rand, passend zum Modus */
 body:has(.hp) { background: #f4f4f2; }
 body:has(.hp[data-theme="dark"]) { background: #0f0f0f; }
-@media (max-width: 600px) { .hp-nav-sec { display: none !important; } }
+@media (max-width: 600px) {
+  .hp-nav-sec { display: none !important; }
+  .hp-head { flex-wrap: nowrap; gap: 8px; }
+  .hp-head nav { flex-wrap: nowrap; gap: 0 4px; }
+  .hp-head nav { font-size: 15px; }
+  .hp-logo { min-width: 0; }
+  .hp-logo svg { height: 28px; max-width: 100%; }
+  .hp-head nav .hp-btn-head { padding: 0 12px; margin-left: 2px; white-space: nowrap; }
+}
