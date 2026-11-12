@@ -1,6 +1,6 @@
 /*
- * Transferborsa App – dieselbe Handschrift wie die Landing Page (taste-skill, „The sentence is the layout“):
- * Navy auf Papier, Orange nur für die eine Hauptaktion und die Daten, die gerade zählen, eckige Kanten,
+ * Transferborsa App – dieselbe Handschrift wie die Startseite „Das Taxischild“:
+ * Schwarz auf Papierweiß, Taxigelb nur für die eine Hauptaktion und die Daten, die gerade zählen, eckige Kanten,
  * Imbue für Wortmarke und Seitentitel, Albert Sans für alles andere.
  *
  * App-Regeln (taste-skill app-screens): graue Flächen auf weißem Grund, keine Schatten auf ruhenden
@@ -8,31 +8,32 @@
  * in Tabellenziffern. Raster: eine Lücke (--gap) waagrecht wie senkrecht.
  */
 :root {
-  --ground: #ffffff;
-  --surface: #f4f4f2;
+  /* Dieselben Farben wie die Startseite: Papierweiß, Schwarz, Taxigelb. Weiße Karten auf Papier, graue Flächen für Felder. */
+  --ground: #f4f4f2;
+  --surface: #ffffff;
   --raised: #ffffff;
-  --stone: #e3e1dc;
-  --text: #1f2b4d;
-  --muted: #555d72;
-  --border: #dcdad3;
-  --rule: #e3e1dc;
-  --control: #b9b6ad;
-  --accent: #f7941d;
-  --accent-hover: #ffa53a;
-  --accent-ink: #1f2b4d;
-  --primary: #1f2b4d;
-  --primary-hover: #2c3b66;
+  --stone: #e8e8e5;
+  --text: #111111;
+  --muted: #5a5a57;
+  --border: #c6c6c1;
+  --rule: #dcdcd8;
+  --control: #8c8c88;
+  --accent: #f5c518;
+  --accent-hover: #ffd43b;
+  --accent-ink: #111111;
+  --primary: #111111;
+  --primary-hover: #2a2a2a;
   --primary-ink: #ffffff;
-  --band: #1f2b4d;
+  --band: #111111;
   --band-ink: #ffffff;
-  --band-muted: #c4cad8;
+  --band-muted: #c9c9c4;
   --night: #05070a;
-  --focus: #f7941d;
+  --focus: #111111;
 
   --ok-bg: #dcf3e3; --ok: #145c32;
-  --warn-bg: #fff1d6; --warn: #7a4a00;
+  --warn-bg: #fff1b8; --warn: #5c4a00;
   --bad-bg: #fde6e2; --bad: #9b1c14;
-  --neutral-bg: #e9e8e4; --neutral: #464c5c;
+  --neutral-bg: #e8e8e5; --neutral: #464646;
 
   --display: "Imbue Variable", "Times New Roman", serif;
   --font: "Albert Sans Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -45,14 +46,15 @@
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
-  /* Nachts im Auto: echte neutrale Dunkeltöne, Orange bleibt die Signalfarbe. */
+  /* „Ruß bei Nacht“ wie auf der Startseite; Taxigelb bleibt die Signalfarbe. */
   :root {
-    --ground: #0d0e10; --surface: #17191c; --raised: #1f2226; --stone: #2a2d32;
-    --text: #eef0f4; --muted: #a9afbd; --border: #2c2f35; --rule: #2a2d32; --control: #4a4f58;
-    --primary: #eef0f4; --primary-hover: #ffffff; --primary-ink: #0d0e10;
-    --band: #1f2b4d; --band-ink: #ffffff; --band-muted: #c4cad8;
-    --ok-bg: #16301f; --ok: #7fd59a; --warn-bg: #352812; --warn: #f1c75b;
-    --bad-bg: #3a1a17; --bad: #f19a92; --neutral-bg: #26292e; --neutral: #c0c5d0;
+    --ground: #0f0f0f; --surface: #1a1a1a; --raised: #232323; --stone: #2c2c2c;
+    --text: #f2f2f2; --muted: #a3a3a3; --border: #3a3a3a; --rule: #2c2c2c; --control: #5a5a57;
+    --primary: #f2f2f2; --primary-hover: #ffffff; --primary-ink: #111111;
+    --band: #232323; --band-ink: #ffffff; --band-muted: #bdbdb8;
+    --focus: #f5c518;
+    --ok-bg: #16331f; --ok: #8fd6a4; --warn-bg: #3b3210; --warn: #f5d65c;
+    --bad-bg: #3a1a17; --bad: #f19a92; --neutral-bg: #2c2c2c; --neutral: #c0c0c0;
     color-scheme: dark;
   }
 }
@@ -130,7 +132,7 @@ h2 small { font-weight: 400; font-size: 13px; }
 .gap-bottom { margin-bottom: var(--gap); }
 .wrap { white-space: normal; }
 
-/* Navy-Feld: dieselbe Naht wie im Hero der Landing Page */
+/* Dunkles Feld mit Zahlen in Taxigelb */
 .band { background: var(--band); color: var(--band-ink); padding: 24px var(--pad); margin-bottom: var(--gap); }
 .band a { color: inherit; }
 .band .muted, .band small { color: var(--band-muted); }
@@ -316,7 +318,7 @@ main.legal { max-width: 800px; margin: 0 auto; padding: 32px var(--margin) 64px;
 .map-tools { position: absolute; top: 14px; left: 14px; z-index: 500; display: grid; gap: 10px; justify-items: start; }
 .base-switch { display: inline-flex; gap: 4px; padding: 4px; border-radius: 22px; background: rgba(14,18,26,.82); box-shadow: 0 4px 14px rgba(0,0,0,.35); backdrop-filter: blur(6px); }
 .base-switch button { min-height: 32px; padding: 0 16px; border: 0; border-radius: 18px; background: transparent; color: #d9dfea; font: 600 14px/1 var(--font); cursor: pointer; }
-.base-switch button[aria-pressed="true"] { background: #2f80ff; color: #fff; }
+.base-switch button[aria-pressed="true"] { background: var(--accent); color: #111; }
 .base-switch button:focus-visible { outline: 2px solid #8fc0ff; outline-offset: 1px; }
 .map-key { list-style: none; margin: 0; padding: 10px 14px; display: grid; gap: 7px; border-radius: 12px; background: rgba(14,18,26,.82); color: #e7ebf3; font-size: 13px; box-shadow: 0 4px 14px rgba(0,0,0,.35); backdrop-filter: blur(6px); }
 .map-key li { display: flex; align-items: center; gap: 10px; }

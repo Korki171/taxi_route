@@ -14,10 +14,10 @@ export function SiteFooter({ t, loggedIn }: { t: T; loggedIn: boolean }) {
     {
       title: t("Produkt"),
       links: [
-        { label: t("Ablauf"), href: "#ablauf" },
-        { label: t("Partner"), href: "#partner" },
+        { label: t("Ablauf"), href: "/#ablauf" },
+        { label: t("Partner"), href: "/#partner" },
         { label: t("Preise"), href: "/preise" },
-        { label: t("Fragen"), href: "#fragen" },
+        { label: t("Fragen"), href: "/#fragen" },
       ],
     },
     {
