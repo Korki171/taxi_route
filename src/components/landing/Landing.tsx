@@ -11,6 +11,7 @@ import { TaxiSign } from "./TaxiSign";
 import { PartnerRelay } from "./PartnerRelay";
 import { SiteFooter } from "./SiteFooter";
 import { ThemeToggle } from "./ThemeToggle";
+import { themeFromCookie } from "@/lib/theme";
 import { cookies } from "next/headers";
 import { getI18n } from "@/server/i18n";
 import { PLANS } from "@/lib/plans";
@@ -81,8 +82,8 @@ function Photo({ src, alt, w, h }: { src: string; alt: string; w: number; h: num
 
 export async function Landing({ appHref }: { appHref?: string } = {}) {
   const { t, locale } = await getI18n();
-  // Hell ist Standard; „Ruß bei Nacht“ nur, wenn der Besucher es oben umgeschaltet hat.
-  const theme = (await cookies()).get("hp-theme")?.value === "dark" ? "dark" : "light";
+  // Ohne Wahl folgt die Seite dem Gerät; „hell“ oder „dunkel“ nur, wenn der Besucher es oben eingestellt hat.
+  const theme = themeFromCookie((await cookies()).get("hp-theme")?.value);
   const plan = PLANS[0];
   const figure = (plan.priceCents / 100).toLocaleString(locale === "en" ? "en-GB" : "de-AT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const rt = (s: string) => s.split(" → ").map((x) => t(x)).join(" → ");
@@ -116,7 +117,7 @@ export async function Landing({ appHref }: { appHref?: string } = {}) {
           <Link href="/preise" className="hp-nav-sec">{t("Preise")}</Link>
           <a href="#fragen" className="hp-nav-sec">{t("Fragen")}</a>
           <LangSwitch path="/" className="hp-lang" />
-          <ThemeToggle initial={theme} labels={{ toDark: t("Dunkle Ansicht"), toLight: t("Helle Ansicht") }} />
+          <ThemeToggle initial={theme} labels={{ auto: t("Darstellung: nach Gerät"), light: t("Darstellung: hell"), dark: t("Darstellung: dunkel") }} nextLabel={t("Klick wechselt zu")} />
           {/* Immer sichtbar, auch am Handy: angemeldet direkt in die App, sonst zur Anmeldung */}
           <Link href={appHref ?? "/login"} className="hp-btn hp-btn-head">{t("Zur App")}</Link>
         </nav>

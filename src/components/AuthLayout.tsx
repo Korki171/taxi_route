@@ -5,17 +5,18 @@ import { getI18n } from "@/server/i18n";
 import { LangSwitch } from "./LangSwitch";
 import { TaxiSign } from "./landing/TaxiSign";
 import { ThemeToggle } from "./landing/ThemeToggle";
+import { themeFromCookie } from "@/lib/theme";
 import "./auth.css";
 
 /**
  * Rahmen für Anmeldung, Registrierung, Passwort und Einladung im Look der Startseite:
  * links das gelbe Dachschild mit dem Satz, rechts das Formular auf Papier.
- * Hell ist Standard; der Umschalter oben teilt sich das Cookie hp-theme mit der Startseite.
+ * Ohne Wahl folgt die Seite dem Gerät; der Umschalter oben teilt sich das Cookie hp-theme mit der Startseite.
  * Auf dem Handy steht das Schild oben, kurz.
  */
 export async function AuthLayout({ path, wide, children }: { path: string; wide?: boolean; children: React.ReactNode }) {
   const { t } = await getI18n();
-  const theme = (await cookies()).get("hp-theme")?.value === "dark" ? "dark" : "light";
+  const theme = themeFromCookie((await cookies()).get("hp-theme")?.value);
   return (
     <div className="auth" data-theme={theme}>
       <aside className="auth-side">
@@ -34,7 +35,7 @@ export async function AuthLayout({ path, wide, children }: { path: string; wide?
       <main id="main" className="auth-main">
         <div className="auth-top">
           <LangSwitch path={path} />
-          <ThemeToggle initial={theme} labels={{ toDark: t("Dunkle Ansicht"), toLight: t("Helle Ansicht") }} />
+          <ThemeToggle initial={theme} labels={{ auto: t("Darstellung: nach Gerät"), light: t("Darstellung: hell"), dark: t("Darstellung: dunkel") }} nextLabel={t("Klick wechselt zu")} />
         </div>
         <div className={wide ? "auth-body wide" : "auth-body"}>
           <p className="back"><Link href="/">{t("← Zur Startseite")}</Link></p>

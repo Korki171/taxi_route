@@ -216,8 +216,8 @@
     "semantic_hash": ""
   },
   "src/app/register/page.tsx": {
-    "mtime": 1794336722.1953003,
-    "seen": 1794337507.0459268,
+    "mtime": 1794497165.998085,
+    "seen": 1794497268.821153,
     "ast_hash": "8e51e6b063572389a598566a163c7f51",
     "semantic_hash": ""
   },
@@ -234,9 +234,9 @@
     "semantic_hash": ""
   },
   "src/components/AuthLayout.tsx": {
-    "mtime": 1794496737.869932,
-    "seen": 1794496842.21647,
-    "ast_hash": "ee15c433981d67cb0cecb2cc851e7e77",
+    "mtime": 1794497206.999215,
+    "seen": 1794497268.821156,
+    "ast_hash": "b54b0c82434a41c98154777397dc5291",
     "semantic_hash": ""
   },
   "src/components/BackLink.tsx": {
@@ -270,8 +270,8 @@
     "semantic_hash": ""
   },
   "src/components/OrgProfileFields.tsx": {
-    "mtime": 1794336722.1965842,
-    "seen": 1794337507.045934,
+    "mtime": 1794497165.9987311,
+    "seen": 1794497268.821161,
     "ast_hash": "3371c11d51919f1cfe3442069cfa90cb",
     "semantic_hash": ""
   },
@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "src/components/landing/Landing.tsx": {
-    "mtime": 1794496675.7083807,
-    "seen": 1794496842.216481,
-    "ast_hash": "ccbe0916330d151c44105f59add2b818",
+    "mtime": 1794497206.9991038,
+    "seen": 1794497268.821166,
+    "ast_hash": "0a4c307aecc74c082ee6c4a8aa2edd1c",
     "semantic_hash": ""
   },
   "src/components/landing/Pricing.tsx": {
@@ -330,9 +330,9 @@
     "semantic_hash": ""
   },
   "src/lib/i18n-en.ts": {
-    "mtime": 1794496838.007942,
-    "seen": 1794496842.216491,
-    "ast_hash": "328df87f04a997d7e96bc5fc332118af",
+    "mtime": 1794497207.0051544,
+    "seen": 1794497268.821177,
+    "ast_hash": "0a1baebace051f33583406d8fbb9aaa0",
     "semantic_hash": ""
   },
   "src/lib/i18n.ts": {
@@ -540,8 +540,8 @@
     "semantic_hash": ""
   },
   "src/server/validation.ts": {
-    "mtime": 1794336722.207385,
-    "seen": 1794337507.045975,
+    "mtime": 1794497166.0002592,
+    "seen": 1794497268.8212118,
     "ast_hash": "977114bc2d8e03a39a0bb4dd2dc74ba7",
     "semantic_hash": ""
   },
@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "src/components/landing/NightRoad.tsx": {
-    "mtime": 1794341590.436509,
-    "seen": 1794342549.773737,
-    "ast_hash": "19782d8da1f2513bc9ab64793c4d42a9",
+    "mtime": 1794497206.9993277,
+    "seen": 1794497268.821167,
+    "ast_hash": "e7d8ed7ddcfe4360be93a816c53a4c47",
     "semantic_hash": ""
   },
   "src/components/landing/SiteFooter.tsx": {
@@ -864,9 +864,15 @@
     "semantic_hash": ""
   },
   "src/components/landing/ThemeToggle.tsx": {
-    "mtime": 1794496739.4128313,
-    "seen": 1794496842.216486,
-    "ast_hash": "6146830866fa4abd5a7acce827cdd6b6",
+    "mtime": 1794497206.99894,
+    "seen": 1794497268.821171,
+    "ast_hash": "77d750f1cb1b9019fb4650ced8677209",
+    "semantic_hash": ""
+  },
+  "src/lib/theme.ts": {
+    "mtime": 1794497200.1401594,
+    "seen": 1794497268.821183,
+    "ast_hash": "562aeef318ef75d76425f6389a516beb",
     "semantic_hash": ""
   },
   "package-lock.json": {

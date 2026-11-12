@@ -50,7 +50,8 @@
   scroll-behavior: smooth;
 }
 
-/* Dunkel „Ruß bei Nacht“: per Umschalter im Kopf (Cookie hp-theme), data-theme auf .hp */
+/* Dunkel „Ruß bei Nacht“: per Umschalter im Kopf (Cookie hp-theme: light oder dark), data-theme auf .hp.
+   Ohne Cookie steht data-theme="auto" und die Seite folgt der Einstellung des Geräts. */
 .hp[data-theme="dark"] {
   --paper: #0f0f0f;
   --surface: #1a1a1a;
@@ -73,6 +74,31 @@
   --sign-off: #2a2a2a;
   --sign-off-ink: #8a8a8a;
   color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  .hp[data-theme="auto"] {
+    --paper: #0f0f0f;
+    --surface: #1a1a1a;
+    --stone: #232323;
+    --stone-2: #2c2c2c;
+    --navy: #f2f2f2;
+    --ink: #f2f2f2;
+    --muted: #a3a3a3;
+    --focus: #f5c518;
+    --accent-text: #f5c518;
+    --ok-bg: #16331f;
+    --ok: #8fd6a4;
+    --open-bg: #3b3210;
+    --open: #f5d65c;
+    --line: #2c2c2c;
+    --frame: #3a3a3a;
+    --chat-bg: #111111;
+    --bubble: #2f2f2f;
+    --bubble-me: #24502f;
+    --sign-off: #2a2a2a;
+    --sign-off-ink: #8a8a8a;
+    color-scheme: dark;
+  }
 }
 .hp *, .hp *::before, .hp *::after { box-sizing: border-box; }
 .hp h1, .hp h2, .hp h3, .hp p, .hp figure { margin: 0; }
@@ -289,6 +315,7 @@
 /* Grund bis an den Rand, passend zum Modus */
 body:has(.hp) { background: #f4f4f2; }
 body:has(.hp[data-theme="dark"]) { background: #0f0f0f; }
+@media (prefers-color-scheme: dark) { body:has(.hp[data-theme="auto"]) { background: #0f0f0f; } }
 @media (max-width: 600px) {
   .hp-nav-sec { display: none !important; }
   .hp-head { flex-wrap: nowrap; gap: 8px; }

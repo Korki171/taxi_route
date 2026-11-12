@@ -1,6 +1,6 @@
 /* Anmelden, Registrieren, Passwort, Einladung: dieselbe Handschrift wie die Startseite.
    Die App-Farben (--text, --border, --accent …) werden hier auf die der Startseite gelegt, damit Felder und Knöpfe
-   aus globals.css ohne Umbau mitgehen. Hell ist Standard, dunkel per data-theme (Cookie hp-theme). */
+   aus globals.css ohne Umbau mitgehen. Ohne Wahl folgt die Seite dem Gerät (data-theme="auto"), sonst hell oder dunkel per Cookie hp-theme. */
 .auth {
   --ground: #f4f4f2; --surface: #ffffff; --raised: #ffffff; --stone: #e8e8e5;
   --text: #111111; --muted: #5a5a57; --border: #c6c6c1; --rule: #dcdcd8; --control: #8c8c88;
@@ -22,8 +22,20 @@
   --bad-bg: #3a1a17; --bad: #f19a92; --neutral-bg: #2c2c2c; --neutral: #c0c0c0;
   color-scheme: dark;
 }
+@media (prefers-color-scheme: dark) {
+  .auth[data-theme="auto"] {
+    --ground: #0f0f0f; --surface: #1a1a1a; --raised: #1a1a1a; --stone: #232323;
+    --text: #f2f2f2; --muted: #a3a3a3; --border: #3a3a3a; --rule: #2c2c2c; --control: #5a5a57;
+    --primary: #f2f2f2; --primary-hover: #ffffff; --primary-ink: #111111;
+    --focus: #f5c518;
+    --ok-bg: #16331f; --ok: #8fd6a4; --warn-bg: #3b3210; --warn: #f5d65c;
+    --bad-bg: #3a1a17; --bad: #f19a92; --neutral-bg: #2c2c2c; --neutral: #c0c0c0;
+    color-scheme: dark;
+  }
+}
 body:has(.auth) { background: #f4f4f2; }
 body:has(.auth[data-theme="dark"]) { background: #0f0f0f; }
+@media (prefers-color-scheme: dark) { body:has(.auth[data-theme="auto"]) { background: #0f0f0f; } }
 
 /* links: das Schild */
 .auth-side { background: var(--stone); padding: 32px var(--margin); display: flex; flex-direction: column; justify-content: space-between; gap: 40px; position: sticky; top: 0; height: 100svh; }
