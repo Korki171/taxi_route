@@ -1312,4 +1312,13 @@ export const EN: Record<string, string> = {
   "Darstellung: hell": "Appearance: light",
   "Darstellung: dunkel": "Appearance: dark",
   "Klick wechselt zu": "Click switches to",
+  "Felder mit * sind Pflichtfelder.": "Fields marked * are required.",
+  "4 bis 5 Ziffern": "4 to 5 digits",
+  "4 bis 5 Ziffern, z. B. 6020": "4 to 5 digits, e.g. 6020",
+  "Zwei Buchstaben, z. B. AT oder DE": "Two letters, e.g. AT or DE",
+  "mit Landesvorwahl": "with country code",
+  "Mit Landesvorwahl, z. B. +43 512 123456": "With country code, e.g. +43 512 123456",
+  "mit https://": "with https://",
+  "z. B. ATU12345678": "e.g. ATU12345678",
+  "Ländercode und Nummer ohne Leerzeichen, z. B. ATU12345678": "Country code and number without spaces, e.g. ATU12345678",
 };

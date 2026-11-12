@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AuthLayout } from "@/components/AuthLayout";
 import { Flash, type SP } from "@/components/ui";
 import { OrgProfileFields } from "@/components/OrgProfileFields";
+import { Req } from "@/components/Req";
 import { getI18n } from "@/server/i18n";
 import { registerAction } from "../actions";
 
@@ -29,9 +30,9 @@ export default async function RegisterPage({ searchParams }: { searchParams: SP 
         <section className="card section stack">
           <h2>{t("Ihr Zugang")}</h2>
           <div className="fields">
-            <label>{t("Name")}<input name="userName" required autoComplete="name" /></label>
-            <label>{t("E-Mail")}<input name="userEmail" type="email" required autoComplete="email" /></label>
-            <label>{t("Passwort")} <small>{t("mind. 10 Zeichen")}</small><input name="password" type="password" minLength={10} required autoComplete="new-password" /></label>
+            <label><span>{t("Name")} <Req label={t("Pflichtfeld")} /></span><input name="userName" required autoComplete="name" /></label>
+            <label><span>{t("E-Mail")} <Req label={t("Pflichtfeld")} /></span><input name="userEmail" type="email" required autoComplete="email" placeholder="name@firma.at" /></label>
+            <label><span>{t("Passwort")} <Req label={t("Pflichtfeld")} /> <small>{t("mind. 10 Zeichen")}</small></span><input name="password" type="password" minLength={10} required autoComplete="new-password" /></label>
           </div>
         </section>
         <p className="muted flush">{t("Mit der Registrierung akzeptieren Sie die")} <Link href="/nutzungsbedingungen">{t("Nutzungsbedingungen")}</Link> {t("und haben die")} <Link href="/datenschutz">{t("Datenschutzerklärung")}</Link> {t("gelesen.")}</p>
