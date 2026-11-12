@@ -1310,4 +1310,13 @@ export const EN: Record<string, string> = {
   "Foto via Wikimedia Commons: KrauS (CC BY 3.0).": "Photo via Wikimedia Commons: KrauS (CC BY 3.0).",
   "Mathon bei Ischgl im Schneetreiben. An solchen Tagen zählen klare Regeln für Storno und Verspätung.": "Mathon near Ischgl in falling snow. On days like this, clear rules for cancellations and delays matter.",
   "Bisher geht die Fahrt in die Gruppe, drei Kollegen antworten halb, Preis und Gepäck bleiben mündlich. Hier haben beide Seiten dasselbe Dokument, auch bei Storno.": "Until now the ride goes into the group, three colleagues half answer, and price and luggage stay verbal. Here both sides hold the same document, including on cancellation.",
+  "Felder mit * sind Pflichtfelder.": "Fields marked * are required.",
+  "4 bis 5 Ziffern": "4 to 5 digits",
+  "4 bis 5 Ziffern, z. B. 6020": "4 to 5 digits, e.g. 6020",
+  "Zwei Buchstaben, z. B. AT oder DE": "Two letters, e.g. AT or DE",
+  "mit Landesvorwahl": "with country code",
+  "Mit Landesvorwahl, z. B. +43 512 123456": "With country code, e.g. +43 512 123456",
+  "mit https://": "with https://",
+  "z. B. ATU12345678": "e.g. ATU12345678",
+  "Ländercode und Nummer ohne Leerzeichen, z. B. ATU12345678": "Country code and number without spaces, e.g. ATU12345678",
 };
