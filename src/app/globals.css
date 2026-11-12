@@ -239,6 +239,7 @@ form.stack, .stack { display: grid; gap: 16px; }
 .fields { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 label:where(:not(.lp *, .hp *)) { display: grid; gap: 6px; font-weight: 500; font-size: 14px; }
 label small { font-weight: 400; color: var(--muted); }
+abbr.req { text-decoration: none; font-weight: 700; color: var(--text); }
 input:where(:not(.lp *, .hp *)), select:where(:not(.lp *, .hp *)), textarea:where(:not(.lp *, .hp *)) {
   font: inherit; font-size: 15px; min-height: var(--control-h); padding: 8px 11px;
   border: 1px solid var(--control); border-radius: 0; background: var(--raised); color: var(--text); width: 100%;
