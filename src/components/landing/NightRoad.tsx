@@ -364,13 +364,19 @@ export function NightRoad() {
       if (!raf && visible) raf = requestAnimationFrame(tick);
     };
 
+    const dark = window.matchMedia("(prefers-color-scheme: dark)");
+    const isDark = () => {
+      const th = box.closest<HTMLElement>(".hp")?.dataset.theme;
+      return th === "dark" || (th !== "light" && dark.matches);
+    };
+
     const resize = () => {
       const W = Math.max(1, box.clientWidth);
       const H = Math.max(1, box.clientHeight);
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(H * dpr);
-      scene = buildScene(W, H, dpr, box.closest<HTMLElement>(".hp")?.dataset.theme === "dark" ? NIGHT : DAY);
+      scene = buildScene(W, H, dpr, isDark() ? NIGHT : DAY);
       draw(performance.now());
     };
 
@@ -389,6 +395,7 @@ export function NightRoad() {
     const hp = box.closest(".hp");
     const mo = new MutationObserver(resize);
     if (hp) mo.observe(hp, { attributes: true, attributeFilter: ["data-theme"] });
+    dark.addEventListener("change", resize);
     const io = new IntersectionObserver(([e]) => {
       visible = !!e?.isIntersecting;
       if (visible) wake();
@@ -399,6 +406,7 @@ export function NightRoad() {
       cancelAnimationFrame(raf);
       ro.disconnect();
       mo.disconnect();
+      dark.removeEventListener("change", resize);
       io.disconnect();
       box.removeEventListener("pointermove", onMove);
     };
