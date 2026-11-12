@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export type HpTheme = "light" | "dark";
 
-/** Umschalter hell/dunkel im Kopf der Startseite. Merkt sich die Wahl im Cookie hp-theme, damit der Server gleich richtig rendert (kein Aufblitzen). */
+/** Umschalter hell/dunkel im Kopf der Startseite und der Anmeldeseiten. Merkt sich die Wahl im Cookie hp-theme, damit der Server gleich richtig rendert (kein Aufblitzen). */
 export function ThemeToggle({ initial, labels }: { initial: HpTheme; labels: { toDark: string; toLight: string } }) {
   const [theme, setTheme] = useState(initial);
   const next: HpTheme = theme === "dark" ? "light" : "dark";
@@ -15,7 +15,7 @@ export function ThemeToggle({ initial, labels }: { initial: HpTheme; labels: { t
       aria-label={theme === "dark" ? labels.toLight : labels.toDark}
       title={theme === "dark" ? labels.toLight : labels.toDark}
       onClick={(e) => {
-        const root = e.currentTarget.closest<HTMLElement>(".hp");
+        const root = e.currentTarget.closest<HTMLElement>(".hp, .auth");
         if (root) root.dataset.theme = next;
         document.cookie = `hp-theme=${next}; path=/; max-age=31536000; samesite=lax`;
         setTheme(next);
