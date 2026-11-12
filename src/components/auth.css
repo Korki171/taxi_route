@@ -1,0 +1,77 @@
+/* Anmelden, Registrieren, Passwort, Einladung: dieselbe Handschrift wie die Startseite.
+   Die App-Farben (--text, --border, --accent …) werden hier auf die der Startseite gelegt, damit Felder und Knöpfe
+   aus globals.css ohne Umbau mitgehen. Hell ist Standard, dunkel per data-theme (Cookie hp-theme). */
+.auth {
+  --ground: #f4f4f2; --surface: #ffffff; --raised: #ffffff; --stone: #e8e8e5;
+  --text: #111111; --muted: #5a5a57; --border: #c6c6c1; --rule: #dcdcd8; --control: #8c8c88;
+  --accent: #f5c518; --accent-hover: #ffd43b; --accent-ink: #111111;
+  --primary: #111111; --primary-hover: #2a2a2a; --primary-ink: #ffffff;
+  --focus: #111111;
+  --ok-bg: #dcf3e3; --ok: #145c32; --warn-bg: #fff1b8; --warn: #5c4a00;
+  --bad-bg: #fde6e2; --bad: #9b1c14; --neutral-bg: #e8e8e5; --neutral: #464646;
+  --taxi: #f5c518; --cap: #3a3a3a;
+  background: var(--ground); color: var(--text); color-scheme: light;
+  min-height: 100svh; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+}
+.auth[data-theme="dark"] {
+  --ground: #0f0f0f; --surface: #1a1a1a; --raised: #1a1a1a; --stone: #232323;
+  --text: #f2f2f2; --muted: #a3a3a3; --border: #3a3a3a; --rule: #2c2c2c; --control: #5a5a57;
+  --primary: #f2f2f2; --primary-hover: #ffffff; --primary-ink: #111111;
+  --focus: #f5c518;
+  --ok-bg: #16331f; --ok: #8fd6a4; --warn-bg: #3b3210; --warn: #f5d65c;
+  --bad-bg: #3a1a17; --bad: #f19a92; --neutral-bg: #2c2c2c; --neutral: #c0c0c0;
+  color-scheme: dark;
+}
+body:has(.auth) { background: #f4f4f2; }
+body:has(.auth[data-theme="dark"]) { background: #0f0f0f; }
+
+/* links: das Schild */
+.auth-side { background: var(--stone); padding: 32px var(--margin); display: flex; flex-direction: column; justify-content: space-between; gap: 40px; position: sticky; top: 0; height: 100svh; }
+.auth-side .wordmark { color: var(--text); text-decoration: none; display: inline-block; }
+.auth-side .wordmark svg { height: 40px; width: auto; display: block; }
+.auth-pitch { display: grid; gap: 28px; justify-items: start; }
+.auth-sign { display: block; width: min(100%, 360px); font-family: var(--display); font-size: clamp(56px, 6.4vw, 104px); }
+.auth-sign .hp-sign { display: inline-grid; justify-items: center; width: 100%; }
+.auth-sign .hp-sign-cap { width: 44%; height: 14px; background: var(--cap); border-radius: 3px 3px 0 0; }
+.auth-sign .hp-sign-face { width: 100%; display: grid; place-items: center; padding: 0.22em 0.4em 0.14em; border-radius: 28px 28px 8px 8px; background: var(--taxi); color: #111; }
+.auth-sign .hp-d { line-height: 0.95; letter-spacing: 0.02em; white-space: nowrap; font-weight: 450; text-transform: uppercase; }
+.auth-claim { margin: 0; font-family: var(--display); font-weight: 450; text-transform: uppercase; font-size: clamp(36px, 3.6vw, 60px); line-height: 0.98; max-width: 12ch; }
+.auth-lead { margin: 0; max-width: 40ch; font-size: 17px; color: var(--text); }
+.auth-foot { display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px; color: var(--text); }
+.auth-foot a { color: inherit; }
+
+/* rechts: das Formular */
+.auth-main { position: relative; padding: 32px var(--margin) 64px; display: flex; flex-direction: column; }
+.auth-top { display: flex; justify-content: flex-end; gap: 12px; align-items: center; min-height: 40px; }
+.auth-top .hp-theme { display: inline-grid; place-items: center; width: 40px; height: 40px; padding: 0; background: none; border: 0; color: var(--text); cursor: pointer; }
+.auth-top .hp-theme:hover { background: var(--stone); }
+.auth-body { width: 100%; max-width: 520px; margin: auto; padding: 48px 0; }
+.auth-body.wide { max-width: 820px; }
+.auth-body { font-size: 16px; }
+.auth-body .sub { color: var(--text); }
+.auth-body label { font-size: 16px; }
+.auth-body h1 { font-size: clamp(40px, 3vw + 12px, 60px); margin-bottom: 12px; }
+.auth-body .back { margin-bottom: 20px; }
+.auth-body .card { background: transparent; padding: 0; }
+.auth-body form.stack { gap: 18px; }
+.auth-body .card.section { background: var(--surface); padding: var(--pad); }
+.auth-body input { background: var(--surface); }
+.auth-body button.accent[type="submit"] { min-height: 52px; padding: 0 28px; font-size: 17px; font-weight: 650; }
+.auth-alt { margin-top: 36px; color: var(--text); }
+.auth-alt a { color: var(--text); font-weight: 600; }
+
+@media (max-width: 900px) {
+  .auth { grid-template-columns: 1fr; }
+  .auth-side { position: static; height: auto; padding-bottom: 28px; gap: 24px; }
+  .auth-pitch { grid-template-columns: minmax(0, 150px) minmax(0, 1fr); align-items: center; gap: 20px; }
+  .auth-sign { font-size: 34px; }
+  .auth-claim { font-size: clamp(30px, 6vw, 44px); max-width: none; }
+  .auth-lead, .auth-foot { display: none; }
+  .auth-body { margin: 0 auto; padding-top: 16px; }
+  .auth-top { justify-content: flex-end; }
+}
+@media (max-width: 600px) {
+  .auth-main { padding-top: 20px; }
+  .auth-body { padding: 8px 0 24px; }
+  .auth-body h1 { font-size: 44px; }
+}

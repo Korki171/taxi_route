@@ -887,7 +887,6 @@ export const EN: Record<string, string> = {
   "Menü": "Menu",
   "Schließen": "Close",
   "Konto und Organisation": "Account and organisation",
-  "Die Börse, auf der Taxi- und Transferunternehmen in Tirol Fahrten und Leerfahrten austauschen.": "The exchange where taxi and transfer companies in Tyrol trade rides and empty runs.",
   "Rechtliches": "Legal",
 
   // Phase 4: Reisebüro-Dashboard, gezielte Anfragen, Auftragsbestätigung

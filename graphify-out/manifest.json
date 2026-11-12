@@ -144,8 +144,8 @@
     "semantic_hash": ""
   },
   "src/app/login/page.tsx": {
-    "mtime": 1794336722.193601,
-    "seen": 1794337507.045918,
+    "mtime": 1794496744.0906763,
+    "seen": 1794496842.216457,
     "ast_hash": "1431c7099c521058948a22b419d1caaf",
     "semantic_hash": ""
   },
@@ -234,9 +234,9 @@
     "semantic_hash": ""
   },
   "src/components/AuthLayout.tsx": {
-    "mtime": 1794336722.195713,
-    "seen": 1794337507.045929,
-    "ast_hash": "ce13eb758c585e980e9190fb6bc169ad",
+    "mtime": 1794496737.869932,
+    "seen": 1794496842.21647,
+    "ast_hash": "ee15c433981d67cb0cecb2cc851e7e77",
     "semantic_hash": ""
   },
   "src/components/BackLink.tsx": {
@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "src/components/landing/Landing.tsx": {
-    "mtime": 1794343924.634419,
-    "seen": 1794344045.2725508,
-    "ast_hash": "32d9c7ad6d16afd14bb62f7fbf9577b5",
+    "mtime": 1794496675.7083807,
+    "seen": 1794496842.216481,
+    "ast_hash": "ccbe0916330d151c44105f59add2b818",
     "semantic_hash": ""
   },
   "src/components/landing/Pricing.tsx": {
@@ -330,9 +330,9 @@
     "semantic_hash": ""
   },
   "src/lib/i18n-en.ts": {
-    "mtime": 1794343940.2446318,
-    "seen": 1794344045.2725692,
-    "ast_hash": "6bbb0f9f172d5f12534f5cf1b4ea16b2",
+    "mtime": 1794496838.007942,
+    "seen": 1794496842.216491,
+    "ast_hash": "328df87f04a997d7e96bc5fc332118af",
     "semantic_hash": ""
   },
   "src/lib/i18n.ts": {
@@ -852,8 +852,8 @@
     "semantic_hash": ""
   },
   "src/components/landing/SiteFooter.tsx": {
-    "mtime": 1794343940.1682875,
-    "seen": 1794344045.272557,
+    "mtime": 1794344056.777142,
+    "seen": 1794496842.216484,
     "ast_hash": "03fe95737bb2ec0bc148e746b52a3e2f",
     "semantic_hash": ""
   },
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "src/components/landing/ThemeToggle.tsx": {
-    "mtime": 1794341590.3592021,
-    "seen": 1794342549.7737422,
-    "ast_hash": "d0434f8ffada7abd52520d0ad35f74ca",
+    "mtime": 1794496739.4128313,
+    "seen": 1794496842.216486,
+    "ast_hash": "6146830866fa4abd5a7acce827cdd6b6",
     "semantic_hash": ""
   },
   "package-lock.json": {
