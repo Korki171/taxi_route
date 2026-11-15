@@ -101,6 +101,8 @@ export async function notifyNewRequest(requestId: string, skipOrgIds: string[] =
       ],
       status: "ACTIVE",
       capabilities: { some: { capability: "TRANSPORT_PROVIDER", status: "VERIFIED" } },
+      // Gesperrte Unternehmen erfahren nichts von den Aufträgen des Auftraggebers (Sperrliste).
+      blockedBy: { none: { orgId: req.requesterOrgId } },
     },
     select: { ...orgSelect, mailNewJobs: true },
   });
@@ -128,7 +130,10 @@ export async function notifyNewRequest(requestId: string, skipOrgIds: string[] =
 export async function notifyInvited(requestId: string, orgIds: string[]) {
   if (orgIds.length === 0) return;
   const req = await db.transferRequest.findUniqueOrThrow({ where: { id: requestId }, include: { requesterOrg: { select: orgSelect } } });
-  const orgs = await db.organization.findMany({ where: { id: { in: orgIds }, status: "ACTIVE" }, select: orgSelect });
+  const orgs = await db.organization.findMany({
+    where: { id: { in: orgIds }, status: "ACTIVE", blockedBy: { none: { orgId: req.requesterOrgId } } },
+    select: orgSelect,
+  });
   const price = req.priceCents ? formatCents(req.priceCents) : "–";
   const takeable = req.priceMode === "FIXED" && req.priceCents != null;
   await deliver(
