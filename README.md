@@ -165,8 +165,8 @@ Jeder Push auf `main` wird automatisch deployt, Pull Requests bekommen eine Vors
 2. Unter **Unternehmen** wird die Prüfung der Funktion „Beförderungsunternehmen“ beantragt.
 3. Admin akzeptiert unter **Administration** die Dokumente und gibt die Funktion frei.
 
-## Noch offen
+## Roadmap
 
-Nachrichten zwischen Betrieben, Partnernetzwerk, Suchagent, Umkreissuche, Bewertungen und Ausschreibungen
-(siehe Roadmap), Online-Zahlung (Stripe; bisher Rechnung), rechtlich geprüfte Texte und Firmendaten im
-Impressum.
+Was als Nächstes kommt (Teilen-Link für WhatsApp, schnellere Übernahme, kürzere Registrierung, Bestellen ohne
+Konto für Hotels, native Fahrer-App mit Push und Hintergrund-GPS, Preisgarantie) steht mit Begründung und
+Reihenfolge in [`docs/ROADMAP.md`](docs/ROADMAP.md). Vor größeren Änderungen bitte dort nachlesen.

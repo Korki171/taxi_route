@@ -1,3 +1,7 @@
+## Roadmap
+
+Before larger changes, read docs/ROADMAP.md: it lists what gets built next (pilot priorities, native driver app) and why.
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
