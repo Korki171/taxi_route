@@ -73,3 +73,35 @@ describe("Mitteilungen aufs Gerät", () => {
     await expect(savePushSubscription(null, null, sub(3))).rejects.toMatchObject({ code: "UNAUTHENTICATED" });
   });
 });
+
+describe("Native App und Fahrer", () => {
+  it("Geräte-Token der App wird gespeichert; zugewiesene Fahrt geht nur an den Fahrer", async () => {
+    const { assignBooking } = await import("@/server/services/dispatch");
+    const poster = await verifiedTaxi("Taxi Abgeber");
+    const taker = await verifiedTaxi("Taxi Nehmer");
+    const driver = await addMember(taker.org.id, "DRIVER");
+    await savePushSubscription(driver.actor, null, { platform: "android", token: "t".repeat(60) });
+    await savePushSubscription(taker.actor, null, sub(1));
+    expect(await db.pushSubscription.findFirstOrThrow({ where: { userId: driver.user.id } })).toMatchObject({ platform: "ANDROID", endpoint: `fcm:${"t".repeat(60)}`, p256dh: null });
+    await expect(savePushSubscription(driver.actor, null, { platform: "windows", token: "t".repeat(60) })).rejects.toMatchObject({ code: "VALIDATION" });
+
+    const req = await createTransferRequest(poster.actor, requestInput({ priceMode: "FIXED" }));
+    const booking = await takeFixedPriceRequest(taker.actor, req.id);
+    sentPushes.length = 0;
+    await assignBooking(taker.actor, booking.id, { driverId: driver.user.id });
+    expect(sentPushes).toHaveLength(1);
+    expect(sentPushes[0]).toMatchObject({ userId: driver.user.id, message: { url: "/fahrer" } });
+    expect(sentPushes[0].message.title).toContain("Neue Fahrt");
+    // Erneutes Speichern derselben Zuweisung meldet nicht noch einmal
+    sentPushes.length = 0;
+    await assignBooking(taker.actor, booking.id, { driverId: driver.user.id });
+    expect(sentPushes).toEqual([]);
+  });
+
+  it("FCM-Nachricht enthält Titel, Text und die Zielseite", async () => {
+    const { fcmPayload } = await import("@/server/push");
+    expect(fcmPayload("tok", { title: "T", body: "B", url: "/fahrer", tag: "x" })).toEqual({
+      message: { token: "tok", notification: { title: "T", body: "B" }, data: { url: "/fahrer" }, android: { priority: "HIGH", notification: { tag: "x" } }, apns: { payload: { aps: { sound: "default" } } } },
+    });
+  });
+});

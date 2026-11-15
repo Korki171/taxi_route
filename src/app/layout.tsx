@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@fontsource-variable/albert-sans";
 import "@fontsource-variable/imbue";
 import "./globals.css";
+import { NativeApp } from "@/components/NativeApp";
 import { getI18n } from "@/server/i18n";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -13,7 +14,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const { locale } = await getI18n();
   return (
     <html lang={locale}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <NativeApp />
+      </body>
     </html>
   );
 }

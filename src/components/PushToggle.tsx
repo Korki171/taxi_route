@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { messaging, nativePlatform, saveNativeToken } from "@/lib/native";
 
 export type PushText = {
   title: string;
@@ -31,7 +32,7 @@ async function save(sub: PushSubscription) {
  * Schaltet Mitteilungen für dieses Gerät ein oder aus. `banner`: kurzer Hinweis, der verschwindet,
  * sobald Mitteilungen laufen oder das Gerät sie nicht kann.
  */
-export function PushToggle({ vapidKey, text, banner = false }: { vapidKey: string; text: PushText; banner?: boolean }) {
+export function PushToggle({ vapidKey, text, banner = false }: { vapidKey: string | null; text: PushText; banner?: boolean }) {
   const [state, setState] = useState<State>("loading");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
@@ -39,6 +40,16 @@ export function PushToggle({ vapidKey, text, banner = false }: { vapidKey: strin
   useEffect(() => {
     let alive = true;
     (async () => {
+      if (nativePlatform()) {
+        // Native App: Mitteilungen laufen über das Betriebssystem, das Token meldet NativeApp an.
+        const perm = await (await messaging()).checkPermissions().then((p) => p.receive, () => "prompt" as const);
+        if (alive) setState(perm === "granted" ? "on" : perm === "denied" ? "denied" : "off");
+        return;
+      }
+      if (!vapidKey) {
+        if (alive) setState("unsupported");
+        return;
+      }
       const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
       if (!supported) {
         // iPhone/iPad: Mitteilungen gibt es nur, wenn die Seite auf dem Home-Bildschirm liegt.
@@ -63,12 +74,20 @@ export function PushToggle({ vapidKey, text, banner = false }: { vapidKey: strin
     return () => {
       alive = false;
     };
-  }, []);
+  }, [vapidKey]);
 
   async function enable() {
     setBusy(true);
     setError(false);
     try {
+      if (nativePlatform()) {
+        const m = await messaging();
+        const perm = (await m.requestPermissions()).receive;
+        if (perm === "granted") await saveNativeToken((await m.getToken()).token);
+        setState(perm === "granted" ? "on" : perm === "denied" ? "denied" : "off");
+        return;
+      }
+      if (!vapidKey) return;
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
         setState(permission === "denied" ? "denied" : "off");
@@ -89,6 +108,14 @@ export function PushToggle({ vapidKey, text, banner = false }: { vapidKey: strin
   async function disable() {
     setBusy(true);
     try {
+      if (nativePlatform()) {
+        const m = await messaging();
+        const token = await m.getToken().then((t) => t.token, () => null);
+        if (token) await fetch("/api/push/subscribe", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ endpoint: `fcm:${token}` }) }).catch(() => {});
+        await m.deleteToken().catch(() => {});
+        setState("off");
+        return;
+      }
       const reg = await navigator.serviceWorker.getRegistration("/sw.js");
       const sub = await reg?.pushManager.getSubscription();
       if (sub) {

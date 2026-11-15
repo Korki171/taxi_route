@@ -133,6 +133,7 @@ Es gehören keine Geheimnisse ins Repository. Lokal in `.env`, in Produktion in 
 | `DATABASE_URL` | ja (für die ganze App) | PostgreSQL-Verbindung. Bei Supabase die Pooler-Adresse nehmen, die Verbindungszahl ist begrenzt. |
 | `RESEND_API_KEY` | optional | API-Schlüssel von Resend. Ohne Schlüssel werden E-Mails nur ins Server-Log geschrieben. |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | optional | Schlüsselpaar für Mitteilungen aufs Gerät (`npx web-push generate-vapid-keys`). Ohne Schlüssel bleibt es bei E-Mails. |
+| `FIREBASE_SERVICE_ACCOUNT` | optional | JSON des Firebase-Dienstkontos für Mitteilungen an die native Fahrer-App (siehe `mobile/README.md`). |
 | `EMAIL_FROM` | optional | Absender, z. B. `Transferborsa <noreply@transferborsa.com>` (Domain bei Resend verifizieren). |
 | `APP_URL` | optional | Öffentliche Adresse für Links in E-Mails, z. B. `https://www.transferborsa.com`. Ohne Angabe wird die Vercel-Produktions-Domain verwendet. |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | nur beim Seed | Zugangsdaten des Plattformadmins (Passwort mind. 12 Zeichen). |
