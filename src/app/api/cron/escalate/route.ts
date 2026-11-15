@@ -18,8 +18,6 @@ async function run(req: Request) {
   if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Nicht erlaubt." }, { status: 401 });
   }
-  return NextResponse.json({ escalated: await escalateDueRequests() }, { headers: { "Cache-Control": "no-store" } });
-async function run() {
   const escalated = await escalateDueRequests();
   // Ablaufwarnungen für Nachweise (jede Stufe geht nur einmal raus)
   const expiryNotices = await sendExpiryNotices().catch(() => 0);
