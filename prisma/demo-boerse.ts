@@ -81,7 +81,7 @@ async function main() {
   const caravelle = await createVehicle(alpen, { label: "VW Caravelle", category: "VAN", licensePlate: "I-AT 103", seats: 8, luggage: 8, skiCapacity: 8 });
   const sprinter = await createVehicle(ziller, { label: "Sprinter 8+1", category: "VAN", seats: 8, luggage: 10, skiCapacity: 8 });
 
-  const terms = { bookingTerms: "Wartezeit am Flughafen bis 60 Minuten nach Landung inklusive", cancellationTerms: "Kostenlos bis 24 Stunden vor Abholung" };
+  const terms = { bookingTerms: "Wartezeit am Flughafen bis 60 Minuten nach Landung inklusive", freeCancelHours: 24, lateCancelPercent: 50 };
 
   // Reisebüro → Taxi (Szenario B)
   const r1 = await createTransferRequest(reise, {
@@ -229,7 +229,7 @@ function trail(points: [number, number][], minutes: number, speed = 25) {
 }
 
 /** Live-Karte: drei Fahrer von Alpen Taxi in der Schicht, mit laufenden und anstehenden Fahrten. */
-async function liveFleetDemo(alpen: OrgActor, reise: OrgActor, v: { vClass: string; superb: string; caravelle: string }, terms: Record<string, string>) {
+async function liveFleetDemo(alpen: OrgActor, reise: OrgActor, v: { vClass: string; superb: string; caravelle: string }, terms: Record<string, string | number>) {
   const stefan = await driver(alpen, "Stefan Mair", "fahrer@demo.test");
   const martina = await driver(alpen, "Martina Kofler", "fahrer2@demo.test");
   const ali = await driver(alpen, "Ali Yilmaz", "fahrer3@demo.test");

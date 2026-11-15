@@ -3,6 +3,7 @@ import type { VehicleCategory } from "@prisma/client";
 import { fmtDate, fmtMinutes, fmtTime } from "@/lib/format";
 import { makeT, type Locale } from "@/lib/i18n";
 import { BOOKING_STATUS_LABEL, VEHICLE_LABEL } from "@/lib/labels";
+import { cancelRuleText } from "@/lib/cancellation";
 import { formatCents } from "@/lib/money";
 import { placeName } from "@/lib/places";
 import { bookingReference, type BookingConfirmation } from "../services/confirmation";
@@ -104,8 +105,8 @@ export async function renderConfirmationPdf(data: BookingConfirmation, locale: L
   w.text(t("Auftragsbestätigung").toUpperCase(), M, w.y, { font: w.bold, size: 20 });
   const status = t(BOOKING_STATUS_LABEL[b.status]);
   const statusWidth = w.bold.widthOfTextAtSize(w.safe(status), 9) + 16;
-  w.page.drawRectangle({ x: W - M - statusWidth, y: w.y - 4, width: statusWidth, height: 18, color: b.status === "CANCELLED" || b.status === "DISPUTED" ? rgb(0xfd / 255, 0xe6 / 255, 0xe2 / 255) : rgb(0xdc / 255, 0xf3 / 255, 0xe3 / 255) });
-  w.text(status, W - M - statusWidth + 8, w.y + 1.5, { font: w.bold, size: 9, color: b.status === "CANCELLED" || b.status === "DISPUTED" ? rgb(0x9b / 255, 0x1c / 255, 0x14 / 255) : rgb(0x14 / 255, 0x5c / 255, 0x32 / 255) });
+  w.page.drawRectangle({ x: W - M - statusWidth, y: w.y - 4, width: statusWidth, height: 18, color: b.status === "CANCELLED" || b.status === "DISPUTED" || b.status === "NO_SHOW" ? rgb(0xfd / 255, 0xe6 / 255, 0xe2 / 255) : rgb(0xdc / 255, 0xf3 / 255, 0xe3 / 255) });
+  w.text(status, W - M - statusWidth + 8, w.y + 1.5, { font: w.bold, size: 9, color: b.status === "CANCELLED" || b.status === "DISPUTED" || b.status === "NO_SHOW" ? rgb(0x9b / 255, 0x1c / 255, 0x14 / 255) : rgb(0x14 / 255, 0x5c / 255, 0x32 / 255) });
   w.y -= 20;
   w.text(`${t("Buchung")} ${ref} · ${t("Auftrag")} ${referenceOf(r.number)} · ${t("Ausgestellt am {date}", { date: fmtDate(new Date(), locale) })}`, M, w.y, { size: 10, color: MUTED });
   w.y -= 30;
@@ -211,7 +212,8 @@ export async function renderConfirmationPdf(data: BookingConfirmation, locale: L
   section(t("Bedingungen"));
   kv([
     [t("Buchungsbedingungen"), r.bookingTerms ?? t("keine gesonderten Bedingungen")],
-    [t("Stornobedingungen"), b.cancellationTerms ?? t("keine gesonderten Bedingungen")],
+    [t("Stornobedingungen"), [cancelRuleText(t, b), b.cancellationTerms].filter(Boolean).join(" ") || t("keine gesonderten Bedingungen")],
+    ...(b.feeCents ? [[b.status === "NO_SHOW" ? t("No-Show-Gebühr") : t("Stornogebühr"), formatCents(b.feeCents, locale)] as [string, string]] : []),
     [t("Vereinbart"), `${full(b.acceptedAt)}, ${b.quoteId ? t("durch Annahme eines Angebots") : t("durch Übernahme zum Festpreis")}${data.acceptedByName ? ` (${data.acceptedByName})` : ""}`],
     ...(b.completedAt ? [[t("Abgeschlossen"), full(b.completedAt)] as [string, string]] : []),
   ]);

@@ -345,6 +345,8 @@ enum TransferStatus {
   COMPLETED
   CANCELLED
   DISPUTED
+  /// Fahrgast nicht erschienen
+  NO_SHOW
 }
 
 /// Wer einen Auftrag sieht: alle geprüften Unternehmen in der Börse oder nur die eingeladenen.
@@ -382,6 +384,8 @@ enum BookingStatus {
   COMPLETED
   CANCELLED
   DISPUTED
+  /// Fahrgast nicht erschienen (vom ausführenden Unternehmen gemeldet)
+  NO_SHOW
 }
 
 enum CapacityStatus {
@@ -450,6 +454,10 @@ model TransferRequest {
   quoteDeadline        DateTime?
   bookingTerms         String?
   cancellationTerms    String?
+  /// Stornoregel: kostenlos bis so viele Stunden vor Abholung (null = keine feste Regel)
+  freeCancelHours      Int?
+  /// Stornoregel: danach so viel Prozent des Fahrpreises (0, 50 oder 100)
+  lateCancelPercent    Int?
   clientReference      String?
   /// MARKET: in der Börse; INVITED: nur für die Unternehmen in QuoteInvitation sichtbar
   visibility           RequestVisibility @default(MARKET)
@@ -550,6 +558,14 @@ model Booking {
   /// Leistungsumfang zum Zeitpunkt der Annahme (unveränderlich)
   scope               Json
   cancellationTerms   String?
+  /// Stornoregel zum Zeitpunkt der Annahme (unveränderlich), siehe TransferRequest
+  freeCancelHours     Int?
+  lateCancelPercent   Int?
+  /// Spätstorno- oder No-Show-Gebühr in Cent, vom Auftraggeber an das ausführende Unternehmen.
+  /// Wird nur berechnet und festgehalten, bezahlt wird direkt zwischen den Firmen.
+  feeCents            Int?
+  cancelledAt         DateTime?
+  cancelledByOrgId    String?
   status              BookingStatus   @default(CONFIRMED)
   acceptedAt          DateTime        @default(now())
   acceptedById        String

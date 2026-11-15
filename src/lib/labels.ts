@@ -70,7 +70,7 @@ export const VEHICLE_LABEL: Record<VehicleCategory, string> = {
 export function statusTone(s: string): "ok" | "warn" | "bad" | "neutral" {
   if (["VERIFIED", "APPROVED", "ACTIVE", "CONFIRMED", "ACCEPTED", "COMPLETED", "ASSIGNED", "RESPONDED"].includes(s)) return "ok";
   if (["PENDING_REVIEW", "PENDING", "RESTRICTED", "SUBMITTED", "IN_PROGRESS", "PLANNED", "OPEN"].includes(s)) return "warn";
-  if (["REJECTED", "SUSPENDED", "CANCELLED", "DISPUTED", "DECLINED"].includes(s)) return "bad";
+  if (["REJECTED", "SUSPENDED", "CANCELLED", "DISPUTED", "DECLINED", "NO_SHOW"].includes(s)) return "bad";
   return "neutral";
 }
 
@@ -92,6 +92,7 @@ export const TRANSFER_STATUS_LABEL: Record<string, string> = {
   COMPLETED: "Abgeschlossen",
   CANCELLED: "Storniert",
   DISPUTED: "Beanstandet",
+  NO_SHOW: "Nicht erschienen",
 };
 
 export const BOOKING_STATUS_LABEL: Record<string, string> = {
@@ -100,6 +101,7 @@ export const BOOKING_STATUS_LABEL: Record<string, string> = {
   COMPLETED: "Abgeschlossen",
   CANCELLED: "Storniert",
   DISPUTED: "Beanstandet",
+  NO_SHOW: "Nicht erschienen",
 };
 
 export const QUOTE_STATUS_LABEL: Record<string, string> = {

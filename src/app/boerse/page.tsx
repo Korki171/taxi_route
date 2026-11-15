@@ -115,7 +115,7 @@ export default async function BoersePage({ searchParams }: { searchParams: SP })
       {view.id === "angebote" && <QuotesView actor={actor} />}
       {view.id === "uebernommen" && <BookingsView actor={actor} side="provider" statuses={["CONFIRMED"]} title={t("Übernommene Aufträge, noch nicht gefahren")} />}
       {view.id === "fahrten" && <BookingsView actor={actor} side="both" statuses={["IN_PROGRESS", "COMPLETED"]} title={t("Laufende und abgeschlossene Fahrten")} />}
-      {view.id === "probleme" && <BookingsView actor={actor} side="both" statuses={["CANCELLED", "DISPUTED"]} title={t("Stornierte oder beanstandete Buchungen")} />}
+      {view.id === "probleme" && <BookingsView actor={actor} side="both" statuses={["CANCELLED", "DISPUTED", "NO_SHOW"]} title={t("Stornierte oder beanstandete Buchungen")} />}
     </AppShell>
   );
 }
@@ -428,7 +428,7 @@ async function QuotesView({ actor }: { actor: OrgActor }) {
 }
 
 async function BookingsView({ actor, side, statuses, title }: {
-  actor: OrgActor; side: "provider" | "both"; statuses: ("CONFIRMED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "DISPUTED")[]; title: string;
+  actor: OrgActor; side: "provider" | "both"; statuses: ("CONFIRMED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "DISPUTED" | "NO_SHOW")[]; title: string;
 }) {
   const { t, f } = await getI18n();
   const rows = await listBookings(actor, side, statuses);

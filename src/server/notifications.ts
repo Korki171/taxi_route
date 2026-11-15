@@ -150,16 +150,18 @@ const STATUS_WORD: Record<string, string> = {
   "booking.cancelled": "storniert",
   "booking.disputed": "beanstandet",
   "booking.completed": "durchgeführt",
+  "booking.no_show": "Fahrgast nicht erschienen",
 };
 
 const STATUS_SUBJECT: Record<string, string> = {
   "booking.cancelled": "Buchung {ref} storniert",
   "booking.disputed": "Problem gemeldet zu {ref}",
   "booking.completed": "Fahrt {ref} durchgeführt",
+  "booking.no_show": "Fahrgast nicht erschienen: {ref}",
 };
 
 /** Storno, Beanstandung oder Abschluss: an die jeweils andere Seite. */
-export async function notifyBookingStatus(bookingId: string, eventType: string, actorOrgId: string, note?: string) {
+export async function notifyBookingStatus(bookingId: string, eventType: string, actorOrgId: string, note?: string, feeCents?: number) {
   const subject = STATUS_SUBJECT[eventType];
   if (!subject) return;
   const b = await db.booking.findUniqueOrThrow({
@@ -171,7 +173,13 @@ export async function notifyBookingStatus(bookingId: string, eventType: string, 
     mail(other, b.request, subject, [
       "{actor} hat den Status der Buchung {ref} ({route}, {pickup}) geändert: {status}.",
       ...(note ? ["Begründung: {note}"] : []),
-    ], { actor: actor.name, status: makeT(localeOf(other.country))(STATUS_WORD[eventType]), note: note ?? "" }),
+      ...(feeCents ? ["Laut vereinbarter Stornoregel fällt eine Gebühr von {fee} an. Sie wird direkt zwischen den Unternehmen abgerechnet."] : []),
+    ], {
+      actor: actor.name,
+      status: makeT(localeOf(other.country))(STATUS_WORD[eventType]),
+      note: note ?? "",
+      fee: feeCents ? new Intl.NumberFormat(localeOf(other.country) === "en" ? "en-GB" : "de-AT", { style: "currency", currency: b.currency }).format(feeCents / 100) : "",
+    }),
   ]);
 }
 

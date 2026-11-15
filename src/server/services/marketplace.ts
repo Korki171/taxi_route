@@ -2,11 +2,13 @@ import type { Prisma, TransferStatus, VehicleCategory } from "@prisma/client";
 import { Prisma as P } from "@prisma/client";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { FREE_CANCEL_HOURS, LATE_CANCEL_PERCENT, lateCancelFeeCents, noShowAllowedFrom } from "@/lib/cancellation";
 import { MAX_HANDOFF_SHARE_PERCENT, splitHandoff } from "@/lib/handoff";
 import { estimateMinutes, isPlaceId, PLACES, type Place } from "@/lib/places";
 import { actorCan, requirePermission, type Actor, type OrgActor } from "../authz/context";
 import { conflict, forbidden, invalid, notFound } from "../errors";
 import { parse } from "../validation";
+import { returnBooking } from "./booking-extras";
 import { categoryFits } from "./matching";
 import {
   notificationFailed,
@@ -61,6 +63,9 @@ export const transferRequestSchema = z
     quoteDeadline: optDate,
     bookingTerms: optText(1000),
     cancellationTerms: optText(500),
+    /** Feste Stornoregel: beide Felder zusammen oder keines */
+    freeCancelHours: z.preprocess((v) => (v === "" || v == null ? undefined : v), z.coerce.number().int().refine((n) => (FREE_CANCEL_HOURS as readonly number[]).includes(n), "Ungültige Stornofrist").optional()),
+    lateCancelPercent: z.preprocess((v) => (v === "" || v == null ? undefined : v), z.coerce.number().int().refine((n) => (LATE_CANCEL_PERCENT as readonly number[]).includes(n), "Ungültige Stornogebühr").optional()),
     clientReference: optText(60),
     passengerName: optText(120),
     passengerPhone: optText(40),
@@ -72,6 +77,7 @@ export const transferRequestSchema = z
     /** Gezielt angefragte Beförderungsunternehmen (bei INVITED Pflicht, bei MARKET zusätzlich benachrichtigt) */
     invitedOrgIds: z.preprocess((v) => (v == null ? [] : Array.isArray(v) ? v : [v]), z.array(z.string().min(1).max(40)).max(MAX_INVITATIONS)),
   })
+  .refine((d) => (d.freeCancelHours == null) === (d.lateCancelPercent == null), { message: "Stornofrist und Stornogebühr bitte zusammen angeben", path: ["lateCancelPercent"] })
   .refine((d) => d.pickupPlaceId !== d.dropoffPlaceId, { message: "Abhol- und Zielort müssen sich unterscheiden", path: ["dropoffPlaceId"] })
   .refine((d) => d.priceMode !== "FIXED" || d.priceCents != null, { message: "Für einen Festpreis bitte einen Betrag angeben", path: ["priceCents"] })
   .refine((d) => !d.quoteDeadline || d.quoteDeadline < d.pickupAt, { message: "Die Angebotsfrist muss vor der Abholung liegen", path: ["quoteDeadline"] })
@@ -114,6 +120,8 @@ const marketSelect = {
   quoteDeadline: true,
   bookingTerms: true,
   cancellationTerms: true,
+  freeCancelHours: true,
+  lateCancelPercent: true,
   visibility: true,
   audience: true,
   createdAt: true,
@@ -204,6 +212,8 @@ export async function createTransferRequest(actor: Actor | null, input: unknown)
         quoteDeadline: d.quoteDeadline,
         bookingTerms: d.bookingTerms,
         cancellationTerms: d.cancellationTerms,
+        freeCancelHours: d.freeCancelHours ?? null,
+        lateCancelPercent: d.lateCancelPercent ?? null,
         clientReference: d.clientReference,
         visibility: d.visibility,
         audience,
@@ -478,6 +488,11 @@ export async function getTransferRequest(actor: Actor | null, requestId: string)
 // Festpreis übernehmen (Szenario A, ohne Verhandlung)
 // ---------------------------------------------------------------------------
 
+/** Storno-Bedingungen, die bei der Annahme unverändert in die Buchung übernommen werden. */
+export function cancelTermsSnapshot(req: { cancellationTerms: string | null; freeCancelHours: number | null; lateCancelPercent: number | null }) {
+  return { cancellationTerms: req.cancellationTerms, freeCancelHours: req.freeCancelHours, lateCancelPercent: req.lateCancelPercent };
+}
+
 export function scopeSnapshot(r: {
   pickupPlaceId: string; dropoffPlaceId: string; pickupAt: Date; passengers: number; luggage: number;
   skiEquipment: number; childSeats: number; vehicleCategory: VehicleCategory | null; requirements: string | null;
@@ -529,7 +544,7 @@ export async function takeFixedPriceRequest(actor: Actor | null, requestId: stri
           handoffShareCents: split.shareCents,
           currency: req.currency,
           scope: scopeSnapshot(req),
-          cancellationTerms: req.cancellationTerms,
+          ...cancelTermsSnapshot(req),
           acceptedById: actor.userId,
         },
       });
@@ -650,7 +665,7 @@ export async function acceptQuote(actor: Actor | null, quoteId: string) {
           handoffShareCents: split.shareCents,
           currency: req.currency,
           scope: scopeSnapshot(req, q.vehicleCategory),
-          cancellationTerms: req.cancellationTerms,
+          ...cancelTermsSnapshot(req),
           acceptedById: actor.userId,
         },
       });
@@ -681,16 +696,21 @@ const BOOKING_TO_REQUEST: Record<string, TransferStatus> = {
   COMPLETED: "COMPLETED",
   CANCELLED: "CANCELLED",
   DISPUTED: "DISPUTED",
+  NO_SHOW: "NO_SHOW",
 };
+
+type BookingFrom = "CONFIRMED" | "IN_PROGRESS" | "COMPLETED" | "NO_SHOW";
+type BookingTo = "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "DISPUTED" | "NO_SHOW";
 
 export async function transitionBooking(
   actor: OrgActor,
   bookingId: string,
   who: "provider" | "either",
-  from: ("CONFIRMED" | "IN_PROGRESS" | "COMPLETED")[],
-  to: "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "DISPUTED",
+  from: BookingFrom[],
+  to: BookingTo,
   eventType: string,
   note?: string,
+  extra?: { feeCents?: number },
 ) {
   const where: Prisma.BookingWhereInput =
     who === "provider"
@@ -698,20 +718,24 @@ export async function transitionBooking(
       : { id: bookingId, OR: [{ providerOrgId: actor.org.id }, { requesterOrgId: actor.org.id }] };
   const b = await db.booking.findFirst({ where });
   if (!b) throw notFound();
+  const now = new Date();
   await db.$transaction(async (tx) => {
     const res = await tx.booking.updateMany({
       where: { id: b.id, status: { in: from } },
       data: {
         status: to,
-        ...(to === "COMPLETED" ? { completedAt: new Date(), completionNote: note ?? null } : {}),
-        ...(to === "IN_PROGRESS" ? {} : { tripStage: null, tripStageAt: new Date() }),
+        ...(to === "COMPLETED" ? { completedAt: now, completionNote: note ?? null } : {}),
+        ...(to === "IN_PROGRESS" ? {} : { tripStage: null, tripStageAt: now }),
+        ...(to === "CANCELLED" ? { cancelledAt: now, cancelledByOrgId: actor.org.id } : {}),
+        ...(extra?.feeCents ? { feeCents: extra.feeCents } : {}),
       },
     });
     if (res.count !== 1) throw invalid("Dieser Statuswechsel ist im aktuellen Zustand nicht möglich.");
     await tx.transferRequest.update({ where: { id: b.requestId }, data: { status: BOOKING_TO_REQUEST[to] } });
-    await transferEvent(tx, b.requestId, eventType, { userId: actor.userId, orgId: actor.org.id }, note ? { note } : undefined);
+    const data = { ...(note ? { note } : {}), ...(extra?.feeCents ? { feeCents: extra.feeCents } : {}) };
+    await transferEvent(tx, b.requestId, eventType, { userId: actor.userId, orgId: actor.org.id }, Object.keys(data).length ? data : undefined);
   });
-  await notifyBookingStatus(b.id, eventType, actor.org.id, note).catch(notificationFailed);
+  await notifyBookingStatus(b.id, eventType, actor.org.id, note, extra?.feeCents).catch(notificationFailed);
 }
 
 export async function startTrip(actor: Actor | null, bookingId: string) {
@@ -725,12 +749,55 @@ export async function completeTrip(actor: Actor | null, bookingId: string, note?
   return transitionBooking(actor, bookingId, "provider", ["CONFIRMED", "IN_PROGRESS"], "COMPLETED", "booking.completed", n);
 }
 
+/**
+ * Storno einer bestätigten Buchung.
+ * - Auftraggeber: Buchung storniert; liegt das Storno nach der kostenlosen Frist, wird die Gebühr laut
+ *   vereinbarter Regel berechnet und festgehalten.
+ * - Ausführendes Unternehmen vor der Abholzeit: wie „Zurückgeben“, die Fahrt geht zurück in die Börse.
+ *   Danach: storniert, ohne Gebühr.
+ */
 export async function cancelBooking(actor: Actor | null, bookingId: string, reason: string) {
   requirePermission(actor, "org.read");
   if (!actorCan(actor, "bookings.manage") && !actorCan(actor, "jobs.accept")) throw forbidden();
   const r = reason.trim().slice(0, 500);
   if (!r) throw invalid("Bitte einen Grund für die Stornierung angeben.");
-  return transitionBooking(actor, bookingId, "either", ["CONFIRMED"], "CANCELLED", "booking.cancelled", r);
+  const b = await db.booking.findFirst({
+    where: { id: bookingId, OR: [{ providerOrgId: actor.org.id }, { requesterOrgId: actor.org.id }] },
+    include: { request: { select: { pickupAt: true } } },
+  });
+  if (!b) throw notFound();
+  if (b.providerOrgId === actor.org.id && b.requesterOrgId !== actor.org.id) {
+    if (b.status === "CONFIRMED" && b.request.pickupAt > new Date()) {
+      return returnBooking(actor, bookingId, r);
+    }
+    return transitionBooking(actor, bookingId, "either", ["CONFIRMED"], "CANCELLED", "booking.cancelled", r);
+  }
+  const feeCents = lateCancelFeeCents(b, b.request.pickupAt, b.agreedPriceCents);
+  return transitionBooking(actor, bookingId, "either", ["CONFIRMED"], "CANCELLED", "booking.cancelled", r, { feeCents });
+}
+
+/**
+ * Fahrgast nicht erschienen. Meldet der zugewiesene Fahrer oder die Disposition des ausführenden Unternehmens,
+ * frühestens wenn der Fahrer „am Abholort“ gemeldet hat und die Abholzeit 30 Minuten vorbei ist.
+ * Die Gebühr ist der volle vereinbarte Preis. Der Auftraggeber kann über „Problem melden“ widersprechen.
+ */
+export async function reportNoShow(actor: Actor | null, bookingId: string, note?: string) {
+  requirePermission(actor, "org.read");
+  const dispatch = actorCan(actor, "jobs.accept");
+  if (!dispatch && !actorCan(actor, "trips.drive")) throw forbidden();
+  const b = await db.booking.findFirst({
+    where: { id: bookingId, providerOrgId: actor.org.id, ...(dispatch ? {} : { driverId: actor.userId }) },
+    include: { request: { select: { pickupAt: true } } },
+  });
+  if (!b) throw notFound();
+  if (b.status !== "IN_PROGRESS" || b.tripStage !== "AT_PICKUP") {
+    throw invalid("Ein No-Show kann erst gemeldet werden, wenn der Fahrer am Abholort ist.");
+  }
+  if (new Date() < noShowAllowedFrom(b.request.pickupAt)) {
+    throw invalid("Ein No-Show kann erst 30 Minuten nach der Abholzeit gemeldet werden.");
+  }
+  const n = note?.trim().slice(0, 500) || undefined;
+  return transitionBooking(actor, bookingId, "provider", ["IN_PROGRESS"], "NO_SHOW", "booking.no_show", n, { feeCents: b.agreedPriceCents });
 }
 
 export async function disputeBooking(actor: Actor | null, bookingId: string, reason: string) {
@@ -738,7 +805,7 @@ export async function disputeBooking(actor: Actor | null, bookingId: string, rea
   if (!actorCan(actor, "bookings.manage") && !actorCan(actor, "jobs.accept")) throw forbidden();
   const r = reason.trim().slice(0, 1000);
   if (!r) throw invalid("Bitte beschreiben Sie das Problem.");
-  return transitionBooking(actor, bookingId, "either", ["CONFIRMED", "IN_PROGRESS", "COMPLETED"], "DISPUTED", "booking.disputed", r);
+  return transitionBooking(actor, bookingId, "either", ["CONFIRMED", "IN_PROGRESS", "COMPLETED", "NO_SHOW"], "DISPUTED", "booking.disputed", r);
 }
 
 // ---------------------------------------------------------------------------
@@ -785,7 +852,7 @@ export async function listOwnQuotes(actor: Actor | null) {
 export async function listBookings(
   actor: Actor | null,
   side: "provider" | "requester" | "both",
-  statuses: ("CONFIRMED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "DISPUTED")[],
+  statuses: ("CONFIRMED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "DISPUTED" | "NO_SHOW")[],
 ) {
   requirePermission(actor, "org.read");
   const orgId = actor.org.id;
