@@ -205,10 +205,8 @@ model Organization {
   planNote      String?
   planUpdatedAt DateTime?
 
-  /// E-Mail bei neuen Börsenaufträgen. Optional nur für eine Strecke (Suchagent): leer = alle Orte.
-  mailNewJobs      Boolean @default(true)
-  alertFromPlaceId String?
-  alertToPlaceId   String?
+  /// E-Mail bei neuen Börsenaufträgen. Gespeicherte Strecken (Suchagent) stehen in JobAlert: keine = alle Orte.
+  mailNewJobs Boolean @default(true)
 
   capabilities     OrganizationCapability[]
   memberships      Membership[]
@@ -234,6 +232,7 @@ model Organization {
   blockedBy         OrgBlock[]         @relation("BlockedBy")
   pushSubscriptions PushSubscription[]
   ratingsReceived   Rating[]           @relation("RatingsReceived")
+  jobAlerts         JobAlert[]
 }
 
 /// Sperrliste: gesperrte Unternehmen sehen keine Aufträge dieses Unternehmens.
@@ -752,4 +751,17 @@ model Rating {
 
   @@unique([bookingId, fromOrgId])
   @@index([toOrgId])
+}
+
+/// Suchagent: gespeicherte Strecke eines Betriebs. Neue Aufträge werden nur gemeldet, wenn eine der
+/// gespeicherten Strecken passt (leeres Feld = egal). Ohne gespeicherte Strecke werden alle gemeldet.
+model JobAlert {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fromPlaceId    String?
+  toPlaceId      String?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
 }

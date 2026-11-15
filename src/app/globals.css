@@ -301,6 +301,8 @@ details.more-actions > summary { color: var(--muted); font-size: 14px; min-heigh
 /* ---------- Anmeldung und Registrierung: Papier oben, Navy unten wie der Hero ---------- */
 
 /* ---------- Rechtstexte ---------- */
+.save-search { margin: -4px 0 var(--gap); }
+.field-end { display: flex; align-items: end; }
 .board-map { height: min(60vh, 480px); min-height: 300px; z-index: 0; background: var(--stone); margin-bottom: var(--gap); }
 .board-pin { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); border: 3px solid #111; font-weight: 700; font-size: 14px; }
 .board-pop { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 8px; max-height: 220px; overflow: auto; }

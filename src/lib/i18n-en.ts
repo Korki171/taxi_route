@@ -1408,4 +1408,13 @@ export const EN: Record<string, string> = {
   "Auf der Karte zeigen": "Show on map",
   "Karte der offenen Aufträge": "Map of open jobs",
   "Preis offen": "price open",
+  // Suchagent: mehrere Strecken
+  "Gespeicherte Strecken": "Saved routes",
+  "Neue Aufträge melden wir Ihnen nur für diese Strecken.": "We notify you about new jobs for these routes only.",
+  "Ohne gespeicherte Strecke melden wir Ihnen alle neuen Aufträge.": "Without a saved route we notify you about all new jobs.",
+  "Strecke speichern": "Save route",
+  "Strecke gespeichert. Neue Aufträge dafür melden wir Ihnen.": "Route saved. We will notify you about new jobs for it.",
+  "Bitte mindestens einen Ort wählen.": "Please choose at least one place.",
+  "Höchstens 5 gespeicherte Strecken.": "At most 5 saved routes.",
+  "Bei neuen Aufträgen für diese Strecke benachrichtigen": "Notify me about new jobs for this route",
 };

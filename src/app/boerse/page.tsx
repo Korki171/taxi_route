@@ -31,7 +31,7 @@ import {
 import { splitHandoff } from "@/lib/handoff";
 import { listCapacityWithMatches } from "@/server/services/matching";
 import { requireOrgActor } from "@/server/web";
-import { setCapacityStatusAction } from "../actions";
+import { addJobAlertAction, setCapacityStatusAction } from "../actions";
 import { getI18n } from "@/server/i18n";
 
 type View = { id: string; label: string; allowed: (a: OrgActor) => boolean };
@@ -199,6 +199,14 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
           {active && <Link href="/boerse?view=markt" className="btn secondary">{t("Zurücksetzen")}</Link>}
         </div>
       </form>}
+      {(sp.from || sp.to) && actorCan(actor, "org.update") && (
+        <form action={addJobAlertAction} className="save-search">
+          <input type="hidden" name="from" value={sp.from ?? ""} />
+          <input type="hidden" name="to" value={sp.to ?? ""} />
+          <input type="hidden" name="back" value={`/boerse?${new URLSearchParams({ view: "markt", ...Object.fromEntries(FILTER_KEYS.filter((k) => sp[k]).map((k) => [k, sp[k]!])) }).toString()}`} />
+          <button type="submit" className="link">{t("Bei neuen Aufträgen für diese Strecke benachrichtigen")}</button>
+        </form>
+      )}
       <section className="card">
         {rows.length > 0 && (
           <div className="head-row">

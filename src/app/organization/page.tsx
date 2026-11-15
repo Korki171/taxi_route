@@ -7,9 +7,11 @@ import { actorCan } from "@/server/authz/context";
 import { getOwnOrganization } from "@/server/services/organizations";
 import { listBlocked, listPartnerCandidates, listPartners } from "@/server/services/partners";
 import { requireOrgActor } from "@/server/web";
+import { listJobAlerts, MAX_JOB_ALERTS } from "@/server/services/messages";
+import { placeName } from "@/lib/places";
 import type { Capability, VehicleCategory } from "@prisma/client";
 import { PlaceSelect } from "@/components/market";
-import { addPartnerAction, updateJobAlertsAction, blockOrgAction, unblockOrgAction, removePartnerAction, requestCapabilityAction, updateProfileAction, updateTransportProfileAction } from "../actions";
+import { addJobAlertAction, addPartnerAction, removeJobAlertAction, updateJobAlertsAction, blockOrgAction, unblockOrgAction, removePartnerAction, requestCapabilityAction, updateProfileAction, updateTransportProfileAction } from "../actions";
 import { getI18n } from "@/server/i18n";
 import Link from "next/link";
 import { PLAN_BY_ID, planStatus } from "@/lib/plans";
@@ -29,6 +31,7 @@ export default async function OrganizationPage({ searchParams }: { searchParams:
   const plan = org.plan ? PLAN_BY_ID[org.plan] : null;
   const vehicles = org._count.vehicles;
   const canPartners = actorCan(actor, "transfers.request");
+  const jobAlerts = canEdit ? await listJobAlerts(actor) : [];
   const [partners, candidates, blocked] = canPartners ? await Promise.all([listPartners(actor), listPartnerCandidates(actor), listBlocked(actor)]) : [[], [], []];
 
   return (
@@ -117,13 +120,31 @@ export default async function OrganizationPage({ searchParams }: { searchParams:
           <PushSetup />
           <form action={updateJobAlertsAction} className="stack">
             <label className="check"><input type="checkbox" name="mailNewJobs" defaultChecked={org.mailNewJobs} />{t("E-Mail bei neuen Aufträgen in der Börse")}</label>
-            <div className="fields">
-              <label>{t("Nur von")}<PlaceSelect name="from" defaultValue={org.alertFromPlaceId ?? ""} emptyLabel={t("Egal")} /></label>
-              <label>{t("Nur nach")}<PlaceSelect name="to" defaultValue={org.alertToPlaceId ?? ""} emptyLabel={t("Egal")} /></label>
-            </div>
             <p className="price-note">{t("Direktanfragen und Nachrichten erhalten Sie immer per E-Mail.")}</p>
             <div><button type="submit">{t("Speichern")}</button></div>
           </form>
+          <h3>{t("Gespeicherte Strecken")}</h3>
+          <p className="muted flush">{t(jobAlerts.length ? "Neue Aufträge melden wir Ihnen nur für diese Strecken." : "Ohne gespeicherte Strecke melden wir Ihnen alle neuen Aufträge.")}</p>
+          {jobAlerts.length > 0 && (
+            <ul className="plain-list">
+              {jobAlerts.map((a) => (
+                <li key={a.id} className="inline">
+                  <span>{a.fromPlaceId ? t(placeName(a.fromPlaceId)) : t("Egal")} <span className="muted">→</span> {a.toPlaceId ? t(placeName(a.toPlaceId)) : t("Egal")}</span>
+                  <form action={removeJobAlertAction}>
+                    <input type="hidden" name="id" value={a.id} />
+                    <button type="submit" className="link">{t("Entfernen")}</button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          )}
+          {jobAlerts.length < MAX_JOB_ALERTS && (
+            <form action={addJobAlertAction} className="fields">
+              <label>{t("Von")}<PlaceSelect name="from" emptyLabel={t("Egal")} /></label>
+              <label>{t("Nach")}<PlaceSelect name="to" emptyLabel={t("Egal")} /></label>
+              <div className="field-end"><button type="submit" className="secondary">{t("Strecke speichern")}</button></div>
+            </form>
+          )}
         </section>
       )}
 
