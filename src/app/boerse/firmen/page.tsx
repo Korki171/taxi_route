@@ -5,6 +5,7 @@ import { AppShell } from "@/components/AppShell";
 import { VehicleSelect } from "@/components/market";
 import { Badge, Flash, Stars, type SP } from "@/components/ui";
 import { VEHICLE_LABEL } from "@/lib/labels";
+import { placeName } from "@/lib/places";
 import { actorCan } from "@/server/authz/context";
 import { getI18n } from "@/server/i18n";
 import { listProviderDirectory } from "@/server/services/marketplace";
@@ -24,7 +25,7 @@ export default async function DirectoryPage({ searchParams }: { searchParams: SP
   const [all, partners] = await Promise.all([listProviderDirectory(actor), listPartners(actor)]);
   const partnerIds = new Set(partners.map((p) => p.id));
   const rows = all.filter((o) =>
-    (!q || `${o.name} ${o.city} ${(o.transportProfile?.declaredRegions ?? []).join(" ")}`.toLowerCase().includes(q)) &&
+    (!q || `${o.name} ${o.city} ${o.locations.map((l) => placeName(l.placeId)).join(" ")} ${(o.transportProfile?.declaredRegions ?? []).join(" ")}`.toLowerCase().includes(q)) &&
     (!cat || (o.transportProfile?.vehicleCategories ?? []).includes(cat)),
   );
   const stars = await ratingSummaries(rows.map((o) => o.id));
@@ -55,7 +56,7 @@ export default async function DirectoryPage({ searchParams }: { searchParams: SP
                     <tr key={o.id}>
                       <td>
                         {o.name} <Badge status="VERIFIED">{t("Konzession geprüft")}</Badge>
-                        <span className="price-note">{o.city}, {o.country}{o.trips > 0 ? ` · ${t(o.trips === 1 ? "1 Fahrt mit Ihnen" : "{n} Fahrten mit Ihnen", { n: o.trips })}` : ""}{partnerIds.has(o.id) ? ` · ${t("Ihr Partner")}` : ""}</span>
+                        <span className="price-note">{[...new Set([o.city, ...o.locations.map((l) => t(placeName(l.placeId)))])].join(", ")}, {o.country}{o.trips > 0 ? ` · ${t(o.trips === 1 ? "1 Fahrt mit Ihnen" : "{n} Fahrten mit Ihnen", { n: o.trips })}` : ""}{partnerIds.has(o.id) ? ` · ${t("Ihr Partner")}` : ""}</span>
                       </td>
                       <td data-label={t("Fahrzeuge")}>
                         {o.transportProfile?.fleetSize ? t("{n} Fahrzeuge", { n: o.transportProfile.fleetSize }) : <span className="muted">–</span>}

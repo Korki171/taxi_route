@@ -1436,4 +1436,12 @@ export const EN: Record<string, string> = {
   "Ihr Partner": "your partner",
   "Anfragen": "Request",
   "Als Partner": "Add as partner",
+  // Standorte
+  "Standorte": "Locations",
+  "Wo stehen Ihre Fahrzeuge? Die Börse zeigt Ihnen damit Aufträge in Ihrer Nähe.": "Where are your vehicles based? The exchange uses this to show you jobs nearby.",
+  "Ort wählen": "Choose a place",
+  "Standort hinzufügen": "Add location",
+  "Standort gespeichert.": "Location saved.",
+  "Höchstens 10 Standorte.": "At most 10 locations.",
+  "Nur in der Nähe meiner Standorte (50 km)": "Only near my locations (50 km)",
 };

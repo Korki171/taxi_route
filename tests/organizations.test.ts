@@ -110,3 +110,24 @@ describe("Szenario D: Reisebüro als Beförderungsunternehmen", () => {
     ).rejects.toMatchObject({ code: "VALIDATION" });
   });
 });
+
+describe("Standorte", () => {
+  it("speichert Standorte und filtert die Börse auf die Nähe", async () => {
+    const { verifiedAgency, verifiedTaxi, requestInput } = await import("./helpers");
+    const { addLocation, listLocations, removeLocation } = await import("@/server/services/organizations");
+    const { createTransferRequest, searchBoard } = await import("@/server/services/marketplace");
+    const agency = await verifiedAgency();
+    const taxi = await verifiedTaxi();
+    await expect(addLocation(taxi.actor, "gibtsnicht")).rejects.toMatchObject({ code: "VALIDATION" });
+    await addLocation(taxi.actor, "kitzbuehel");
+    await addLocation(taxi.actor, "kitzbuehel");
+    const list = await listLocations(taxi.actor);
+    expect(list.map((l) => l.placeId)).toEqual(["kitzbuehel"]);
+    const near = await createTransferRequest(agency.actor, requestInput({ pickupPlaceId: "kitzbuehel", priceMode: "FIXED" }));
+    await createTransferRequest(agency.actor, requestInput({ pickupPlaceId: "soelden", priceMode: "FIXED" }));
+    expect((await searchBoard(taxi.actor, { nearMe: "1" })).map((r) => r.id)).toEqual([near.id]);
+    await removeLocation(taxi.actor, list[0].id);
+    // ohne Standorte filtert „in meiner Nähe“ nichts weg
+    expect(await searchBoard(taxi.actor, { nearMe: "1" })).toHaveLength(2);
+  });
+});

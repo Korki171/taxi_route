@@ -1,5 +1,6 @@
 import type { Capability } from "@prisma/client";
 import { db } from "@/lib/db";
+import { isPlaceId } from "@/lib/places";
 import { requirePermission, type Actor } from "../authz/context";
 import { invalid, notFound } from "../errors";
 import { orgProfileSchema, parse, transportProfileSchema } from "../validation";
@@ -131,4 +132,32 @@ export async function getPublicOrganizationProfile(actor: Actor | null, orgId: s
   if (!org || org.status === "SUSPENDED") throw notFound();
   const { status: _status, ...rest } = org;
   return rest;
+}
+
+// ---------------------------------------------------------------------------
+// Standorte
+// ---------------------------------------------------------------------------
+
+/** Höchstzahl Standorte je Betrieb */
+export const MAX_LOCATIONS = 10;
+
+export async function listLocations(actor: Actor | null) {
+  requirePermission(actor, "org.read");
+  return db.orgLocation.findMany({ where: { organizationId: actor.org.id }, orderBy: { createdAt: "asc" } });
+}
+
+export async function addLocation(actor: Actor | null, placeId: string) {
+  requirePermission(actor, "org.update");
+  if (!isPlaceId(placeId)) throw invalid("Unbekannter Ort");
+  if ((await db.orgLocation.count({ where: { organizationId: actor.org.id } })) >= MAX_LOCATIONS) throw invalid("Höchstens 10 Standorte.");
+  await db.orgLocation.upsert({
+    where: { organizationId_placeId: { organizationId: actor.org.id, placeId } },
+    create: { organizationId: actor.org.id, placeId },
+    update: {},
+  });
+}
+
+export async function removeLocation(actor: Actor | null, id: string) {
+  requirePermission(actor, "org.update");
+  await db.orgLocation.deleteMany({ where: { id, organizationId: actor.org.id } });
 }

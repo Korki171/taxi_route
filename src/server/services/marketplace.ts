@@ -309,7 +309,7 @@ export async function listProviderDirectory(actor: Actor | null) {
   const [orgs, history] = await Promise.all([
     db.organization.findMany({
       where: { id: { not: actor.org.id }, status: "ACTIVE", capabilities: { some: { capability: "TRANSPORT_PROVIDER", status: "VERIFIED" } } },
-      select: { id: true, name: true, city: true, country: true, transportProfile: { select: { vehicleCategories: true, fleetSize: true, declaredRegions: true } } },
+      select: { id: true, name: true, city: true, country: true, transportProfile: { select: { vehicleCategories: true, fleetSize: true, declaredRegions: true } }, locations: { select: { placeId: true } } },
       orderBy: { name: "asc" },
       take: 300,
     }),
@@ -348,6 +348,8 @@ export const boardFilterSchema = z.object({
   to: z.string().optional(),
   /** Umkreis in km um den Ort „Von“: Aufträge mit Abholung in diesem Umkreis */
   radiusKm: optInt(500),
+  /** Nur Aufträge mit Abholung im Umkreis der eigenen Standorte */
+  nearMe: z.preprocess((v) => v === "1" || v === true, z.boolean()).optional(),
   fromRegion: z.string().optional(),
   toRegion: z.string().optional(),
   country: z.string().optional(),
@@ -363,6 +365,9 @@ export const boardFilterSchema = z.object({
 });
 export type BoardFilter = z.infer<typeof boardFilterSchema>;
 
+/** Umkreis um die eigenen Standorte für „In meiner Nähe“ */
+export const NEAR_ME_KM = 50;
+
 const PLACE_IDS_IN = (pred: (p: Place) => boolean) => PLACES.filter(pred).map((p) => p.id);
 
 /** Offene Aufträge anderer Organisationen. Filter laufen in der Datenbank. */
@@ -376,6 +381,10 @@ export async function searchBoard(actor: Actor | null, rawFilter: unknown = {}) 
   if (center) and.push({ pickupPlaceId: { in: PLACE_IDS_IN((p) => haversineKm(center, p) <= f.radiusKm!) } });
   else if (f.from) and.push({ pickupPlaceId: f.from });
   if (f.to) and.push({ dropoffPlaceId: f.to });
+  if (f.nearMe) {
+    const own = (await db.orgLocation.findMany({ where: { organizationId: actor.org.id }, select: { placeId: true } })).flatMap((l) => getPlace(l.placeId) ?? []);
+    if (own.length) and.push({ pickupPlaceId: { in: PLACE_IDS_IN((p) => own.some((o) => haversineKm(o, p) <= NEAR_ME_KM)) } });
+  }
   if (f.fromRegion) and.push({ pickupPlaceId: { in: PLACE_IDS_IN((p) => p.region === f.fromRegion) } });
   if (f.toRegion) and.push({ dropoffPlaceId: { in: PLACE_IDS_IN((p) => p.region === f.toRegion) } });
   if (f.country) {

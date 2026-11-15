@@ -4,14 +4,14 @@ import { OrgProfileFields } from "@/components/OrgProfileFields";
 import { Badge, Flash, type SP } from "@/components/ui";
 import { CAPABILITY_LABEL, VEHICLE_LABEL, VERIFICATION_LABEL } from "@/lib/labels";
 import { actorCan } from "@/server/authz/context";
-import { getOwnOrganization } from "@/server/services/organizations";
+import { getOwnOrganization, listLocations, MAX_LOCATIONS } from "@/server/services/organizations";
 import { listBlocked, listPartnerCandidates, listPartners } from "@/server/services/partners";
 import { requireOrgActor } from "@/server/web";
 import { listJobAlerts, MAX_JOB_ALERTS } from "@/server/services/messages";
 import { placeName } from "@/lib/places";
 import type { Capability, VehicleCategory } from "@prisma/client";
 import { PlaceSelect } from "@/components/market";
-import { addJobAlertAction, addPartnerAction, removeJobAlertAction, updateJobAlertsAction, blockOrgAction, unblockOrgAction, removePartnerAction, requestCapabilityAction, updateProfileAction, updateTransportProfileAction } from "../actions";
+import { addJobAlertAction, addLocationAction, addPartnerAction, removeJobAlertAction, removeLocationAction, updateJobAlertsAction, blockOrgAction, unblockOrgAction, removePartnerAction, requestCapabilityAction, updateProfileAction, updateTransportProfileAction } from "../actions";
 import { getI18n } from "@/server/i18n";
 import Link from "next/link";
 import { PLAN_BY_ID, planStatus } from "@/lib/plans";
@@ -32,6 +32,7 @@ export default async function OrganizationPage({ searchParams }: { searchParams:
   const vehicles = org._count.vehicles;
   const canPartners = actorCan(actor, "transfers.request");
   const jobAlerts = canEdit ? await listJobAlerts(actor) : [];
+  const locations = canEdit ? await listLocations(actor) : [];
   const [partners, candidates, blocked] = canPartners ? await Promise.all([listPartners(actor), listPartnerCandidates(actor), listBlocked(actor)]) : [[], [], []];
 
   return (
@@ -143,6 +144,32 @@ export default async function OrganizationPage({ searchParams }: { searchParams:
               <label>{t("Von")}<PlaceSelect name="from" emptyLabel={t("Egal")} /></label>
               <label>{t("Nach")}<PlaceSelect name="to" emptyLabel={t("Egal")} /></label>
               <div className="field-end"><button type="submit" className="secondary">{t("Strecke speichern")}</button></div>
+            </form>
+          )}
+        </section>
+      )}
+
+      {capByType.has("TRANSPORT_PROVIDER") && canEdit && (
+        <section className="card stack" id="standorte">
+          <h2>{t("Standorte")}</h2>
+          <p className="muted flush">{t("Wo stehen Ihre Fahrzeuge? Die Börse zeigt Ihnen damit Aufträge in Ihrer Nähe.")}</p>
+          {locations.length > 0 && (
+            <ul className="plain-list">
+              {locations.map((l) => (
+                <li key={l.id} className="inline">
+                  <span>{t(placeName(l.placeId))}</span>
+                  <form action={removeLocationAction}>
+                    <input type="hidden" name="id" value={l.id} />
+                    <button type="submit" className="link">{t("Entfernen")}</button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          )}
+          {locations.length < MAX_LOCATIONS && (
+            <form action={addLocationAction} className="actions-row">
+              <PlaceSelect name="placeId" required emptyLabel={t("Ort wählen")} />
+              <button type="submit" className="secondary">{t("Standort hinzufügen")}</button>
             </form>
           )}
         </section>

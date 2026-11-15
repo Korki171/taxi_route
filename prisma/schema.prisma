@@ -233,6 +233,7 @@ model Organization {
   pushSubscriptions PushSubscription[]
   ratingsReceived   Rating[]           @relation("RatingsReceived")
   jobAlerts         JobAlert[]
+  locations         OrgLocation[]
 }
 
 /// Sperrliste: gesperrte Unternehmen sehen keine Aufträge dieses Unternehmens.
@@ -766,4 +767,16 @@ model JobAlert {
   createdAt      DateTime     @default(now())
 
   @@index([organizationId])
+}
+
+/// Standort eines Betriebs (Ort aus dem Ortskatalog). Dient der Suche „in meiner Nähe“ in der Börse
+/// und steht im Firmenverzeichnis. Der Firmensitz bleibt die Adresse am Unternehmen.
+model OrgLocation {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  placeId        String
+  createdAt      DateTime     @default(now())
+
+  @@unique([organizationId, placeId])
 }

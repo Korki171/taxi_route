@@ -58,7 +58,7 @@ const GROUPS: { id: string; label: string; views: string[] }[] = [
 /** Chips: „Neue Aufträge“ ist ein Filter (Schalter im Filter), kein eigener Knopf. */
 const CHIP_HIDDEN = new Set(["neu"]);
 
-const FILTER_KEYS = ["from", "to", "radiusKm", "fromRegion", "toRegion", "country", "dateFrom", "dateTo", "vehicleCategory", "minPassengers", "maxPassengers", "maxPrice", "priceMode", "newOnly"];
+const FILTER_KEYS = ["from", "to", "radiusKm", "nearMe", "fromRegion", "toRegion", "country", "dateFrom", "dateTo", "vehicleCategory", "minPassengers", "maxPassengers", "maxPrice", "priceMode", "newOnly"];
 
 async function PriceCell({ mode, cents, share = 0 }: { mode: "FIXED" | "NEGOTIABLE"; cents: number | null; share?: number }) {
   const { t, f } = await getI18n();
@@ -129,7 +129,7 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
   const { t, f } = await getI18n();
   const filter = Object.fromEntries(FILTER_KEYS.map((k) => [k, sp[k] ?? ""]));
   const maxPriceCents = sp.maxPrice ? String(Math.round(Number(sp.maxPrice) * 100)) : "";
-  const rows = await searchBoard(actor, { ...filter, maxPrice: maxPriceCents, newOnly: sp.newOnly });
+  const rows = await searchBoard(actor, { ...filter, maxPrice: maxPriceCents, newOnly: sp.newOnly, nearMe: sp.nearMe });
   const active = FILTER_KEYS.some((k) => sp[k]);
   const stars = await ratingSummaries(rows.map((r) => r.requesterOrg.id));
   // Karte: ein Punkt je Abholort, nur auf Wunsch geladen (?map=1)
@@ -193,6 +193,7 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
             <option value="">{t("Alle")}</option><option value="FIXED">{t("Festpreis")}</option><option value="NEGOTIABLE">{t("Verhandelbar")}</option>
           </select>
         </label>
+        <div className="checks"><label><input type="checkbox" name="nearMe" value="1" defaultChecked={!!sp.nearMe} />{" "}{t("Nur in der Nähe meiner Standorte (50 km)")}</label></div>
         <div className="checks"><label><input type="checkbox" name="newOnly" value="1" defaultChecked={!!sp.newOnly} />{" "}{t("Nur neue Aufträge (letzte 24 Stunden)")}</label></div>
         </div>
         <div className="actions">

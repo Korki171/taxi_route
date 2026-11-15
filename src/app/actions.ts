@@ -19,7 +19,7 @@ import {
   removeMember,
   revokeInvitation,
 } from "@/server/services/members";
-import { requestCapabilityReview, updateOrganizationProfile, updateTransportProfile } from "@/server/services/organizations";
+import { addLocation, removeLocation, requestCapabilityReview, updateOrganizationProfile, updateTransportProfile } from "@/server/services/organizations";
 import { registerOrganization } from "@/server/services/registration";
 import { createVehicle, publishCapacity, setCapacityStatus, setVehicleActive } from "@/server/services/fleet";
 import { assignBooking } from "@/server/services/dispatch";
@@ -315,6 +315,19 @@ export async function updateJobAlertsAction(fd: FormData) {
   await runAction("/organization", async () => {
     await updateJobAlerts(await getActor(), { mailNewJobs: fd.get("mailNewJobs") === "on" });
     return withParam("/organization", "ok", "Benachrichtigungen gespeichert.");
+  });
+}
+
+export async function addLocationAction(fd: FormData) {
+  await runAction("/organization", async () => {
+    await addLocation(await getActor(), str(fd, "placeId"));
+    return withParam("/organization", "ok", "Standort gespeichert.") + "#standorte";
+  });
+}
+
+export async function removeLocationAction(fd: FormData) {
+  await runAction("/organization", async () => {
+    await removeLocation(await getActor(), str(fd, "id"));
   });
 }
 
