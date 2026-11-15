@@ -24,7 +24,9 @@ describe("Nachrichten zum Auftrag", () => {
     expect(asRequester.threads.map((t) => t.withName).sort()).toEqual(["Taxi B", "Taxi C"]);
     await expect(sendMessage(agency.actor, req.id, { body: "Ja, einer", threadOrgId: agency.org.id })).rejects.toMatchObject({ code: "VALIDATION" });
     await sendMessage(agency.actor, req.id, { body: "Ja, einer", threadOrgId: taxi.org.id });
-    expect((await listThreads(taxi.actor, req.id)).threads[0].messages.map((m) => m.body)).toEqual(["Ist ein Kindersitz nötig?", "Ja, einer"]);
+    const reply = await listThreads(taxi.actor, req.id);
+    expect(reply.threads[0].messages.map((m) => m.body)).toEqual(["Ist ein Kindersitz nötig?", "Ja, einer"]);
+    expect(reply.threads[0].messages.map((m) => reply.names.get(m.senderOrgId))).toEqual(["Taxi B", "Reisebüro A"]);
     expect((await listThreads(other.actor, req.id)).threads[0].messages.map((m) => m.body)).toEqual(["Wie viel Gepäck?"]);
   });
 
