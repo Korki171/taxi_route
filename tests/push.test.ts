@@ -2,11 +2,12 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { sentEmails } from "@/server/email";
 import { sentPushes } from "@/server/push";
+import { blockOrg } from "@/server/services/partners";
 import { createTransferRequest, takeFixedPriceRequest } from "@/server/services/marketplace";
 import { removePushSubscription, savePushSubscription } from "@/server/services/push";
 import { addMember, requestInput, verifiedTaxi } from "./helpers";
 
-const sub = (n: number) => ({ endpoint: `https://push.example.com/send/${n}`, keys: { p256dh: "p".repeat(40), auth: "a".repeat(20) } });
+const sub = (n: number) => ({ endpoint: `https://fcm.googleapis.com/fcm/send/${n}`, keys: { p256dh: "p".repeat(40), auth: "a".repeat(20) } });
 
 beforeEach(() => {
   sentPushes.length = 0;
@@ -14,6 +15,15 @@ beforeEach(() => {
 });
 
 describe("Mitteilungen aufs Gerät", () => {
+  it("gesperrte Unternehmen bekommen keine Mitteilung über neue Aufträge", async () => {
+    const poster = await verifiedTaxi("Taxi Abgeber");
+    const blocked = await verifiedTaxi("Taxi Gesperrt");
+    await savePushSubscription(blocked.actor, null, sub(1));
+    await blockOrg(poster.actor, blocked.org.id);
+    await createTransferRequest(poster.actor, requestInput({ priceMode: "FIXED" }));
+    expect(sentPushes).toHaveLength(0);
+  });
+
   it("neuer Festpreis-Auftrag: Mitteilung mit „Übernehmen“ an die Geräte der anderen Betriebe", async () => {
     const poster = await verifiedTaxi("Taxi Abgeber");
     const taker = await verifiedTaxi("Taxi Nehmer");
@@ -71,5 +81,15 @@ describe("Mitteilungen aufs Gerät", () => {
     expect(await db.pushSubscription.count()).toBe(0);
     await expect(savePushSubscription(taxi.actor, null, { endpoint: "http://unsicher.example.com", keys: sub(1).keys })).rejects.toMatchObject({ code: "VALIDATION" });
     await expect(savePushSubscription(null, null, sub(3))).rejects.toMatchObject({ code: "UNAUTHENTICATED" });
+  });
+
+  it("nimmt nur echte Push-Dienste an und hängt fremde Geräte nicht um", async () => {
+    const a = await verifiedTaxi();
+    const b = await verifiedTaxi();
+    await expect(savePushSubscription(a.actor, null, { endpoint: "https://intern.example.com/x", keys: sub(1).keys })).rejects.toMatchObject({ code: "VALIDATION" });
+    await expect(savePushSubscription(a.actor, null, { endpoint: "https://fcm.googleapis.com.evil.com/x", keys: sub(1).keys })).rejects.toMatchObject({ code: "VALIDATION" });
+    await savePushSubscription(a.actor, null, sub(7));
+    await savePushSubscription(b.actor, null, sub(7));
+    expect((await db.pushSubscription.findUniqueOrThrow({ where: { endpoint: sub(7).endpoint } })).userId).toBe(a.user.id);
   });
 });

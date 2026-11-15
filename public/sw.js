@@ -24,7 +24,10 @@ self.addEventListener("push", (event) => {
 });
 
 async function openUrl(url) {
-  const target = new URL(url || "/boerse", self.location.origin).href;
+  let target = new URL(url || "/boerse", self.location.origin);
+  // Nur Seiten dieser App öffnen.
+  if (target.origin !== self.location.origin) target = new URL("/boerse", self.location.origin);
+  target = target.href;
   const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
   for (const w of wins) {
     if ("navigate" in w && "focus" in w) {

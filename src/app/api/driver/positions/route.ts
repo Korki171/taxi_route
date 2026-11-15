@@ -10,6 +10,8 @@ export async function POST(req: Request) {
   } catch {
     return Response.json({ error: "Ungültige Anfrage." }, { status: 400 });
   }
+  // Vor der Prüfung kappen: zod 3 prüft sonst jedes Element eines riesigen Arrays (Speicher-Angriff).
+  if (Array.isArray(body) && body.length > 100) return Response.json({ error: "Zu viele Messpunkte." }, { status: 413 });
   try {
     return Response.json(await recordPositions(await getActor(), body), { headers: { "Cache-Control": "no-store" } });
   } catch (e) {

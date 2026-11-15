@@ -43,6 +43,7 @@ import {
 import { fromLocalInput } from "@/lib/format";
 import { parseEuroToCents } from "@/lib/money";
 import { rateLimit } from "@/server/rate-limit";
+import { safeInternalPath } from "@/lib/safe-path";
 import { requestPasswordReset, resetPassword } from "@/server/services/password-reset";
 import {
   clientIp,
@@ -85,7 +86,7 @@ export async function loginAction(fd: FormData) {
     const s = await login({ email: str(fd, "email"), password: str(fd, "password") }, { ip: await clientIp() });
     await setSessionCookie(s.token, s.expiresAt);
     // Nur interne Pfade als Rücksprungziel (kein Open Redirect).
-    return next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+    return safeInternalPath(next, "/dashboard");
   });
 }
 
@@ -296,7 +297,7 @@ export async function createTransferRequestAction(fd: FormData) {
       visibility: str(fd, "visibility"),
       audience: str(fd, "audience"),
       escalateAfterMinutes: str(fd, "escalateAfterMinutes"),
-      invitedOrgIds: fd.getAll("invitedOrgIds").map(String),
+      invitedOrgIds: fd.getAll("invitedOrgIds").slice(0, 21).map(String),
     });
     return withParam(`/boerse/auftrag/${req.id}`, "ok", req.visibility === "INVITED" ? "Anfrage an die ausgewählten Unternehmen geschickt." : "Auftrag veröffentlicht.");
   });
@@ -517,7 +518,7 @@ export async function setCapacityStatusAction(fd: FormData) {
 export async function inviteProvidersAction(fd: FormData) {
   const id = str(fd, "requestId");
   await runAction(`/boerse/auftrag/${id}`, async () => {
-    await inviteProviders(await getActor(), id, fd.getAll("invitedOrgIds").map(String));
+    await inviteProviders(await getActor(), id, fd.getAll("invitedOrgIds").slice(0, 21).map(String));
     return withParam(`/boerse/auftrag/${id}`, "ok", "Weitere Unternehmen angefragt.");
   });
 }

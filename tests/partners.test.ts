@@ -96,7 +96,7 @@ describe("Zeitgeber für die Weitergabe", () => {
     const { POST } = await import("@/app/api/cron/escalate/route");
     const { poster, partner, stranger } = await setup();
     for (const [i, x] of [partner, stranger].entries()) {
-      await savePushSubscription(x.actor, null, { endpoint: `https://push.example.com/${i}`, keys: { p256dh: "p".repeat(40), auth: "a".repeat(20) } });
+      await savePushSubscription(x.actor, null, { endpoint: `https://fcm.googleapis.com/fcm/send/${i}`, keys: { p256dh: "p".repeat(40), auth: "a".repeat(20) } });
     }
     const req = await createTransferRequest(poster.actor, requestInput({ audience: "PARTNERS", escalateAfterMinutes: 30, priceMode: "FIXED" }));
     expect(await (await POST()).json()).toEqual({ escalated: 0 });
