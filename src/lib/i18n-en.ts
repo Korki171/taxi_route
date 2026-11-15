@@ -1320,4 +1320,8 @@ export const EN: Record<string, string> = {
   "mit https://": "with https://",
   "z. B. ATU12345678": "e.g. ATU12345678",
   "Ländercode und Nummer ohne Leerzeichen, z. B. ATU12345678": "Country code and number without spaces, e.g. ATU12345678",
+  "PLZ mit 4 bis 5 Ziffern, z. B. 6020": "Postcode with 4 to 5 digits, e.g. 6020",
+  "Telefon mit Landesvorwahl, z. B. +43 512 123456": "Phone with country code, e.g. +43 512 123456",
+  "Website als Adresse, z. B. https://www.firma.at": "Website as an address, e.g. https://www.company.com",
+  "UID ohne Leerzeichen, z. B. ATU12345678": "VAT ID without spaces, e.g. ATU12345678",
 };
