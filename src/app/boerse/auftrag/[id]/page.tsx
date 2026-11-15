@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import type { VehicleCategory } from "@prisma/client";
 import { AppShell } from "@/components/AppShell";
 import { Load, ProviderPicker, Route, VehicleSelect } from "@/components/market";
-import { Badge, Flash, type SP } from "@/components/ui";
+import { Badge, Flash, Stars, type SP } from "@/components/ui";
 import { fmtDateTime, fmtMinutes, fmtTime } from "@/lib/format";
 import {
   BOOKING_STATUS_LABEL,
@@ -25,6 +25,7 @@ import { listVehicles } from "@/server/services/fleet";
 import { escalateDueRequests } from "@/server/services/partners";
 import { listThreads } from "@/server/services/messages";
 import { listBookingDocuments } from "@/server/services/booking-extras";
+import { listBookingRatings, ratingSummaries } from "@/server/services/ratings";
 import { getTransferRequest, listProviderDirectory, MAX_INVITATIONS, referenceOf } from "@/server/services/marketplace";
 import { EVENT_LABEL } from "@/server/services/transfer-events";
 import { requireOrgActor } from "@/server/web";
@@ -36,6 +37,7 @@ import {
   cancelTransferRequestAction,
   declineInvitationAction,
   inviteProvidersAction,
+  rateBookingAction,
   openToMarketAction,
   rejectQuoteAction,
   submitQuoteAction,
@@ -92,6 +94,14 @@ export default async function RequestDetailPage({ params, searchParams }: { para
   const noShowOpen = !!booking && booking.status === "IN_PROGRESS" && booking.tripStage === "AT_PICKUP" && now >= noShowAllowedFrom(r.pickupAt) && actorCan(actor, "jobs.accept");
   const bookingDocs = booking && booking.status !== "CANCELLED" ? await listBookingDocuments(actor, booking.id) : [];
   const canDocs = !!booking && booking.status !== "CANCELLED" && (actorCan(actor, "bookings.manage") || actorCan(actor, "jobs.accept"));
+  // Bewertungen: Schnitt je Firma und die Bewertungen zu dieser Buchung
+  const stars = await ratingSummaries([r.requesterOrg.id, ...(booking ? [booking.providerOrgId] : []), ...quotes.map((q) => q.providerOrgId)]);
+  const rateable = !!booking && booking.status === "COMPLETED" && booking.providerOrgId !== booking.requesterOrgId;
+  const ratings = rateable ? await listBookingRatings(actor, booking.id) : [];
+  const myRating = ratings.find((x) => x.fromOrgId === actor.org.id);
+  const theirRating = ratings.find((x) => x.toOrgId === actor.org.id);
+  const canRate = rateable && !myRating && (actorCan(actor, "bookings.manage") || actorCan(actor, "jobs.accept"));
+  const otherName = booking ? (role === "requester" ? booking.providerOrg.name : r.requesterOrg.name) : "";
   const scope = booking?.scope as { vehicleCategory?: VehicleCategory | null } | undefined;
   const share = r.handoffSharePercent;
   const giver = role === "requester" ? t("Ihr Unternehmen") : r.requesterOrg.name;
@@ -187,7 +197,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
         <section className="card">
           <h2>{t("Auftraggeber")}</h2>
           <dl className="kv">
-            <dt>{t("Unternehmen")}</dt><dd>{r.requesterOrg.name}, {r.requesterOrg.city} <Badge status="VERIFIED">{t("geprüft")}</Badge></dd>
+            <dt>{t("Unternehmen")}</dt><dd>{r.requesterOrg.name}, {r.requesterOrg.city} <Badge status="VERIFIED">{t(r.requesterOrg.type === "TRANSPORT_COMPANY" ? "Konzession geprüft" : "geprüft")}</Badge> <Stars rating={stars.get(r.requesterOrg.id)} /></dd>
             {r.requesterOrg.email && <><dt>{t("E-Mail")}</dt><dd>{r.requesterOrg.email}</dd></>}
             {r.requesterOrg.phone && <><dt>{t("Telefon")}</dt><dd>{r.requesterOrg.phone}</dd></>}
             {r.clientReference && <><dt>{t("Ihre Referenz")}</dt><dd>{r.clientReference}</dd></>}
@@ -269,7 +279,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
                 <tbody>
                   {quotes.map((q, i) => (
                     <tr key={q.id} className={i === 0 && q.status === "SUBMITTED" ? "match" : undefined}>
-                      <td>{q.providerOrg.name}<span className="price-note">{q.providerOrg.city}{q.providerOrg.transportProfile?.fleetSize ? ` · ${t("{n} Fahrzeuge", { n: q.providerOrg.transportProfile.fleetSize })}` : ""} · {t("geprüft")}</span></td>
+                      <td>{q.providerOrg.name}<span className="price-note">{q.providerOrg.city}{q.providerOrg.transportProfile?.fleetSize ? ` · ${t("{n} Fahrzeuge", { n: q.providerOrg.transportProfile.fleetSize })}` : ""}</span><Badge status="VERIFIED">{t("Konzession geprüft")}</Badge> <Stars rating={stars.get(q.providerOrgId)} /></td>
                       <td data-label={t("Fahrzeug")}>{t(VEHICLE_LABEL[q.vehicleCategory])}</td>
                       <td data-label={t("Nachricht")}>{q.message ?? <span className="muted">–</span>}{q.validUntil && <span className="price-note">gültig bis {f.dateTime(q.validUntil)}</span>}</td>
                       <td className="num price-fixed">{f.money(q.amountCents)}{share > 0 && <span className="price-note price-share">{t("Ihr Anteil {amount}", { amount: f.money(splitHandoff(q.amountCents, share).shareCents) })}</span>}{r.priceCents ? <span className="price-note">{t("Richtpreis")} {f.money(r.priceCents)}</span> : null}</td>
@@ -348,7 +358,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
             <Badge status={booking.status}>{t(BOOKING_STATUS_LABEL[booking.status])}</Badge>
           </div>
           <dl className="kv">
-            <dt>{t("Ausführend")}</dt><dd>{booking.providerOrg.name}, {booking.providerOrg.city}</dd>
+            <dt>{t("Ausführend")}</dt><dd>{booking.providerOrg.name}, {booking.providerOrg.city} <Badge status="VERIFIED">{t("Konzession geprüft")}</Badge> <Stars rating={stars.get(booking.providerOrgId)} /></dd>
             {role === "requester" && booking.providerOrg.phone && <><dt>{t("Telefon")}</dt><dd>{booking.providerOrg.phone}</dd></>}
             {role === "requester" && booking.providerOrg.email && <><dt>{t("E-Mail")}</dt><dd>{booking.providerOrg.email}</dd></>}
             <dt>{t("Bestätigter Preis")}</dt><dd className="price-fixed">{f.money(booking.agreedPriceCents)}</dd>
@@ -440,6 +450,29 @@ export default async function RequestDetailPage({ params, searchParams }: { para
               </div>
             </details>
           )}
+        </section>
+      )}
+
+      {rateable && (canRate || myRating || theirRating) && (
+        <section className="card stack" id="bewertung">
+          <h2>{t("Bewertung")}</h2>
+          {canRate && (
+            <form action={rateBookingAction} className="stack">
+              <input type="hidden" name="requestId" value={r.id} />
+              <input type="hidden" name="bookingId" value={booking.id} />
+              <fieldset className="star-pick">
+                <legend>{t("Wie war die Zusammenarbeit mit {org}?", { org: otherName })}</legend>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <label key={n}><input type="radio" name="stars" value={n} required defaultChecked={n === 5} /> {"★".repeat(n)}</label>
+                ))}
+              </fieldset>
+              <label>{t("Kommentar, optional")}<input name="comment" maxLength={300} placeholder={t("z. B. pünktlich, sauberes Fahrzeug, schnell bezahlt")} /></label>
+              <div><button type="submit">{t("Bewertung abgeben")}</button></div>
+            </form>
+          )}
+          {myRating && <p className="flush">{t("Ihre Bewertung für {org}:", { org: otherName })} <span className="stars">{"★".repeat(myRating.stars)}</span>{myRating.comment ? ` „${myRating.comment}“` : ""}</p>}
+          {theirRating && <p className="flush">{t("{org} hat Sie bewertet:", { org: otherName })} <span className="stars">{"★".repeat(theirRating.stars)}</span>{theirRating.comment ? ` „${theirRating.comment}“` : ""}</p>}
+          <p className="price-note">{t("Bewertungen sind für alle Betriebe als Schnitt sichtbar und lassen sich nicht mehr ändern.")}</p>
         </section>
       )}
 

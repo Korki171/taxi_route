@@ -9,6 +9,7 @@ import { login, switchActiveOrganization } from "@/server/services/auth";
 import { deleteDocument, uploadDocument } from "@/server/services/documents";
 import { sendMessage, updateJobAlerts } from "@/server/services/messages";
 import { returnBooking, uploadBookingDocument } from "@/server/services/booking-extras";
+import { rateBooking } from "@/server/services/ratings";
 import { addPartner, advanceAudience, blockOrg, removePartner, takeOwnRequest, unblockOrg } from "@/server/services/partners";
 import {
   acceptInvitation,
@@ -427,6 +428,14 @@ export async function bookingTransitionAction(fd: FormData) {
       case "no_show": await reportNoShow(actor, bookingId, note); break;
       default: throw invalid("Unbekannte Aktion.");
     }
+  });
+}
+
+export async function rateBookingAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await rateBooking(await getActor(), str(fd, "bookingId"), { stars: str(fd, "stars"), comment: str(fd, "comment") });
+    return withParam(`/boerse/auftrag/${id}`, "ok", "Danke für Ihre Bewertung.");
   });
 }
 

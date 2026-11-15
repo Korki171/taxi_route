@@ -233,6 +233,7 @@ model Organization {
   messagesThread    Message[]          @relation("MessagesThread")
   blockedBy         OrgBlock[]         @relation("BlockedBy")
   pushSubscriptions PushSubscription[]
+  ratingsReceived   Rating[]           @relation("RatingsReceived")
 }
 
 /// Sperrliste: gesperrte Unternehmen sehen keine Aufträge dieses Unternehmens.
@@ -605,6 +606,7 @@ model Booking {
   completionNote      String?
 
   documents BookingDocument[]
+  ratings   Rating[]
 
   @@index([providerOrgId])
   @@index([requesterOrgId])
@@ -731,4 +733,21 @@ model PositionPing {
 
   @@index([shiftId, recordedAt])
   @@index([recordedAt])
+}
+
+/// Bewertung nach der Fahrt: jede der beiden Firmen bewertet die andere einmal je Buchung (1 bis 5 Sterne).
+model Rating {
+  id        String       @id @default(cuid())
+  bookingId String
+  booking   Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  fromOrgId String
+  toOrgId   String
+  toOrg     Organization @relation("RatingsReceived", fields: [toOrgId], references: [id], onDelete: Cascade)
+  createdBy String
+  stars     Int
+  comment   String?
+  createdAt DateTime     @default(now())
+
+  @@unique([bookingId, fromOrgId])
+  @@index([toOrgId])
 }

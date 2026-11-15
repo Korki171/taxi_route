@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { PushSetup } from "@/components/PushSetup";
 import { Empty, Load, PlaceSelect, Route, VehicleSelect } from "@/components/market";
-import { Badge, Flash, type SP } from "@/components/ui";
+import { Badge, Flash, Stars, type SP } from "@/components/ui";
+import { ratingSummaries } from "@/server/services/ratings";
 import { fmtDateTime, fmtMinutes, fmtTime } from "@/lib/format";
 import {
   BOOKING_STATUS_LABEL,
@@ -128,6 +129,7 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
   const maxPriceCents = sp.maxPrice ? String(Math.round(Number(sp.maxPrice) * 100)) : "";
   const rows = await searchBoard(actor, { ...filter, maxPrice: maxPriceCents, newOnly: sp.newOnly });
   const active = FILTER_KEYS.some((k) => sp[k]);
+  const stars = await ratingSummaries(rows.map((r) => r.requesterOrg.id));
   return (
     <>
       {(rows.length > 0 || active) && <form className="card filters" method="get" aria-label={t("Filter")}>
@@ -203,7 +205,7 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
                       <td><Route from={r.pickupPlaceId} to={r.dropoffPlaceId} href={`/boerse/auftrag/${r.id}`} /><span className="price-note">{t("ca. {n}", { n: f.minutes(r.estimatedMinutes) })}{r.flightNumber ? ` · ${t("Flug")} ${r.flightNumber}` : ""}</span></td>
                       <td data-label={t("Fahrgäste")}><Load passengers={r.passengers} luggage={r.luggage} ski={r.skiEquipment} /></td>
                       <td data-label={t("Fahrzeug")}>{r.vehicleCategory ? t(VEHICLE_LABEL[r.vehicleCategory]) : <span className="muted">{t("beliebig")}</span>}</td>
-                      <td data-label={t("Auftraggeber")}>{r.requesterOrg.name}<span className="price-note">{r.requesterOrg.city} · {t("geprüft")}</span></td>
+                      <td data-label={t("Auftraggeber")}>{r.requesterOrg.name}<span className="price-note">{r.requesterOrg.city} · {t(r.requesterOrg.type === "TRANSPORT_COMPANY" ? "Konzession geprüft" : "geprüft")}</span><Stars rating={stars.get(r.requesterOrg.id)} /></td>
                       <td className="num"><PriceCell mode={r.priceMode} cents={r.priceCents} share={r.handoffSharePercent} /></td>
                       <td className="nowrap">{r.invitations[0]?.status === "PENDING" && <span className="badge warn">{t("Direktanfrage")}</span>}{mine ? <Badge status={mine.status}>{t("Ihr Angebot")} {f.money(mine.amountCents)}</Badge> : <Link href={`/boerse/auftrag/${r.id}`}>{r.priceMode === "FIXED" ? t("Übernehmen") : t("Angebot abgeben")}</Link>}</td>
                     </tr>

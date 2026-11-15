@@ -203,6 +203,10 @@ a.badge:hover { text-decoration: underline; }
 .push-banner > div, .push-toggle > div { flex: 1 1 240px; }
 .push-error { color: var(--bad); }
 .muted { color: var(--muted); }
+.stars { font-weight: 600; font-variant-numeric: tabular-nums; }
+.star-pick { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.star-pick legend { padding: 0; margin-bottom: 6px; font-weight: 600; }
+.star-pick label { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 400; cursor: pointer; }
 p.right { text-align: right; margin: 0; }
 a.plain { color: inherit; text-decoration: none; }
 a.lang { color: var(--muted); font-size: 14px; }
