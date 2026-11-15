@@ -143,7 +143,7 @@ export async function advanceAudience(actor: Actor | null, requestId: string) {
 
 /**
  * Gibt alle Aufträge, deren Frist ohne Übernahme abgelaufen ist, an die nächste Stufe weiter.
- * Läuft beim Öffnen der Börse und täglich per Cron; ist idempotent.
+ * Läuft alle 5 Minuten (GitHub Actions, siehe /api/cron/escalate), beim Öffnen der Börse und täglich per Vercel-Cron; ist idempotent.
  */
 export async function escalateDueRequests(now = new Date()) {
   const open = await db.transferRequest.findMany({

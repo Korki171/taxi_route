@@ -95,20 +95,50 @@ enum VehicleCategory {
 }
 
 model User {
-  id              String               @id @default(cuid())
-  email           String               @unique
-  name            String
-  phone           String?
-  passwordHash    String
-  status          UserStatus           @default(ACTIVE)
-  isPlatformAdmin Boolean              @default(false)
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  memberships     Membership[]
-  sessions        Session[]
-  passwordResets  PasswordResetToken[]
-  driverBookings  Booking[]            @relation("DriverBookings")
-  driverShifts    DriverShift[]
+  id                String               @id @default(cuid())
+  email             String               @unique
+  name              String
+  phone             String?
+  passwordHash      String
+  status            UserStatus           @default(ACTIVE)
+  isPlatformAdmin   Boolean              @default(false)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  memberships       Membership[]
+  sessions          Session[]
+  passwordResets    PasswordResetToken[]
+  driverBookings    Booking[]            @relation("DriverBookings")
+  driverShifts      DriverShift[]
+  pushSubscriptions PushSubscription[]
+}
+
+/// Ein Gerät, das Mitteilungen erhält. WEB: Web-Push (Browser, PWA) mit Endpunkt und Schlüsseln.
+/// IOS/ANDROID: die native App, `endpoint` ist dann das Geräte-Token des Push-Dienstes.
+enum PushPlatform {
+  WEB
+  IOS
+  ANDROID
+}
+
+model PushSubscription {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Mitteilungen gelten für dieses Unternehmen (das beim Einschalten aktive)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  /// Anmeldung, mit der das Gerät eingeschaltet wurde: Abmelden schaltet die Mitteilungen dort ab.
+  sessionId      String?
+  session        Session?     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  platform       PushPlatform @default(WEB)
+  endpoint       String       @unique
+  p256dh         String?
+  auth           String?
+  createdAt      DateTime     @default(now())
+  lastSentAt     DateTime?
+
+  @@index([organizationId])
+  @@index([userId])
 }
 
 /// Einmal-Link zum Zurücksetzen des Passworts. Gespeichert wird nur der SHA-256 des Tokens.
@@ -135,13 +165,14 @@ model RateLimitHit {
 
 model Session {
   /// SHA-256 des Session-Tokens; das Klartext-Token existiert nur im Cookie.
-  id          String        @id
-  userId      String
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  activeOrgId String?
-  activeOrg   Organization? @relation(fields: [activeOrgId], references: [id], onDelete: SetNull)
-  expiresAt   DateTime
-  createdAt   DateTime      @default(now())
+  id                String             @id
+  userId            String
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeOrgId       String?
+  activeOrg         Organization?      @relation(fields: [activeOrgId], references: [id], onDelete: SetNull)
+  expiresAt         DateTime
+  createdAt         DateTime           @default(now())
+  pushSubscriptions PushSubscription[]
 
   @@index([userId])
 }
@@ -188,19 +219,20 @@ model Organization {
   auditEvents      AuditEvent[]
 
   vehicles          Vehicle[]
-  requests          TransferRequest[] @relation("RequesterRequests")
-  quotes            Quote[]           @relation("ProviderQuotes")
-  quoteInvitations  QuoteInvitation[] @relation("ProviderInvitations")
-  requesterBookings Booking[]         @relation("RequesterBookings")
-  providerBookings  Booking[]         @relation("ProviderBookings")
+  requests          TransferRequest[]  @relation("RequesterRequests")
+  quotes            Quote[]            @relation("ProviderQuotes")
+  quoteInvitations  QuoteInvitation[]  @relation("ProviderInvitations")
+  requesterBookings Booking[]          @relation("RequesterBookings")
+  providerBookings  Booking[]          @relation("ProviderBookings")
   capacityOffers    CapacityOffer[]
   driverShifts      DriverShift[]
-  partners          PartnerLink[]     @relation("OwnPartners")
-  partnerOf         PartnerLink[]     @relation("PartnerOf")
-  blocks            OrgBlock[]        @relation("OwnBlocks")
-  messagesSent      Message[]         @relation("MessagesSent")
-  messagesThread    Message[]         @relation("MessagesThread")
-  blockedBy         OrgBlock[]        @relation("BlockedBy")
+  partners          PartnerLink[]      @relation("OwnPartners")
+  partnerOf         PartnerLink[]      @relation("PartnerOf")
+  blocks            OrgBlock[]         @relation("OwnBlocks")
+  messagesSent      Message[]          @relation("MessagesSent")
+  messagesThread    Message[]          @relation("MessagesThread")
+  blockedBy         OrgBlock[]         @relation("BlockedBy")
+  pushSubscriptions PushSubscription[]
 }
 
 /// Sperrliste: gesperrte Unternehmen sehen keine Aufträge dieses Unternehmens.

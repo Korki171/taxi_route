@@ -3,6 +3,10 @@
  * E-Mail-Adresse der jeweiligen Organisation. Die Sprache richtet sich nach dem Land der
  * Organisation (deutschsprachige Länder Deutsch, sonst Englisch).
  *
+ * Jede Benachrichtigung geht zusätzlich als Mitteilung an die Geräte des Unternehmens, auf denen
+ * Mitteilungen eingeschaltet sind (siehe push.ts). Neue Festpreis-Aufträge lassen sich direkt aus
+ * der Mitteilung übernehmen.
+ *
  * Benachrichtigungen enthalten keine Fahrgastdaten und keine genauen Adressen; Details
  * stehen nach der Anmeldung in der App.
  */
@@ -12,38 +16,63 @@ import { makeT, type Locale } from "@/lib/i18n";
 import { formatCents } from "@/lib/money";
 import { placeName } from "@/lib/places";
 import { appUrl, sendAll, type Email } from "./email";
+import { sendPushes, type PushMessage } from "./push";
 import { referenceOf } from "./services/marketplace";
 
-type Org = { email: string; name: string; country: string };
+type Org = { id: string; email: string; name: string; country: string };
+
+/** Eine Benachrichtigung an ein Unternehmen: E-Mail (falls gewünscht) und Mitteilung aufs Gerät. */
+type Note = { email: Email | null; push: { orgId: string; message: PushMessage } };
 
 const localeOf = (country: string): Locale => (["AT", "DE", "CH", "LI"].includes(country) ? "de" : "en");
 
 type Req = { id: string; number: number; pickupPlaceId: string; dropoffPlaceId: string; pickupAt: Date };
 
-function mail(org: Org, req: Req, subject: string, lines: string[], vars: Record<string, string | number> = {}): Email {
+type Opts = { vars?: Record<string, string | number>; /** Kurztext der Mitteilung; sonst die erste Zeile */ pushBody?: string; takeable?: boolean; email?: boolean };
+
+function note(org: Org, req: Req, subject: string, lines: string[], opts: Opts = {}): Note {
   const locale = localeOf(org.country);
   const t = makeT(locale);
   const v = {
     ref: referenceOf(req.number),
     route: `${t(placeName(req.pickupPlaceId))} → ${t(placeName(req.dropoffPlaceId))}`,
     pickup: fmtDateTime(req.pickupAt, locale),
-    ...vars,
+    ...opts.vars,
   };
+  const path = `/boerse/auftrag/${req.id}`;
   return {
-    to: org.email,
-    subject: `Transferborsa: ${t(subject, v)}`,
-    text: [
-      ...lines.map((l) => t(l, v)),
-      "",
-      appUrl(`/boerse/auftrag/${req.id}`),
-      "",
-      "—",
-      t("Diese Nachricht wurde automatisch von Transferborsa verschickt."),
-    ].join("\n"),
+    email: opts.email === false ? null : {
+      to: org.email,
+      subject: `Transferborsa: ${t(subject, v)}`,
+      text: [
+        ...lines.map((l) => t(l, v)),
+        "",
+        appUrl(path),
+        "",
+        "—",
+        t("Diese Nachricht wurde automatisch von Transferborsa verschickt."),
+      ].join("\n"),
+    },
+    push: {
+      orgId: org.id,
+      message: {
+        title: t(subject, v),
+        body: t(opts.pushBody ?? lines[0], v),
+        url: path,
+        tag: `${subject}:${req.id}`,
+        ...(opts.takeable
+          ? { takeRequestId: req.id, actions: [{ action: "take" as const, title: t("Übernehmen") }, { action: "open" as const, title: t("Ansehen") }] }
+          : {}),
+      },
+    },
   };
 }
 
-const orgSelect = { email: true, name: true, country: true } as const;
+async function deliver(notes: Note[]) {
+  await Promise.all([sendAll(notes.flatMap((n) => (n.email ? [n.email] : []))), sendPushes(notes.map((n) => n.push))]);
+}
+
+const orgSelect = { id: true, email: true, name: true, country: true } as const;
 
 /**
  * Neuer Auftrag: eingeladene Unternehmen erhalten eine Direktanfrage. Börsenaufträge gehen zusätzlich
@@ -65,8 +94,7 @@ export async function notifyNewRequest(requestId: string, skipOrgIds: string[] =
   const providers = await db.organization.findMany({
     where: {
       id: { notIn: [req.requesterOrgId, ...invited, ...skipOrgIds], ...(partnerIds ? { in: partnerIds } : {}) },
-      // Suchagent: nur wer E-Mails will und dessen Strecke (falls gesetzt) passt
-      mailNewJobs: true,
+      // Suchagent: nur wessen Strecke (falls gesetzt) passt. E-Mail nur, wer sie will; Mitteilungen aufs Gerät immer.
       AND: [
         { OR: [{ alertFromPlaceId: null }, { alertFromPlaceId: req.pickupPlaceId }] },
         { OR: [{ alertToPlaceId: null }, { alertToPlaceId: req.dropoffPlaceId }] },
@@ -74,17 +102,23 @@ export async function notifyNewRequest(requestId: string, skipOrgIds: string[] =
       status: "ACTIVE",
       capabilities: { some: { capability: "TRANSPORT_PROVIDER", status: "VERIFIED" } },
     },
-    select: orgSelect,
+    select: { ...orgSelect, mailNewJobs: true },
   });
   const price = req.priceCents ? formatCents(req.priceCents) : "–";
-  await sendAll(
+  const takeable = req.priceMode === "FIXED" && req.priceCents != null;
+  await deliver(
     providers.map((p) =>
-      mail(p, req, "Neuer Auftrag {route}", [
+      note(p, req, "Neuer Auftrag {route}", [
         "Neuer Auftrag in der Börse: {route}, Abholung {pickup}.",
         req.priceMode === "FIXED" ? "Festpreis: {price}. Das erste Unternehmen, das übernimmt, erhält den Auftrag." : "Richtpreis: {price}. Angebote sind möglich.",
         ...(req.handoffSharePercent > 0 ? ["{requester} behält {share} % vom Fahrpreis als Abgabe-Anteil."] : []),
         "{pax} Personen, Auftraggeber: {requester}.",
-      ], { price, pax: req.passengers, requester: req.requesterOrg.name, share: req.handoffSharePercent }),
+      ], {
+        vars: { price, pax: req.passengers, requester: req.requesterOrg.name, share: req.handoffSharePercent },
+        pushBody: takeable ? "{pickup} · {pax} Personen · Festpreis {price}" : "{pickup} · {pax} Personen · Richtpreis {price}",
+        takeable,
+        email: p.mailNewJobs,
+      }),
     ),
   );
   if (invited.length) await notifyInvited(requestId, invited);
@@ -96,14 +130,19 @@ export async function notifyInvited(requestId: string, orgIds: string[]) {
   const req = await db.transferRequest.findUniqueOrThrow({ where: { id: requestId }, include: { requesterOrg: { select: orgSelect } } });
   const orgs = await db.organization.findMany({ where: { id: { in: orgIds }, status: "ACTIVE" }, select: orgSelect });
   const price = req.priceCents ? formatCents(req.priceCents) : "–";
-  await sendAll(
+  const takeable = req.priceMode === "FIXED" && req.priceCents != null;
+  await deliver(
     orgs.map((p) =>
-      mail(p, req, "Direktanfrage von {requester}: {route}", [
+      note(p, req, "Direktanfrage von {requester}: {route}", [
         "{requester} bittet Sie gezielt um ein Angebot: {route}, Abholung {pickup}.",
         req.priceMode === "FIXED" ? "Festpreis: {price}. Das erste Unternehmen, das übernimmt, erhält den Auftrag." : "Richtpreis: {price}. Angebote sind möglich.",
         ...(req.handoffSharePercent > 0 ? ["{requester} behält {share} % vom Fahrpreis als Abgabe-Anteil."] : []),
         "{pax} Personen. Sie können die Anfrage in Transferborsa annehmen oder ablehnen.",
-      ], { price, pax: req.passengers, requester: req.requesterOrg.name, share: req.handoffSharePercent }),
+      ], {
+        vars: { price, pax: req.passengers, requester: req.requesterOrg.name, share: req.handoffSharePercent },
+        pushBody: takeable ? "{pickup} · {pax} Personen · Festpreis {price}" : "{pickup} · {pax} Personen · Richtpreis {price}",
+        takeable,
+      }),
     ),
   );
 }
@@ -114,11 +153,11 @@ export async function notifyQuoteSubmitted(quoteId: string) {
     where: { id: quoteId },
     include: { providerOrg: { select: { name: true } }, request: { include: { requesterOrg: { select: orgSelect } } } },
   });
-  await sendAll([
-    mail(q.request.requesterOrg, q.request, "Neues Angebot für {ref}", [
+  await deliver([
+    note(q.request.requesterOrg, q.request, "Neues Angebot für {ref}", [
       "{provider} bietet {amount} für {route} (Abholung {pickup}).",
       "Sie können das Angebot in Transferborsa vergleichen und annehmen.",
-    ], { provider: q.providerOrg.name, amount: formatCents(q.amountCents) }),
+    ], { vars: { provider: q.providerOrg.name, amount: formatCents(q.amountCents) } }),
   ]);
 }
 
@@ -133,16 +172,16 @@ export async function notifyBooked(bookingId: string) {
     share: b.handoffSharePercent, shareAmount: formatCents(b.handoffShareCents), net: formatCents(b.agreedPriceCents - b.handoffShareCents),
   };
   const hasShare = b.handoffShareCents > 0;
-  await sendAll([
-    mail(b.providerOrg, b.request, "Auftrag {ref} verbindlich vergeben", [
+  await deliver([
+    note(b.providerOrg, b.request, "Auftrag {ref} verbindlich vergeben", [
       "Sie fahren {route} am {pickup} für {amount}.",
       ...(hasShare ? ["Davon behält {requester} {shareAmount} ({share} %) als Abgabe-Anteil, Sie erhalten {net}."] : []),
       "Auftraggeber: {requester}. Adressen und Fahrgastdaten finden Sie jetzt in der Buchung.",
-    ], vars),
-    mail(b.requesterOrg, b.request, "Buchung {ref} bestätigt", [
+    ], { vars }),
+    note(b.requesterOrg, b.request, "Buchung {ref} bestätigt", [
       "{provider} fährt {route} am {pickup} für {amount}. Der Preis ist verbindlich.",
       ...(hasShare ? ["Ihr Abgabe-Anteil: {shareAmount} ({share} %). {provider} erhält {net}."] : []),
-    ], vars),
+    ], { vars }),
   ]);
 }
 
@@ -161,7 +200,7 @@ const STATUS_SUBJECT: Record<string, string> = {
 };
 
 /** Storno, Beanstandung oder Abschluss: an die jeweils andere Seite. */
-export async function notifyBookingStatus(bookingId: string, eventType: string, actorOrgId: string, note?: string, feeCents?: number) {
+export async function notifyBookingStatus(bookingId: string, eventType: string, actorOrgId: string, reason?: string, feeCents?: number) {
   const subject = STATUS_SUBJECT[eventType];
   if (!subject) return;
   const b = await db.booking.findUniqueOrThrow({
@@ -169,16 +208,18 @@ export async function notifyBookingStatus(bookingId: string, eventType: string, 
     include: { request: true, providerOrg: { select: orgSelect }, requesterOrg: { select: orgSelect } },
   });
   const [actor, other] = actorOrgId === b.providerOrgId ? [b.providerOrg, b.requesterOrg] : [b.requesterOrg, b.providerOrg];
-  await sendAll([
-    mail(other, b.request, subject, [
+  await deliver([
+    note(other, b.request, subject, [
       "{actor} hat den Status der Buchung {ref} ({route}, {pickup}) geändert: {status}.",
-      ...(note ? ["Begründung: {note}"] : []),
+      ...(reason ? ["Begründung: {note}"] : []),
       ...(feeCents ? ["Laut vereinbarter Stornoregel fällt eine Gebühr von {fee} an. Sie wird direkt zwischen den Unternehmen abgerechnet."] : []),
     ], {
-      actor: actor.name,
-      status: makeT(localeOf(other.country))(STATUS_WORD[eventType]),
-      note: note ?? "",
-      fee: feeCents ? new Intl.NumberFormat(localeOf(other.country) === "en" ? "en-GB" : "de-AT", { style: "currency", currency: b.currency }).format(feeCents / 100) : "",
+      vars: {
+        actor: actor.name,
+        status: makeT(localeOf(other.country))(STATUS_WORD[eventType]),
+        note: reason ?? "",
+        fee: feeCents ? new Intl.NumberFormat(localeOf(other.country) === "en" ? "en-GB" : "de-AT", { style: "currency", currency: b.currency }).format(feeCents / 100) : "",
+      },
     }),
   ]);
 }
@@ -190,20 +231,20 @@ export async function notifyNewMessage(messageId: string) {
     include: { request: true, senderOrg: { select: orgSelect }, threadOrg: { select: orgSelect } },
   });
   const to = m.senderOrgId === m.threadOrgId ? await db.organization.findUniqueOrThrow({ where: { id: m.request.requesterOrgId }, select: orgSelect }) : m.threadOrg;
-  await sendAll([
-    mail(to, m.request, "Neue Nachricht zu {ref}", ["{actor} hat Ihnen zum Auftrag {ref} ({route}, {pickup}) geschrieben. Die Nachricht lesen und antworten Sie in Transferborsa."], { actor: m.senderOrg.name }),
+  await deliver([
+    note(to, m.request, "Neue Nachricht zu {ref}", ["{actor} hat Ihnen zum Auftrag {ref} ({route}, {pickup}) geschrieben. Die Nachricht lesen und antworten Sie in Transferborsa."], { vars: { actor: m.senderOrg.name } }),
   ]);
 }
 
 /** Das ausführende Unternehmen hat einen übernommenen Auftrag zurückgegeben: an den Auftraggeber. */
-export async function notifyBookingReturned(requestId: string, providerOrgId: string, note: string) {
+export async function notifyBookingReturned(requestId: string, providerOrgId: string, reason: string) {
   const req = await db.transferRequest.findUniqueOrThrow({ where: { id: requestId }, include: { requesterOrg: { select: orgSelect } } });
   const provider = await db.organization.findUniqueOrThrow({ where: { id: providerOrgId }, select: orgSelect });
-  await sendAll([
-    mail(req.requesterOrg, req, "Auftrag {ref} zurückgegeben", [
+  await deliver([
+    note(req.requesterOrg, req, "Auftrag {ref} zurückgegeben", [
       "{actor} hat den übernommenen Auftrag {ref} ({route}, {pickup}) zurückgegeben. Er ist wieder offen und wird neu veröffentlicht.",
       "Begründung: {note}",
-    ], { actor: provider.name, note }),
+    ], { vars: { actor: provider.name, note: reason } }),
   ]);
 }
 
@@ -213,8 +254,8 @@ export async function notifyRequestCancelled(requestId: string) {
     where: { id: requestId },
     include: { quotes: { include: { providerOrg: { select: orgSelect } } } },
   });
-  await sendAll(
-    req.quotes.map((q) => mail(q.providerOrg, req, "Auftrag {ref} zurückgezogen", [
+  await deliver(
+    req.quotes.map((q) => note(q.providerOrg, req, "Auftrag {ref} zurückgezogen", [
       "Der Auftraggeber hat {route} ({pickup}) zurückgezogen. Ihr Angebot ist damit hinfällig.",
     ])),
   );

@@ -25,9 +25,10 @@ Optionales kommt hinter „Weitere Angaben“, und Funktionen werden versteckt o
 1. **Aufträge in WhatsApp teilen.** Jeder Auftrag bekommt einen Teilen-Link (WhatsApp, Kopieren). Wer den Link
    öffnet, sieht die Fahrt ohne Login (ohne Fahrgastdaten) und kann nach einer kurzen Registrierung übernehmen.
    Ziel: WhatsApp-Gruppen bringen neue Betriebe auf die Börse, statt ihr Konkurrenz zu machen.
-2. **Übernahme in Minuten.** Sofortige Benachrichtigung aufs Handy (Push über die Fahrer-App, bis dahin E-Mail
-   und ggf. WhatsApp/SMS) mit direktem „Übernehmen“. Bleibt ein Auftrag 30 Minuten frei, wird automatisch die
-   nächste Stufe im Partnernetzwerk benachrichtigt (heute nur täglicher Cron).
+2. **Übernahme in Minuten.** *Gebaut (November 2026):* Mitteilung aufs Handy bei jedem neuen Auftrag (Web-Push,
+   E-Mail als Rückfall) mit direktem „Übernehmen“ bei Festpreis. Bleibt ein Auftrag 30 Minuten frei (Standardfrist),
+   wird automatisch die nächste Stufe im Partnernetzwerk benachrichtigt; ein Zeitgeber prüft alle 5 Minuten
+   (`.github/workflows/weitergabe.yml`). Offen: nativer Push über die Fahrer-App, SMS/WhatsApp nur bei Bedarf.
 3. **Einstieg in 2 Minuten.** Registrierung von 14 auf etwa 6 Pflichtfelder, Konzession und Versicherung
    später nachreichen. Navigation für Taxibetriebe von 8 auf 4 Punkte.
 4. **Hotels bestellen ohne Konto.** Einfaches Bestellformular bzw. ein fester Link pro Hotel/Reisebüro, ohne

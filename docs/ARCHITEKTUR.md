@@ -108,6 +108,8 @@ eine Übersetzung mit denselben Platzhaltern hat. Der Adminbereich und die Recht
 Eingaben der Nutzer (Notizen, Bedingungen) werden nicht übersetzt.
 
 **E-Mails.** `src/server/email.ts` verschickt über Resend; ohne `RESEND_API_KEY` nur ins Log.
+
+**Mitteilungen aufs Gerät.** Jede Benachrichtigung aus `src/server/notifications.ts` geht zusätzlich über `src/server/push.ts` als Web-Push an die Geräte des Unternehmens (`PushSubscription`, je Gerät und Anmeldung). Der Service Worker `public/sw.js` zeigt sie an; „Übernehmen“ ruft `/api/push/take` auf.
 `src/server/notifications.ts` benachrichtigt nach dem Speichern: neue Aufträge an alle geprüften
 Beförderungsunternehmen, Angebote an den Auftraggeber, Vergabe an beide Seiten, Storno/Beanstandung/
 Abschluss an die andere Seite, zurückgezogene Aufträge an Anbieter mit Angebot. Die Sprache folgt dem

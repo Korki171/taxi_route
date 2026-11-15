@@ -3,11 +3,17 @@ import { escalateDueRequests } from "@/server/services/partners";
 
 export const dynamic = "force-dynamic";
 
-/** Täglicher Vercel-Cron: gibt überfällige Aufträge an die nächste Stufe weiter (zusätzlich zum Aufruf beim Öffnen der Börse). */
-export async function GET(req: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
-  return NextResponse.json({ escalated: await escalateDueRequests() });
+/**
+ * Gibt Aufträge, deren Frist ohne Übernahme abgelaufen ist, an die nächste Stufe weiter und
+ * benachrichtigt den neuen Kreis. Aufgerufen alle 5 Minuten von GitHub Actions
+ * (.github/workflows/weitergabe.yml), täglich vom Vercel-Cron und zusätzlich beim Öffnen der Börse.
+ *
+ * Bewusst ohne Geheimnis: der Aufruf ändert nur, was ohnehin fällig ist, ist wiederholbar und
+ * liest höchstens 200 Aufträge. Ein fremder Aufruf kann nichts vorziehen oder verraten.
+ */
+async function run() {
+  return NextResponse.json({ escalated: await escalateDueRequests() }, { headers: { "Cache-Control": "no-store" } });
 }
+
+export const GET = run;
+export const POST = run;

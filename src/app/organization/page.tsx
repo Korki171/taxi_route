@@ -1,3 +1,4 @@
+import { PushSetup } from "@/components/PushSetup";
 import { AppShell } from "@/components/AppShell";
 import { OrgProfileFields } from "@/components/OrgProfileFields";
 import { Badge, Flash, type SP } from "@/components/ui";
@@ -103,9 +104,17 @@ export default async function OrganizationPage({ searchParams }: { searchParams:
         </div>
       </section>
 
+      {capByType.has("TRANSPORT_PROVIDER") && !canEdit && (
+        <section className="card stack">
+          <h2>{t("Benachrichtigungen")}</h2>
+          <PushSetup />
+        </section>
+      )}
+
       {capByType.has("TRANSPORT_PROVIDER") && canEdit && (
         <section className="card stack">
           <h2>{t("Benachrichtigungen")}</h2>
+          <PushSetup />
           <form action={updateJobAlertsAction} className="stack">
             <label className="check"><input type="checkbox" name="mailNewJobs" defaultChecked={org.mailNewJobs} />{t("E-Mail bei neuen Aufträgen in der Börse")}</label>
             <div className="fields">
