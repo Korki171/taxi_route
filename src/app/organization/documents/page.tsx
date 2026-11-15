@@ -42,7 +42,7 @@ export default async function DocumentsPage({ searchParams }: { searchParams: SP
                     <tr key={d.id}>
                       <td>{DOCUMENT_LABELS[d.type]}</td>
                       <td><a href={`/api/documents/${d.id}`}>{d.title}</a> <span className="muted">({Math.ceil(d.sizeBytes / 1024)} KB)</span></td>
-                      <td>{d.validUntil ? d.validUntil.toLocaleDateString("de-AT") : "–"} {expired && <Badge status="REJECTED">{t("Abgelaufen")}</Badge>}</td>
+                      <td>{d.validUntil ? d.validUntil.toLocaleDateString("de-AT") : "–"} {expired && <Badge status="REJECTED">{t("Abgelaufen")}</Badge>}{!expired && d.validUntil && d.validUntil.getTime() - now.getTime() < 30 * 86_400_000 && <Badge status="PENDING">{t("Läuft bald ab")}</Badge>}</td>
                       <td><Badge status={d.status}>{t(DOC_STATUS_LABEL[d.status])}</Badge></td>
                       <td className="muted">{d.reviewNote}</td>
                       <td>

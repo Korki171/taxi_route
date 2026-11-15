@@ -333,6 +333,8 @@ model VerificationDocument {
   /// Später: Objektspeicher mit signierten URLs.
   content        Bytes
   validUntil     DateTime?
+  /// Ablaufwarnung: 0 = keine, 1 = Hinweis 30 Tage vorher gesendet, 2 = Hinweis zum Ablauf gesendet
+  expiryNotice   Int            @default(0)
   status         DocumentStatus @default(PENDING)
   reviewNote     String?
   reviewedById   String?

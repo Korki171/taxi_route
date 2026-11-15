@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { escalateDueRequests } from "@/server/services/partners";
+import { sendExpiryNotices } from "@/server/services/verification-rules";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,10 @@ export const dynamic = "force-dynamic";
  * liest höchstens 200 Aufträge. Ein fremder Aufruf kann nichts vorziehen oder verraten.
  */
 async function run() {
-  return NextResponse.json({ escalated: await escalateDueRequests() }, { headers: { "Cache-Control": "no-store" } });
+  const escalated = await escalateDueRequests();
+  // Ablaufwarnungen für Nachweise (jede Stufe geht nur einmal raus)
+  const expiryNotices = await sendExpiryNotices().catch(() => 0);
+  return NextResponse.json({ escalated, expiryNotices }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export const GET = run;

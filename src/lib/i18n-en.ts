@@ -1417,4 +1417,12 @@ export const EN: Record<string, string> = {
   "Bitte mindestens einen Ort wählen.": "Please choose at least one place.",
   "Höchstens 5 gespeicherte Strecken.": "At most 5 saved routes.",
   "Bei neuen Aufträgen für diese Strecke benachrichtigen": "Notify me about new jobs for this route",
+  // Ablaufwarnung für Nachweise
+  "{doc} ist abgelaufen": "{doc} has expired",
+  "{doc} läuft am {date} ab": "{doc} expires on {date}",
+  "Ihr Nachweis „{doc}“ ist am {date} abgelaufen.": "Your document “{doc}” expired on {date}.",
+  "Ihr Nachweis „{doc}“ läuft am {date} ab.": "Your document “{doc}” expires on {date}.",
+  "Bitte laden Sie das neue Dokument unter „Nachweise“ hoch, damit Ihr Betrieb weiter als geprüft gilt.": "Please upload the new document under “Documents” so your company remains verified.",
+  "Läuft bald ab": "Expires soon",
+  "Neues Dokument hochladen": "Upload new document",
 };
