@@ -23,6 +23,12 @@ const subscriptionSchema = z.object({
   keys: z.object({ p256dh: z.string().min(10).max(300), auth: z.string().min(10).max(100) }),
 });
 
+/** Native Fahrer-App: Geräte-Token von Firebase Cloud Messaging */
+const nativeSchema = z.object({
+  platform: z.enum(["ios", "android"]),
+  token: z.string().min(20).max(4096).regex(/^[\w:.\-]+$/, "Ungültiges Token."),
+});
+
 /** Schaltet Mitteilungen für dieses Gerät ein (oder frischt den Eintrag auf). Gilt für das aktive Unternehmen. */
 export async function savePushSubscription(actor: Actor | null, sessionId: string | null, input: unknown) {
   requirePermission(actor, "org.read");

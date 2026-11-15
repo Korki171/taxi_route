@@ -202,7 +202,18 @@ a.badge:hover { text-decoration: underline; }
 .push-banner p, .push-toggle p { margin: 0; }
 .push-banner > div, .push-toggle > div { flex: 1 1 240px; }
 .push-error { color: var(--bad); }
+/* Erster Start der Fahrer-Ansicht: drei nummerierte Schritte */
+ol.setup-steps { list-style: none; counter-reset: step; margin: 0; padding: 0; }
+ol.setup-steps li { counter-increment: step; position: relative; padding: 0 0 16px 40px; }
+ol.setup-steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--band); color: var(--band-ink); font-weight: 600; display: grid; place-items: center; }
+ol.setup-steps li:last-child { padding-bottom: 0; }
+ol.setup-steps strong { display: block; line-height: 28px; }
+.consent details { margin-top: 8px; font-size: 14px; color: var(--muted); }
 .muted { color: var(--muted); }
+.stars { font-weight: 600; font-variant-numeric: tabular-nums; }
+.star-pick { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.star-pick legend { padding: 0; margin-bottom: 6px; font-weight: 600; }
+.star-pick label { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 400; cursor: pointer; }
 p.right { text-align: right; margin: 0; }
 a.plain { color: inherit; text-decoration: none; }
 a.lang { color: var(--muted); font-size: 14px; }
@@ -297,6 +308,18 @@ details.more-actions > summary { color: var(--muted); font-size: 14px; min-heigh
 /* ---------- Anmeldung und Registrierung: Papier oben, Navy unten wie der Hero ---------- */
 
 /* ---------- Rechtstexte ---------- */
+.route-guide strong { color: var(--text); }
+.save-search { margin: -4px 0 var(--gap); }
+.field-end { display: flex; align-items: end; }
+.board-map { height: min(60vh, 480px); min-height: 300px; z-index: 0; background: var(--stone); margin-bottom: var(--gap); }
+.board-pin { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); border: 3px solid #111; font-weight: 700; font-size: 14px; }
+.board-pop { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 8px; max-height: 220px; overflow: auto; }
+.board-pop small { display: block; color: var(--muted); }
+.track-state { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; background: var(--band); color: var(--band-ink); padding: 14px 16px; margin-top: 16px; }
+.track-state strong { font-size: 18px; }
+.track-state .muted { color: var(--band-muted); }
+.track-map { height: min(52vh, 440px); min-height: 280px; z-index: 0; background: var(--stone); margin-bottom: var(--gap); }
+main.legal.track .legal-top { margin-bottom: 24px; }
 main.legal { max-width: 800px; margin: 0 auto; padding: 32px var(--margin) 64px; }
 .legal-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
 .legal h2 { margin-top: 32px; }

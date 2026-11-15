@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { PushSetup } from "@/components/PushSetup";
 import { Empty, Load, PlaceSelect, Route, VehicleSelect } from "@/components/market";
-import { Badge, Flash, type SP } from "@/components/ui";
+import { Badge, Flash, Stars, type SP } from "@/components/ui";
+import { BoardMap, type BoardMapPoint } from "@/components/BoardMap";
+import { ratingSummaries } from "@/server/services/ratings";
 import { fmtDateTime, fmtMinutes, fmtTime } from "@/lib/format";
 import {
   BOOKING_STATUS_LABEL,
@@ -14,7 +16,7 @@ import {
   VEHICLE_LABEL,
 } from "@/lib/labels";
 import { formatCents } from "@/lib/money";
-import { REGION_LABEL, placeName } from "@/lib/places";
+import { REGION_LABEL, getPlace, placeName } from "@/lib/places";
 import { actorCan, type OrgActor } from "@/server/authz/context";
 import { listMarketCapacity } from "@/server/services/fleet";
 import {
@@ -29,7 +31,7 @@ import {
 import { splitHandoff } from "@/lib/handoff";
 import { listCapacityWithMatches } from "@/server/services/matching";
 import { requireOrgActor } from "@/server/web";
-import { setCapacityStatusAction } from "../actions";
+import { addJobAlertAction, setCapacityStatusAction } from "../actions";
 import { getI18n } from "@/server/i18n";
 
 type View = { id: string; label: string; allowed: (a: OrgActor) => boolean };
@@ -56,7 +58,7 @@ const GROUPS: { id: string; label: string; views: string[] }[] = [
 /** Chips: „Neue Aufträge“ ist ein Filter (Schalter im Filter), kein eigener Knopf. */
 const CHIP_HIDDEN = new Set(["neu"]);
 
-const FILTER_KEYS = ["from", "to", "fromRegion", "toRegion", "country", "dateFrom", "dateTo", "vehicleCategory", "minPassengers", "maxPassengers", "maxPrice", "priceMode", "newOnly"];
+const FILTER_KEYS = ["from", "to", "radiusKm", "nearMe", "fromRegion", "toRegion", "country", "dateFrom", "dateTo", "vehicleCategory", "minPassengers", "maxPassengers", "maxPrice", "priceMode", "newOnly"];
 
 async function PriceCell({ mode, cents, share = 0 }: { mode: "FIXED" | "NEGOTIABLE"; cents: number | null; share?: number }) {
   const { t, f } = await getI18n();
@@ -90,6 +92,7 @@ export default async function BoersePage({ searchParams }: { searchParams: SP })
         <div className="inline">
           {actorCan(actor, "transfers.request") && <Link href="/boerse/neu" className="btn accent">{t("Auftrag einstellen")}</Link>}
           {actorCan(actor, "capacity.publish") && <Link href="/flotte#fahrt" className="btn secondary">{t("Rückfahrt anbieten")}</Link>}
+          {actorCan(actor, "transfers.request") && <Link href="/boerse/firmen">{t("Firmenverzeichnis")}</Link>}
         </div>
       </div>
       <Flash searchParams={sp} />
@@ -126,8 +129,26 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
   const { t, f } = await getI18n();
   const filter = Object.fromEntries(FILTER_KEYS.map((k) => [k, sp[k] ?? ""]));
   const maxPriceCents = sp.maxPrice ? String(Math.round(Number(sp.maxPrice) * 100)) : "";
-  const rows = await searchBoard(actor, { ...filter, maxPrice: maxPriceCents, newOnly: sp.newOnly });
+  const rows = await searchBoard(actor, { ...filter, maxPrice: maxPriceCents, newOnly: sp.newOnly, nearMe: sp.nearMe });
   const active = FILTER_KEYS.some((k) => sp[k]);
+  const stars = await ratingSummaries(rows.map((r) => r.requesterOrg.id));
+  // Karte: ein Punkt je Abholort, nur auf Wunsch geladen (?map=1)
+  const showMap = sp.map === "1";
+  const mapQuery = new URLSearchParams({ view: "markt", ...Object.fromEntries(FILTER_KEYS.filter((k) => sp[k]).map((k) => [k, sp[k]!])), ...(showMap ? {} : { map: "1" }) }).toString();
+  const mapPoints: BoardMapPoint[] = [];
+  if (showMap) {
+    for (const r of rows) {
+      const place = getPlace(r.pickupPlaceId);
+      if (!place) continue;
+      let point = mapPoints.find((x) => x.id === place.id);
+      if (!point) mapPoints.push((point = { id: place.id, name: t(place.name), lat: place.lat, lng: place.lng, jobs: [] }));
+      point.jobs.push({
+        href: `/boerse/auftrag/${r.id}`,
+        label: `${t(placeName(r.pickupPlaceId))} → ${t(placeName(r.dropoffPlaceId))}`,
+        note: `${f.dateTime(r.pickupAt)} · ${r.priceCents ? f.money(r.priceCents) : t("Preis offen")}`,
+      });
+    }
+  }
   return (
     <>
       {(rows.length > 0 || active) && <form className="card filters" method="get" aria-label={t("Filter")}>
@@ -138,6 +159,12 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
         <input type="checkbox" id="more-filters" className="more-check" defaultChecked={FILTER_KEYS.some((k) => !["from", "to", "dateFrom"].includes(k) && sp[k])} />
         <label htmlFor="more-filters" className="more-toggle">{t("Mehr Filter")}</label>
         <div className="more">
+        <label>{t("Umkreis um „Von“")}
+          <select name="radiusKm" defaultValue={sp.radiusKm ?? ""}>
+            <option value="">{t("Nur dieser Ort")}</option>
+            {[25, 50, 100].map((km) => <option key={km} value={km}>{t("{n} km", { n: km })}</option>)}
+          </select>
+        </label>
         <label>{t("Region Start")}
           <select name="fromRegion" defaultValue={sp.fromRegion ?? ""}>
             <option value="">{t("Alle")}</option>
@@ -166,6 +193,7 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
             <option value="">{t("Alle")}</option><option value="FIXED">{t("Festpreis")}</option><option value="NEGOTIABLE">{t("Verhandelbar")}</option>
           </select>
         </label>
+        <div className="checks"><label><input type="checkbox" name="nearMe" value="1" defaultChecked={!!sp.nearMe} />{" "}{t("Nur in der Nähe meiner Standorte (50 km)")}</label></div>
         <div className="checks"><label><input type="checkbox" name="newOnly" value="1" defaultChecked={!!sp.newOnly} />{" "}{t("Nur neue Aufträge (letzte 24 Stunden)")}</label></div>
         </div>
         <div className="actions">
@@ -173,8 +201,22 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
           {active && <Link href="/boerse?view=markt" className="btn secondary">{t("Zurücksetzen")}</Link>}
         </div>
       </form>}
+      {(sp.from || sp.to) && actorCan(actor, "org.update") && (
+        <form action={addJobAlertAction} className="save-search">
+          <input type="hidden" name="from" value={sp.from ?? ""} />
+          <input type="hidden" name="to" value={sp.to ?? ""} />
+          <input type="hidden" name="back" value={`/boerse?${new URLSearchParams({ view: "markt", ...Object.fromEntries(FILTER_KEYS.filter((k) => sp[k]).map((k) => [k, sp[k]!])) }).toString()}`} />
+          <button type="submit" className="link">{t("Bei neuen Aufträgen für diese Strecke benachrichtigen")}</button>
+        </form>
+      )}
       <section className="card">
-        {rows.length > 0 && <h2>{rows.length === 1 ? t("1 offener Auftrag") : t("{n} offene Aufträge", { n: rows.length })}{sp.newOnly ? " " + t("aus den letzten 24 Stunden") : ""}</h2>}
+        {rows.length > 0 && (
+          <div className="head-row">
+            <h2>{rows.length === 1 ? t("1 offener Auftrag") : t("{n} offene Aufträge", { n: rows.length })}{sp.newOnly ? " " + t("aus den letzten 24 Stunden") : ""}</h2>
+            <Link href={`/boerse?${mapQuery}`} className="btn secondary">{t(showMap ? "Karte ausblenden" : "Auf der Karte zeigen")}</Link>
+          </div>
+        )}
+        {showMap && rows.length > 0 && <BoardMap points={mapPoints} label={t("Karte der offenen Aufträge")} />}
         {rows.length === 0 ? (
           active ? (
             <Empty>{t("Keine offenen Aufträge für diese Filter.")}</Empty>
@@ -203,7 +245,7 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
                       <td><Route from={r.pickupPlaceId} to={r.dropoffPlaceId} href={`/boerse/auftrag/${r.id}`} /><span className="price-note">{t("ca. {n}", { n: f.minutes(r.estimatedMinutes) })}{r.flightNumber ? ` · ${t("Flug")} ${r.flightNumber}` : ""}</span></td>
                       <td data-label={t("Fahrgäste")}><Load passengers={r.passengers} luggage={r.luggage} ski={r.skiEquipment} /></td>
                       <td data-label={t("Fahrzeug")}>{r.vehicleCategory ? t(VEHICLE_LABEL[r.vehicleCategory]) : <span className="muted">{t("beliebig")}</span>}</td>
-                      <td data-label={t("Auftraggeber")}>{r.requesterOrg.name}<span className="price-note">{r.requesterOrg.city} · {t("geprüft")}</span></td>
+                      <td data-label={t("Auftraggeber")}>{r.requesterOrg.name}<span className="price-note">{r.requesterOrg.city} · {t(r.requesterOrg.type === "TRANSPORT_COMPANY" ? "Konzession geprüft" : "geprüft")}</span><Stars rating={stars.get(r.requesterOrg.id)} /></td>
                       <td className="num"><PriceCell mode={r.priceMode} cents={r.priceCents} share={r.handoffSharePercent} /></td>
                       <td className="nowrap">{r.invitations[0]?.status === "PENDING" && <span className="badge warn">{t("Direktanfrage")}</span>}{mine ? <Badge status={mine.status}>{t("Ihr Angebot")} {f.money(mine.amountCents)}</Badge> : <Link href={`/boerse/auftrag/${r.id}`}>{r.priceMode === "FIXED" ? t("Übernehmen") : t("Angebot abgeben")}</Link>}</td>
                     </tr>

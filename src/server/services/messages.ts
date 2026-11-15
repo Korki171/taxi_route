@@ -67,7 +67,7 @@ export async function listThreads(actor: Actor | null, requestId: string) {
     take: 500,
   });
   const orgIds = [...new Set([...a.allowed, ...messages.map((m) => m.threadOrgId)])].filter((id) => id !== actor.org.id);
-  const names = new Map((await db.organization.findMany({ where: { id: { in: [...orgIds, actor.org.id] } }, select: { id: true, name: true } })).map((o) => [o.id, o.name]));
+  const names = new Map((await db.organization.findMany({ where: { id: { in: [...orgIds, actor.org.id, a.req.requesterOrgId] } }, select: { id: true, name: true } })).map((o) => [o.id, o.name]));
   const threadIds = a.role === "requester" ? orgIds : [actor.org.id];
   const threads = threadIds.map((id) => ({
     threadOrgId: id,
@@ -81,15 +81,38 @@ export async function listThreads(actor: Actor | null, requestId: string) {
 // Suchagent: E-Mail bei neuen Aufträgen
 // ---------------------------------------------------------------------------
 
-const alertSchema = z.object({
-  mailNewJobs: z.boolean(),
-  from: z.preprocess((v) => (v === "" || v == null ? undefined : v), z.string().refine(isPlaceId, "Unbekannter Ort").optional()),
-  to: z.preprocess((v) => (v === "" || v == null ? undefined : v), z.string().refine(isPlaceId, "Unbekannter Ort").optional()),
-});
+/** Höchstzahl gespeicherter Strecken je Betrieb */
+export const MAX_JOB_ALERTS = 5;
 
+const optPlace = z.preprocess((v) => (v === "" || v == null ? undefined : v), z.string().refine(isPlaceId, "Unbekannter Ort").optional());
+const alertSchema = z.object({ mailNewJobs: z.boolean() });
+const routeSchema = z.object({ from: optPlace, to: optPlace });
+
+/** Schalter „E-Mail bei neuen Aufträgen“. */
 export async function updateJobAlerts(actor: Actor | null, input: unknown) {
   requirePermission(actor, "org.update");
   const d = parse(alertSchema, input);
-  await db.organization.update({ where: { id: actor.org.id }, data: { mailNewJobs: d.mailNewJobs, alertFromPlaceId: d.from ?? null, alertToPlaceId: d.to ?? null } });
+  await db.organization.update({ where: { id: actor.org.id }, data: { mailNewJobs: d.mailNewJobs } });
   await audit(db, { actorUserId: actor.userId, organizationId: actor.org.id, action: "organization.job_alerts_updated", targetType: "Organization", targetId: actor.org.id });
+}
+
+export async function listJobAlerts(actor: Actor | null) {
+  requirePermission(actor, "org.read");
+  return db.jobAlert.findMany({ where: { organizationId: actor.org.id }, orderBy: { createdAt: "asc" } });
+}
+
+/** Strecke speichern: neue Aufträge werden nur noch für die gespeicherten Strecken gemeldet. */
+export async function addJobAlert(actor: Actor | null, input: unknown) {
+  requirePermission(actor, "org.update");
+  const d = parse(routeSchema, input);
+  if (!d.from && !d.to) throw invalid("Bitte mindestens einen Ort wählen.");
+  const existing = await db.jobAlert.findMany({ where: { organizationId: actor.org.id } });
+  if (existing.some((a) => a.fromPlaceId === (d.from ?? null) && a.toPlaceId === (d.to ?? null))) return;
+  if (existing.length >= MAX_JOB_ALERTS) throw invalid("Höchstens 5 gespeicherte Strecken.");
+  await db.jobAlert.create({ data: { organizationId: actor.org.id, fromPlaceId: d.from ?? null, toPlaceId: d.to ?? null } });
+}
+
+export async function removeJobAlert(actor: Actor | null, id: string) {
+  requirePermission(actor, "org.update");
+  await db.jobAlert.deleteMany({ where: { id, organizationId: actor.org.id } });
 }

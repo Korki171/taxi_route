@@ -58,8 +58,10 @@ um die bestehende Web-App:
   Chat-Nachrichten, Statusänderungen. Das ist die Grundlage für Punkt 2 oben.
 - **Später:** Navigation per Übergabe an Google Maps/Apple Karten, Reisebüros sehen das ankommende Fahrzeug.
 
-Reihenfolge: zuerst die Punkte 1 bis 3 oben, dann die Fahrer-App mit Push, sobald Pilotbetriebe die Live-Karte
-wirklich nutzen.
+**Stand November 2026:** Der Web-Teil ist gebaut: Hintergrund-Ortung und nativer Push sind in der Web-App
+vorbereitet (`src/lib/native.ts`), der Server verschickt über Firebase Cloud Messaging, und das Capacitor-Projekt
+liegt unter `mobile/` (Anleitung in `mobile/README.md`). Offen: Firebase-Projekt, Apple-Developer- und
+Google-Play-Konto, erster Bau und Test auf echten Geräten, Einreichung in den Stores.
 
 ## Später (nach dem Pilot, wenn die Zahlen stimmen)
 

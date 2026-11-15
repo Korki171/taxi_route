@@ -257,3 +257,18 @@ describe("Szenario D und E: Berechtigungen und Datenschutz", () => {
     await expect(disputeBooking(c.actor, bk.id, "x")).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 });
+
+describe("Umkreissuche in der Börse", () => {
+  it("findet Abholorte im Umkreis um den gewählten Ort", async () => {
+    const { verifiedAgency, verifiedTaxi, requestInput } = await import("./helpers");
+    const { createTransferRequest, searchBoard } = await import("@/server/services/marketplace");
+    const agency = await verifiedAgency();
+    const taxi = await verifiedTaxi();
+    const hall = await createTransferRequest(agency.actor, requestInput({ pickupPlaceId: "hall", priceMode: "FIXED" }));
+    await createTransferRequest(agency.actor, requestInput({ pickupPlaceId: "kitzbuehel", priceMode: "FIXED" }));
+    // Hall liegt rund 8 km von Innsbruck, Kitzbühel rund 77 km
+    expect(await searchBoard(taxi.actor, { from: "innsbruck" })).toEqual([]);
+    expect((await searchBoard(taxi.actor, { from: "innsbruck", radiusKm: "25" })).map((r) => r.id)).toEqual([hall.id]);
+    expect(await searchBoard(taxi.actor, { from: "innsbruck", radiusKm: "100" })).toHaveLength(2);
+  });
+});

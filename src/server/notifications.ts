@@ -94,10 +94,10 @@ export async function notifyNewRequest(requestId: string, skipOrgIds: string[] =
   const providers = await db.organization.findMany({
     where: {
       id: { notIn: [req.requesterOrgId, ...invited, ...skipOrgIds], ...(partnerIds ? { in: partnerIds } : {}) },
-      // Suchagent: nur wessen Strecke (falls gesetzt) passt. E-Mail nur, wer sie will; Mitteilungen aufs Gerät immer.
-      AND: [
-        { OR: [{ alertFromPlaceId: null }, { alertFromPlaceId: req.pickupPlaceId }] },
-        { OR: [{ alertToPlaceId: null }, { alertToPlaceId: req.dropoffPlaceId }] },
+      // Suchagent: nur wer keine Strecke gespeichert hat oder wessen gespeicherte Strecke passt. E-Mail nur, wer sie will; Mitteilungen aufs Gerät immer.
+      OR: [
+        { jobAlerts: { none: {} } },
+        { jobAlerts: { some: { AND: [{ OR: [{ fromPlaceId: null }, { fromPlaceId: req.pickupPlaceId }] }, { OR: [{ toPlaceId: null }, { toPlaceId: req.dropoffPlaceId }] }] } } },
       ],
       status: "ACTIVE",
       capabilities: { some: { capability: "TRANSPORT_PROVIDER", status: "VERIFIED" } },
@@ -264,6 +264,14 @@ export async function notifyRequestCancelled(requestId: string) {
       "Der Auftraggeber hat {route} ({pickup}) zurückgezogen. Ihr Angebot ist damit hinfällig.",
     ])),
   );
+}
+
+/** Die Disposition hat einem Fahrer eine Fahrt zugewiesen: Mitteilung nur an dessen Geräte (keine E-Mail). */
+export async function notifyDriverAssigned(bookingId: string) {
+  const b = await db.booking.findUniqueOrThrow({ where: { id: bookingId }, include: { request: true, providerOrg: { select: orgSelect } } });
+  if (!b.driverId) return;
+  const n = note(b.providerOrg, b.request, "Neue Fahrt für Sie: {route}", ["Abholung {pickup}. Details stehen unter „Meine Fahrten“."], { email: false });
+  await sendPushes([{ ...n.push, userIds: [b.driverId], message: { ...n.push.message, url: "/fahrer" } }]);
 }
 
 /** Benachrichtigungen sind nachrangig: ein Fehler darf die bereits gespeicherte Aktion nicht als gescheitert melden. */

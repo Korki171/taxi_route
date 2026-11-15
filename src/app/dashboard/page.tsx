@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { DOCUMENT_LABELS, expiringDocuments } from "@/server/services/verification-rules";
 import { db } from "@/lib/db";
 import { AgencyOverview } from "@/components/AgencyOverview";
 import { AppShell } from "@/components/AppShell";
@@ -45,6 +46,7 @@ export default async function Dashboard({ searchParams }: { searchParams: SP }) 
     },
   });
   const overall = overallVerification(org.status, org.capabilities);
+  const expiring = await expiringDocuments(org.id);
   const isAgency = org.type === "TRAVEL_AGENCY";
   const input = authzInput(actor);
   const canMarket = actorCan(actor, "jobs.accept");
@@ -78,6 +80,12 @@ export default async function Dashboard({ searchParams }: { searchParams: SP }) 
         <span className={`badge ${overall.tone}`}>{t(overall.label)}</span>
       </p>
       <Flash searchParams={sp} />
+      {expiring.map((d) => (
+        <p key={d.id} className="flash error">
+          {t(d.validUntil! <= new Date() ? "{doc} ist abgelaufen" : "{doc} läuft am {date} ab", { doc: t(DOCUMENT_LABELS[d.type]), date: f.date(d.validUntil) })}.{" "}
+          <Link href="/organization/documents">{t("Neues Dokument hochladen")}</Link>
+        </p>
+      ))}
 
       {figures.length > 0 ? (
         <section className="band" aria-label={t("Auftragsbörse")}>

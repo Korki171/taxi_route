@@ -1,3 +1,4 @@
+import { notificationFailed, notifyDriverAssigned } from "../notifications";
 import type { MemberRole } from "@prisma/client";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -82,6 +83,7 @@ export async function assignBooking(actor: Actor | null, bookingId: string, inpu
     targetId: b.id,
     data: { driverId: data.driverId, vehicleId: data.vehicleId },
   });
+  if (driverChanged && data.driverId) await notifyDriverAssigned(b.id).catch(notificationFailed);
 }
 
 export type LivePoint = { name: string; address: string | null; lat: number; lng: number };

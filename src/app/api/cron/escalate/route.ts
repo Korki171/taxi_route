@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { escalateDueRequests } from "@/server/services/partners";
+import { sendExpiryNotices } from "@/server/services/verification-rules";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,11 @@ async function run(req: Request) {
     return NextResponse.json({ error: "Nicht erlaubt." }, { status: 401 });
   }
   return NextResponse.json({ escalated: await escalateDueRequests() }, { headers: { "Cache-Control": "no-store" } });
+async function run() {
+  const escalated = await escalateDueRequests();
+  // Ablaufwarnungen für Nachweise (jede Stufe geht nur einmal raus)
+  const expiryNotices = await sendExpiryNotices().catch(() => 0);
+  return NextResponse.json({ escalated, expiryNotices }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export const GET = run;

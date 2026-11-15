@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { createTransferRequest, takeFixedPriceRequest } from "@/server/services/marketplace";
-import { listThreads, sendMessage, updateJobAlerts } from "@/server/services/messages";
+import { listThreads, sendMessage, updateJobAlerts, addJobAlert, listJobAlerts, removeJobAlert } from "@/server/services/messages";
 import { notifyNewRequest } from "@/server/notifications";
 import { requestInput, verifiedAgency, verifiedTaxi } from "./helpers";
 
@@ -24,7 +24,9 @@ describe("Nachrichten zum Auftrag", () => {
     expect(asRequester.threads.map((t) => t.withName).sort()).toEqual(["Taxi B", "Taxi C"]);
     await expect(sendMessage(agency.actor, req.id, { body: "Ja, einer", threadOrgId: agency.org.id })).rejects.toMatchObject({ code: "VALIDATION" });
     await sendMessage(agency.actor, req.id, { body: "Ja, einer", threadOrgId: taxi.org.id });
-    expect((await listThreads(taxi.actor, req.id)).threads[0].messages.map((m) => m.body)).toEqual(["Ist ein Kindersitz nötig?", "Ja, einer"]);
+    const reply = await listThreads(taxi.actor, req.id);
+    expect(reply.threads[0].messages.map((m) => m.body)).toEqual(["Ist ein Kindersitz nötig?", "Ja, einer"]);
+    expect(reply.threads[0].messages.map((m) => reply.names.get(m.senderOrgId))).toEqual(["Taxi B", "Reisebüro A"]);
     expect((await listThreads(other.actor, req.id)).threads[0].messages.map((m) => m.body)).toEqual(["Wie viel Gepäck?"]);
   });
 
@@ -41,12 +43,19 @@ describe("Nachrichten zum Auftrag", () => {
 });
 
 describe("Suchagent", () => {
-  it("speichert Strecke und Schalter", async () => {
+  it("speichert mehrere Strecken und den Schalter", async () => {
     const taxi = await verifiedTaxi("Taxi B");
-    await expect(updateJobAlerts(taxi.actor, { mailNewJobs: true, from: "gibtsnicht" })).rejects.toMatchObject({ code: "VALIDATION" });
-    await updateJobAlerts(taxi.actor, { mailNewJobs: true, from: "innsbruck", to: "" });
-    const o = await db.organization.findUniqueOrThrow({ where: { id: taxi.org.id } });
-    expect([o.mailNewJobs, o.alertFromPlaceId, o.alertToPlaceId]).toEqual([true, "innsbruck", null]);
+    await expect(addJobAlert(taxi.actor, { from: "gibtsnicht" })).rejects.toMatchObject({ code: "VALIDATION" });
+    await expect(addJobAlert(taxi.actor, {})).rejects.toMatchObject({ code: "VALIDATION" });
+    await addJobAlert(taxi.actor, { from: "innsbruck", to: "" });
+    await addJobAlert(taxi.actor, { from: "innsbruck", to: "" }); // doppelt: wird nicht zweimal gespeichert
+    await addJobAlert(taxi.actor, { from: "muc", to: "kitzbuehel" });
+    const list = await listJobAlerts(taxi.actor);
+    expect(list.map((a) => [a.fromPlaceId, a.toPlaceId])).toEqual([["innsbruck", null], ["muc", "kitzbuehel"]]);
+    await removeJobAlert(taxi.actor, list[0].id);
+    expect(await listJobAlerts(taxi.actor)).toHaveLength(1);
+    await updateJobAlerts(taxi.actor, { mailNewJobs: false });
+    expect((await db.organization.findUniqueOrThrow({ where: { id: taxi.org.id } })).mailNewJobs).toBe(false);
   });
 
   it("neue Aufträge gehen nur an passende Betriebe", async () => {
@@ -55,8 +64,9 @@ describe("Suchagent", () => {
     const match = await verifiedTaxi("Taxi Passt");
     const wrong = await verifiedTaxi("Taxi Falsch");
     const off = await verifiedTaxi("Taxi Aus");
-    await updateJobAlerts(match.actor, { mailNewJobs: true, from: "innsbruck", to: "muc" });
-    await updateJobAlerts(wrong.actor, { mailNewJobs: true, from: "salzburg" });
+    await addJobAlert(match.actor, { from: "kitzbuehel" });
+    await addJobAlert(match.actor, { from: "innsbruck", to: "muc" });
+    await addJobAlert(wrong.actor, { from: "szg" });
     await updateJobAlerts(off.actor, { mailNewJobs: false });
     const before = outbox.length;
     const req = await createTransferRequest(agency.actor, requestInput());
