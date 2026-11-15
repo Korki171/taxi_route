@@ -94,10 +94,10 @@ export async function notifyNewRequest(requestId: string, skipOrgIds: string[] =
   const providers = await db.organization.findMany({
     where: {
       id: { notIn: [req.requesterOrgId, ...invited, ...skipOrgIds], ...(partnerIds ? { in: partnerIds } : {}) },
-      // Suchagent: nur wessen Strecke (falls gesetzt) passt. E-Mail nur, wer sie will; Mitteilungen aufs Gerät immer.
-      AND: [
-        { OR: [{ alertFromPlaceId: null }, { alertFromPlaceId: req.pickupPlaceId }] },
-        { OR: [{ alertToPlaceId: null }, { alertToPlaceId: req.dropoffPlaceId }] },
+      // Suchagent: nur wer keine Strecke gespeichert hat oder wessen gespeicherte Strecke passt. E-Mail nur, wer sie will; Mitteilungen aufs Gerät immer.
+      OR: [
+        { jobAlerts: { none: {} } },
+        { jobAlerts: { some: { AND: [{ OR: [{ fromPlaceId: null }, { fromPlaceId: req.pickupPlaceId }] }, { OR: [{ toPlaceId: null }, { toPlaceId: req.dropoffPlaceId }] }] } } },
       ],
       status: "ACTIVE",
       capabilities: { some: { capability: "TRANSPORT_PROVIDER", status: "VERIFIED" } },

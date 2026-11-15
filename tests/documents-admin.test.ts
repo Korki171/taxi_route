@@ -106,3 +106,23 @@ describe("Plattformadministration", () => {
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 });
+
+describe("Ablaufwarnung für Nachweise", () => {
+  it("warnt einmal 30 Tage vorher und einmal zum Ablauf", async () => {
+    const { sendExpiryNotices, expiringDocuments } = await import("@/server/services/verification-rules");
+    const { sentEmails } = await import("@/server/email");
+    const { verifiedTaxi, addDocument } = await import("./helpers");
+    const taxi = await verifiedTaxi();
+    const day = 86_400_000;
+    await addDocument(taxi.org.id, "INSURANCE", "APPROVED", new Date(Date.now() + 90 * day));
+    const soon = await addDocument(taxi.org.id, "TAXI_CONCESSION", "APPROVED", new Date(Date.now() + 10 * day));
+    const before = sentEmails.length;
+    expect(await sendExpiryNotices()).toBe(1);
+    expect(await sendExpiryNotices()).toBe(0);
+    expect(sentEmails.slice(before).map((m) => m.subject)).toEqual([expect.stringContaining("Taxikonzession läuft am")]);
+    expect((await expiringDocuments(taxi.org.id)).map((d) => d.id)).toEqual([soon.id]);
+    // nach dem Ablauf noch genau ein Hinweis
+    expect(await sendExpiryNotices(new Date(Date.now() + 11 * day))).toBe(1);
+    expect(await sendExpiryNotices(new Date(Date.now() + 12 * day))).toBe(0);
+  });
+});

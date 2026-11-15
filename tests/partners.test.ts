@@ -99,14 +99,14 @@ describe("Zeitgeber für die Weitergabe", () => {
       await savePushSubscription(x.actor, null, { endpoint: `https://push.example.com/${i}`, keys: { p256dh: "p".repeat(40), auth: "a".repeat(20) } });
     }
     const req = await createTransferRequest(poster.actor, requestInput({ audience: "PARTNERS", escalateAfterMinutes: 30, priceMode: "FIXED" }));
-    expect(await (await POST()).json()).toEqual({ escalated: 0 });
+    expect(await (await POST()).json()).toEqual({ escalated: 0, expiryNotices: 0 });
 
     // 31 Minuten später ohne Übernahme
     await db.transferRequest.update({ where: { id: req.id }, data: { audienceSince: new Date(Date.now() - 31 * 60_000) } });
     sentPushes.length = 0;
-    expect(await (await POST()).json()).toEqual({ escalated: 1 });
+    expect(await (await POST()).json()).toEqual({ escalated: 1, expiryNotices: 0 });
     expect(sentPushes.map((p) => p.userId)).toEqual([stranger.user.id]);
     expect(sentPushes[0].message.takeRequestId).toBe(req.id);
-    expect(await (await POST()).json()).toEqual({ escalated: 0 });
+    expect(await (await POST()).json()).toEqual({ escalated: 0, expiryNotices: 0 });
   });
 });

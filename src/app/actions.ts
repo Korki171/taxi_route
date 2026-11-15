@@ -7,8 +7,9 @@ import { AppError, invalid } from "@/server/errors";
 import { adminReviewCapability, adminReviewDocument, adminSetOrganizationPlan, adminSetOrganizationStatus } from "@/server/services/admin";
 import { login, switchActiveOrganization } from "@/server/services/auth";
 import { deleteDocument, uploadDocument } from "@/server/services/documents";
-import { sendMessage, updateJobAlerts } from "@/server/services/messages";
+import { addJobAlert, removeJobAlert, sendMessage, updateJobAlerts } from "@/server/services/messages";
 import { returnBooking, uploadBookingDocument } from "@/server/services/booking-extras";
+import { rateBooking } from "@/server/services/ratings";
 import { addPartner, advanceAudience, blockOrg, removePartner, takeOwnRequest, unblockOrg } from "@/server/services/partners";
 import {
   acceptInvitation,
@@ -18,7 +19,7 @@ import {
   removeMember,
   revokeInvitation,
 } from "@/server/services/members";
-import { requestCapabilityReview, updateOrganizationProfile, updateTransportProfile } from "@/server/services/organizations";
+import { addLocation, removeLocation, requestCapabilityReview, updateOrganizationProfile, updateTransportProfile } from "@/server/services/organizations";
 import { registerOrganization } from "@/server/services/registration";
 import { createVehicle, publishCapacity, setCapacityStatus, setVehicleActive } from "@/server/services/fleet";
 import { assignBooking } from "@/server/services/dispatch";
@@ -312,8 +313,36 @@ export async function sendMessageAction(fd: FormData) {
 
 export async function updateJobAlertsAction(fd: FormData) {
   await runAction("/organization", async () => {
-    await updateJobAlerts(await getActor(), { mailNewJobs: fd.get("mailNewJobs") === "on", from: str(fd, "from"), to: str(fd, "to") });
+    await updateJobAlerts(await getActor(), { mailNewJobs: fd.get("mailNewJobs") === "on" });
     return withParam("/organization", "ok", "Benachrichtigungen gespeichert.");
+  });
+}
+
+export async function addLocationAction(fd: FormData) {
+  await runAction("/organization", async () => {
+    await addLocation(await getActor(), str(fd, "placeId"));
+    return withParam("/organization", "ok", "Standort gespeichert.") + "#standorte";
+  });
+}
+
+export async function removeLocationAction(fd: FormData) {
+  await runAction("/organization", async () => {
+    await removeLocation(await getActor(), str(fd, "id"));
+  });
+}
+
+export async function addJobAlertAction(fd: FormData) {
+  // Aus der Börse heraus („Suche speichern“) zurück in die Börse, sonst zum Unternehmen
+  const back = str(fd, "back").startsWith("/boerse") ? str(fd, "back") : "/organization";
+  await runAction(back, async () => {
+    await addJobAlert(await getActor(), { from: str(fd, "from"), to: str(fd, "to") });
+    return withParam(back, "ok", "Strecke gespeichert. Neue Aufträge dafür melden wir Ihnen.");
+  });
+}
+
+export async function removeJobAlertAction(fd: FormData) {
+  await runAction("/organization", async () => {
+    await removeJobAlert(await getActor(), str(fd, "id"));
   });
 }
 
@@ -334,9 +363,10 @@ export async function advanceAudienceAction(fd: FormData) {
 }
 
 export async function addPartnerAction(fd: FormData) {
-  await runAction("/organization", async () => {
+  const back = str(fd, "back") === "/boerse/firmen" ? "/boerse/firmen" : "/organization";
+  await runAction(back, async () => {
     await addPartner(await getActor(), str(fd, "partnerOrgId"));
-    return withParam("/organization", "ok", "Partner hinzugefügt.");
+    return withParam(back, "ok", "Partner hinzugefügt.");
   });
 }
 
@@ -427,6 +457,14 @@ export async function bookingTransitionAction(fd: FormData) {
       case "no_show": await reportNoShow(actor, bookingId, note); break;
       default: throw invalid("Unbekannte Aktion.");
     }
+  });
+}
+
+export async function rateBookingAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await rateBooking(await getActor(), str(fd, "bookingId"), { stars: str(fd, "stars"), comment: str(fd, "comment") });
+    return withParam(`/boerse/auftrag/${id}`, "ok", "Danke für Ihre Bewertung.");
   });
 }
 
