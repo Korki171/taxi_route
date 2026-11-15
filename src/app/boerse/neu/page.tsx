@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { PlaceSelect, ProviderPicker, VehicleSelect } from "@/components/market";
 import { Flash, type SP } from "@/components/ui";
+import { RouteGuide } from "@/components/RouteGuide";
 import { HANDOFF_SHARE_OPTIONS } from "@/lib/handoff";
 import { actorCan } from "@/server/authz/context";
 import { listProviderDirectory } from "@/server/services/marketplace";
@@ -50,6 +51,7 @@ export default async function NewRequestPage({ searchParams }: { searchParams: S
 
         <section className="card stack">
           <label>{t("Festpreis in €")}<input name="price" inputMode="decimal" placeholder="180,00" required={!targeted} /></label>
+          <RouteGuide text={{ line: t("Etwa {km} km, {time} Fahrzeit. Üblich sind rund € {low} bis € {high}."), hint: t("Schätzung aus der Entfernung, ohne Maut und Wartezeit.") }} />
           <p className="price-note">{t("Das erste geprüfte Unternehmen kann den Auftrag direkt zu diesem Preis übernehmen. Die Abrechnung läuft direkt zwischen den Unternehmen.")}</p>
         </section>
 

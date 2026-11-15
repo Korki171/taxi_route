@@ -1425,4 +1425,7 @@ export const EN: Record<string, string> = {
   "Bitte laden Sie das neue Dokument unter „Nachweise“ hoch, damit Ihr Betrieb weiter als geprüft gilt.": "Please upload the new document under “Documents” so your company remains verified.",
   "Läuft bald ab": "Expires soon",
   "Neues Dokument hochladen": "Upload new document",
+  // Routen- und Preisrechner
+  "Etwa {km} km, {time} Fahrzeit. Üblich sind rund € {low} bis € {high}.": "About {km} km, {time} driving time. Around € {low} to € {high} is usual.",
+  "Schätzung aus der Entfernung, ohne Maut und Wartezeit.": "Estimate based on distance, without tolls and waiting time.",
 };

@@ -301,6 +301,7 @@ details.more-actions > summary { color: var(--muted); font-size: 14px; min-heigh
 /* ---------- Anmeldung und Registrierung: Papier oben, Navy unten wie der Hero ---------- */
 
 /* ---------- Rechtstexte ---------- */
+.route-guide strong { color: var(--text); }
 .save-search { margin: -4px 0 var(--gap); }
 .field-end { display: flex; align-items: end; }
 .board-map { height: min(60vh, 480px); min-height: 300px; z-index: 0; background: var(--stone); margin-bottom: var(--gap); }
