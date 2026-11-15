@@ -31,6 +31,7 @@ import {
   createTransferRequest,
   declineInvitation,
   disputeBooking,
+  reportNoShow,
   inviteProviders,
   openRequestToMarket,
   rejectQuote,
@@ -285,7 +286,7 @@ export async function createTransferRequestAction(fd: FormData) {
       ...formObject(fd, [
         "pickupPlaceId", "dropoffPlaceId", "pickupAddress", "dropoffAddress", "pickupWindowMinutes", "passengers",
         "luggage", "skiEquipment", "specialLuggage", "vehicleCategory", "childSeats", "requirements",
-        "pickupNotes", "priceMode", "handoffSharePercent", "bookingTerms", "cancellationTerms", "clientReference", "passengerName", "passengerPhone",
+        "pickupNotes", "priceMode", "handoffSharePercent", "bookingTerms", "cancellationTerms", "freeCancelHours", "lateCancelPercent", "clientReference", "passengerName", "passengerPhone",
       ]),
       pickupAt: localDate(fd, "pickupAt"),
       flightNumber: byPlane ? str(fd, "flightNumber") : "",
@@ -423,6 +424,7 @@ export async function bookingTransitionAction(fd: FormData) {
       case "cancel": await cancelBooking(actor, bookingId, note); break;
       case "dispute": await disputeBooking(actor, bookingId, note); break;
       case "return": await returnBooking(actor, bookingId, note); break;
+      case "no_show": await reportNoShow(actor, bookingId, note); break;
       default: throw invalid("Unbekannte Aktion.");
     }
   });
@@ -460,6 +462,13 @@ export async function startShiftAction(fd: FormData) {
 export async function endShiftAction() {
   await runAction("/fahrer", async () => {
     await endShift(await getActor());
+  });
+}
+
+export async function reportNoShowAction(fd: FormData) {
+  await runAction("/fahrer", async () => {
+    await reportNoShow(await getActor(), str(fd, "bookingId"));
+    return withParam("/fahrer", "ok", "No-Show gemeldet.");
   });
 }
 

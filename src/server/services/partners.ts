@@ -5,7 +5,7 @@ import { splitHandoff } from "@/lib/handoff";
 import { requirePermission, type Actor } from "../authz/context";
 import { conflict, invalid, notFound } from "../errors";
 import { notificationFailed, notifyNewRequest } from "../notifications";
-import { ownVehicleId, scopeSnapshot } from "./marketplace";
+import { cancelTermsSnapshot, ownVehicleId, scopeSnapshot } from "./marketplace";
 import { transferEvent } from "./transfer-events";
 
 /** Höchstzahl Partner je Unternehmen */
@@ -184,7 +184,7 @@ export async function takeOwnRequest(actor: Actor | null, requestId: string, inp
           agreedPriceCents: split.priceCents,
           currency: req.currency,
           scope: scopeSnapshot(req),
-          cancellationTerms: req.cancellationTerms,
+          ...cancelTermsSnapshot(req),
           acceptedById: actor.userId,
         },
       });

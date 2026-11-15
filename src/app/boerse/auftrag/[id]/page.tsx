@@ -15,6 +15,7 @@ import {
   VEHICLE_LABEL,
   priceStateLabel,
 } from "@/lib/labels";
+import { cancelRuleText, freeCancelUntil, lateCancelFeeCents, noShowAllowedFrom } from "@/lib/cancellation";
 import { splitHandoff } from "@/lib/handoff";
 import { formatCents } from "@/lib/money";
 import { placeName } from "@/lib/places";
@@ -84,6 +85,11 @@ export default async function RequestDetailPage({ params, searchParams }: { para
       : quotes.find((q) => q.providerOrgId === orgId)?.providerOrg.name
         ?? invitations.find((i) => i.providerOrgId === orgId)?.providerOrg.name ?? t("Anbieter");
   const chat = await listThreads(actor, id).catch(() => null);
+  // Storno und No-Show (Regeln in src/lib/cancellation.ts)
+  const now = new Date();
+  const cancelFee = booking ? lateCancelFeeCents(booking, r.pickupAt, booking.agreedPriceCents, now) : 0;
+  const freeUntil = booking ? freeCancelUntil(booking, r.pickupAt) : null;
+  const noShowOpen = !!booking && booking.status === "IN_PROGRESS" && booking.tripStage === "AT_PICKUP" && now >= noShowAllowedFrom(r.pickupAt) && actorCan(actor, "jobs.accept");
   const bookingDocs = booking && booking.status !== "CANCELLED" ? await listBookingDocuments(actor, booking.id) : [];
   const canDocs = !!booking && booking.status !== "CANCELLED" && (actorCan(actor, "bookings.manage") || actorCan(actor, "jobs.accept"));
   const scope = booking?.scope as { vehicleCategory?: VehicleCategory | null } | undefined;
@@ -143,7 +149,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
             {r.requirements && <><dt>{t("Anforderungen")}</dt><dd>{r.requirements}</dd></>}
             {r.flightNumber && <><dt>{t("Flug")}</dt><dd>{r.flightNumber}{r.flightArrivalAt ? `, Landung ${f.time(r.flightArrivalAt)}` : ""}</dd></>}
             {r.bookingTerms && <><dt>{t("Bedingungen")}</dt><dd>{r.bookingTerms}</dd></>}
-            {r.cancellationTerms && <><dt>{t("Storno")}</dt><dd>{r.cancellationTerms}</dd></>}
+            {(cancelRuleText(t, r) || r.cancellationTerms) && <><dt>{t("Storno")}</dt><dd>{[cancelRuleText(t, r), r.cancellationTerms].filter(Boolean).join(" ")}</dd></>}
           </dl>
         </section>
 
@@ -357,7 +363,10 @@ export default async function RequestDetailPage({ params, searchParams }: { para
               <><dt>{t("Fahrer")}</dt><dd>{booking.driver?.name ?? <span className="muted">{t("noch nicht zugewiesen")}</span>}{actorCan(actor, "fleet.manage") && (booking.status === "CONFIRMED" || booking.status === "IN_PROGRESS") && <> · <Link href="/flotte/live#disposition">{t("Disposition")}</Link></>}</dd></>
             )}
             {booking.tripStage && <><dt>{t("Fortschritt")}</dt><dd>{t(TRIP_STAGE_LABEL[booking.tripStage])}</dd></>}
-            <dt>{t("Storno")}</dt><dd>{booking.cancellationTerms ?? "keine gesonderten Bedingungen"}</dd>
+            <dt>{t("Storno")}</dt><dd>{[cancelRuleText(t, booking), booking.cancellationTerms].filter(Boolean).join(" ") || t("keine gesonderten Bedingungen")}</dd>
+            {booking.feeCents != null && booking.feeCents > 0 && (
+              <><dt>{booking.status === "NO_SHOW" ? t("No-Show-Gebühr") : t("Stornogebühr")}</dt><dd className="price-fixed">{f.money(booking.feeCents)} <span className="price-note">{t("an {org}, direkt abzurechnen", { org: booking.providerOrg.name })}</span></dd></>
+            )}
             <dt>{t("Vereinbart")}</dt><dd>{f.dateTime(booking.acceptedAt)}{" "}{booking.quoteId ? t("durch Annahme eines Angebots") : t("durch Übernahme zum Festpreis")}</dd>
             {booking.completedAt && <><dt>{t("Abgeschlossen")}</dt><dd>{f.dateTime(booking.completedAt)}{booking.completionNote ? `, ${booking.completionNote}` : ""}</dd></>}
           </dl>
@@ -370,6 +379,14 @@ export default async function RequestDetailPage({ params, searchParams }: { para
                 <input type="hidden" name="bookingId" value={booking.id} />
                 <input type="hidden" name="to" value="start" />
                 <button type="submit">{t("Fahrt beginnen")}</button>
+              </form>
+            )}
+            {role === "provider" && noShowOpen && (
+              <form action={bookingTransitionAction}>
+                <input type="hidden" name="requestId" value={r.id} />
+                <input type="hidden" name="bookingId" value={booking.id} />
+                <input type="hidden" name="to" value="no_show" />
+                <button type="submit" className="danger">{t("Fahrgast nicht erschienen")}</button>
               </form>
             )}
             {role === "provider" && (booking.status === "CONFIRMED" || booking.status === "IN_PROGRESS") && (
@@ -395,7 +412,16 @@ export default async function RequestDetailPage({ params, searchParams }: { para
                     <button type="submit" className="danger">{t("Auftrag zurückgeben")}</button>
                   </form>
                 )}
-                {booking.status === "CONFIRMED" && (
+                {booking.status === "CONFIRMED" && role === "requester" && (
+                  <p className="flush">
+                    {cancelFee > 0
+                      ? t("Die kostenlose Stornofrist ist vorbei. Storno jetzt: {fee} an {org}.", { fee: f.money(cancelFee), org: booking.providerOrg.name })
+                      : freeUntil
+                        ? t("Kostenlos stornierbar bis {when}.", { when: f.dateTime(freeUntil) })
+                        : t("Für diese Buchung gilt keine feste Stornogebühr.")}
+                  </p>
+                )}
+                {booking.status === "CONFIRMED" && (role === "requester" || r.pickupAt <= new Date()) && (
                   <form action={bookingTransitionAction} className="inline">
                     <input type="hidden" name="requestId" value={r.id} />
                     <input type="hidden" name="bookingId" value={booking.id} />
@@ -516,13 +542,14 @@ export default async function RequestDetailPage({ params, searchParams }: { para
           <h2>{t("Verlauf")}</h2>
           <ol className="timeline">
             {events.map((e) => {
-              const d = (e.data ?? {}) as { note?: string; amountCents?: number };
+              const d = (e.data ?? {}) as { note?: string; amountCents?: number; feeCents?: number };
               return (
                 <li key={e.id}>
                   <time dateTime={e.createdAt.toISOString()}>{f.dateTime(e.createdAt)}</time>
                   <span>
                     {t(EVENT_LABEL[e.type] ?? e.type)} · {orgName(e.actorOrgId)}
                     {typeof d.amountCents === "number" ? `, ${f.money(d.amountCents)}` : ""}
+                    {typeof d.feeCents === "number" && d.feeCents > 0 ? `, ${t("Gebühr {fee}", { fee: f.money(d.feeCents) })}` : ""}
                     {d.note ? <span className="price-note">„{d.note}“</span> : null}
                   </span>
                 </li>

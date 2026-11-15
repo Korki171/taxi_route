@@ -12,7 +12,8 @@ import { getI18n } from "@/server/i18n";
 import { driverOverview, type TripStep } from "@/server/services/driver";
 import { referenceOf } from "@/server/services/marketplace";
 import { requireOrgActor } from "@/server/web";
-import { advanceTripAction, endShiftAction, startShiftAction } from "../actions";
+import { advanceTripAction, endShiftAction, reportNoShowAction, startShiftAction } from "../actions";
+import { noShowAllowedFrom } from "@/lib/cancellation";
 
 export const metadata: Metadata = { title: "Transferborsa Fahrer" };
 
@@ -126,6 +127,16 @@ export default async function DriverPage({ searchParams }: { searchParams: SP })
               <input type="hidden" name="step" value={next.step} />
               <button type="submit" className={i === 0 ? "big accent" : "big"}>{t(next.label)}</button>
             </form>
+            {b.tripStage === "AT_PICKUP" && (
+              new Date() >= noShowAllowedFrom(r.pickupAt) ? (
+                <form action={reportNoShowAction} className="trip-action">
+                  <input type="hidden" name="bookingId" value={b.id} />
+                  <button type="submit" className="big danger">{t("Fahrgast nicht erschienen")}</button>
+                </form>
+              ) : (
+                <p className="muted flush">{t("Erscheint der Fahrgast nicht, können Sie das ab {time} melden.", { time: f.time(noShowAllowedFrom(r.pickupAt)) })}</p>
+              )
+            )}
           </article>
         );
       })}

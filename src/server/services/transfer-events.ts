@@ -36,4 +36,5 @@ export const EVENT_LABEL: Record<string, string> = {
   "booking.completed": "Fahrt abgeschlossen",
   "booking.cancelled": "Buchung storniert",
   "booking.disputed": "Beanstandung gemeldet",
+  "booking.no_show": "Fahrgast nicht erschienen",
 };
