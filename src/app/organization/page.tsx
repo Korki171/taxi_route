@@ -151,7 +151,7 @@ export default async function OrganizationPage({ searchParams }: { searchParams:
       {canPartners && (
         <section className="card stack">
           <h2>{t("Meine Partner")}</h2>
-          <p className="muted">{t("Aufträge können Sie zuerst nur Ihren Partnern zeigen, bevor sie in die ganze Börse gehen.")}</p>
+          <p className="muted">{t("Aufträge können Sie zuerst nur Ihren Partnern zeigen, bevor sie in die ganze Börse gehen.")} <Link href="/boerse/firmen">{t("Firmenverzeichnis")}</Link></p>
           {partners.length > 0 && (
             <ul className="plain-list">
               {partners.map((p) => (

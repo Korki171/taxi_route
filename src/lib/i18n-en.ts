@@ -1428,4 +1428,12 @@ export const EN: Record<string, string> = {
   // Routen- und Preisrechner
   "Etwa {km} km, {time} Fahrzeit. Üblich sind rund € {low} bis € {high}.": "About {km} km, {time} driving time. Around € {low} to € {high} is usual.",
   "Schätzung aus der Entfernung, ohne Maut und Wartezeit.": "Estimate based on distance, without tolls and waiting time.",
+  // Firmenverzeichnis
+  "Firmenverzeichnis": "Company directory",
+  "Alle geprüften Beförderungsunternehmen. Fragen Sie eine Firma direkt an oder nehmen Sie sie als Partner auf.": "All verified transport companies. Send a company a direct request or add it as a partner.",
+  "Name oder Ort": "Name or place",
+  "Keine Unternehmen gefunden.": "No companies found.",
+  "Ihr Partner": "your partner",
+  "Anfragen": "Request",
+  "Als Partner": "Add as partner",
 };

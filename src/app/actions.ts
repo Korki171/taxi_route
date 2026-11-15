@@ -350,9 +350,10 @@ export async function advanceAudienceAction(fd: FormData) {
 }
 
 export async function addPartnerAction(fd: FormData) {
-  await runAction("/organization", async () => {
+  const back = str(fd, "back") === "/boerse/firmen" ? "/boerse/firmen" : "/organization";
+  await runAction(back, async () => {
     await addPartner(await getActor(), str(fd, "partnerOrgId"));
-    return withParam("/organization", "ok", "Partner hinzugefügt.");
+    return withParam(back, "ok", "Partner hinzugefügt.");
   });
 }
 

@@ -92,6 +92,7 @@ export default async function BoersePage({ searchParams }: { searchParams: SP })
         <div className="inline">
           {actorCan(actor, "transfers.request") && <Link href="/boerse/neu" className="btn accent">{t("Auftrag einstellen")}</Link>}
           {actorCan(actor, "capacity.publish") && <Link href="/flotte#fahrt" className="btn secondary">{t("Rückfahrt anbieten")}</Link>}
+          {actorCan(actor, "transfers.request") && <Link href="/boerse/firmen">{t("Firmenverzeichnis")}</Link>}
         </div>
       </div>
       <Flash searchParams={sp} />
