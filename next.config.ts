@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  serverExternalPackages: ["web-push"],
   experimental: {
     // Uploads bis 5 MB plus Formular-Overhead
     serverActions: { bodySizeLimit: "6mb" },

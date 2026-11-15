@@ -2,6 +2,7 @@ import Link from "next/link";
 import { escalateDueRequests } from "@/server/services/partners";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
+import { PushSetup } from "@/components/PushSetup";
 import { Empty, Load, PlaceSelect, Route, VehicleSelect } from "@/components/market";
 import { Badge, Flash, type SP } from "@/components/ui";
 import { fmtDateTime, fmtMinutes, fmtTime } from "@/lib/format";
@@ -92,6 +93,7 @@ export default async function BoersePage({ searchParams }: { searchParams: SP })
         </div>
       </div>
       <Flash searchParams={sp} />
+      {actorCan(actor, "jobs.accept") && <PushSetup banner />}
       {groups.length > 1 && (
         <nav className="tabs" aria-label={t("Ansichten der Börse")}>
           {groups.map((g) => (
