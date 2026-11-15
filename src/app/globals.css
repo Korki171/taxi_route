@@ -557,3 +557,7 @@ label.check input { width: 20px; height: 20px; margin-top: 2px; flex: none; }
 .order-form .flight-fields { display: none; }
 .order-form:has(input[name="byPlane"][value="yes"]:checked) .flight-fields { display: grid; }
 .plain-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+
+/* Auswertung: Zeitraum wählen */
+.period { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.period .btn { padding: 8px 14px; font-size: 14px; }
