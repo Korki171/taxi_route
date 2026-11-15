@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { Fragment } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Empty } from "@/components/market";
+import { LocationStep } from "@/components/LocationStep";
+import { PushSetup } from "@/components/PushSetup";
 import { ShiftTracker } from "@/components/ShiftTracker";
 import { Flash, type SP } from "@/components/ui";
 import { TRIP_STAGE_LABEL } from "@/lib/labels";
@@ -34,13 +36,14 @@ export default async function DriverPage({ searchParams }: { searchParams: SP })
   const sp = await searchParams;
   const actor = await requireOrgActor();
   if (!actorCan(actor, "trips.drive")) redirect("/dashboard");
-  const { shift, consentAt, vehicles, trips } = await driverOverview(actor);
+  const { shift, consentAt, vehicles, trips, lastVehicleId } = await driverOverview(actor);
 
   return (
     <AppShell actor={actor} narrow path="/fahrer">
       <h1>{t("Meine Fahrten")}</h1>
       <p className="sub">{t("Ihre zugewiesenen Fahrten. Während der Schicht sieht Ihre Disposition, wo Sie gerade sind.")}</p>
       <Flash searchParams={sp} />
+      {consentAt && <PushSetup banner driver />}
 
       <section className="card shift">
         {shift ? (
@@ -63,15 +66,38 @@ export default async function DriverPage({ searchParams }: { searchParams: SP })
                 unavailable: t("Standort derzeit nicht verfügbar"),
                 unsupported: t("Dieses Gerät unterstützt keine Standortbestimmung."),
                 keepOpen: t("Lassen Sie diese Seite während der Schicht geöffnet."),
+                background: t("Der Standort wird auch gesendet, wenn die App im Hintergrund läuft oder der Bildschirm aus ist."),
+                backgroundTitle: t("Schicht läuft"),
+                backgroundMessage: t("Standort wird mit Ihrer Disposition geteilt"),
               }}
             />
           </>
         ) : (
           <form action={startShiftAction} className="stack">
-            <h2>{t("Schicht starten")}</h2>
+            <h2>{consentAt ? t("Schicht starten") : t("In 3 Schritten startklar")}</h2>
+            {!consentAt && (
+              <ol className="setup-steps">
+                <li>
+                  <strong>{t("Standort erlauben")}</strong>
+                  <LocationStep
+                    text={{
+                      hint: t("Nur während der Schicht sieht Ihre Disposition, wo Sie sind."),
+                      allow: t("Standort erlauben"),
+                      on: t("Standort ist erlaubt."),
+                      denied: t("Standortzugriff verweigert. Bitte in den Einstellungen des Browsers für diese Seite erlauben."),
+                    }}
+                  />
+                </li>
+                <li>
+                  <strong>{t("Mitteilungen einschalten")}</strong>
+                  <PushSetup driver />
+                </li>
+                <li><strong>{t("Schicht starten")}</strong></li>
+              </ol>
+            )}
             {vehicles.length > 0 && (
               <label>{t("Fahrzeug")}
-                <select name="vehicleId" defaultValue="">
+                <select name="vehicleId" defaultValue={lastVehicleId ?? ""}>
                   <option value="">{t("ohne festes Fahrzeug")}</option>
                   {vehicles.map((v) => <option key={v.id} value={v.id}>{v.label}{v.licensePlate ? ` · ${v.licensePlate}` : ""}</option>)}
                 </select>
@@ -81,8 +107,11 @@ export default async function DriverPage({ searchParams }: { searchParams: SP })
               <p className="muted">{t("Während der Schicht wird Ihr Standort an Ihr Unternehmen übertragen. Nach Schichtende nicht mehr.")}</p>
             ) : (
               <div className="consent">
-                <p>{t("Während einer Schicht überträgt Transferborsa etwa alle 15 Sekunden Ihren Standort an die Disposition Ihres Unternehmens, damit Fahrten koordiniert werden können. Außerhalb der Schicht wird nichts übertragen. Der Verlauf wird nach 30 Tagen gelöscht.")}</p>
                 <label className="check"><input type="checkbox" name="consent" required /> {t("Ich bin einverstanden, dass mein Standort während der Schicht übertragen wird.")}</label>
+                <details>
+                  <summary>{t("Was wird übertragen?")}</summary>
+                  <p>{t("Während einer Schicht überträgt Transferborsa etwa alle 15 Sekunden Ihren Standort an die Disposition Ihres Unternehmens, damit Fahrten koordiniert werden können. Außerhalb der Schicht wird nichts übertragen. Der Verlauf wird nach 30 Tagen gelöscht.")}</p>
+                </details>
               </div>
             )}
             <div><button type="submit" className="big accent">{t("Schicht starten")}</button></div>

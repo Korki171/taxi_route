@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { backgroundGeolocation, nativeHttp, nativePlatform } from "@/lib/native";
 
 type Fix = { lat: number; lng: number; accuracy: number | null; speed: number | null; heading: number | null; at: number };
 
@@ -15,6 +16,10 @@ export type TrackerText = {
   unavailable: string;
   unsupported: string;
   keepOpen: string;
+  /** Native App: Hinweis statt „Seite geöffnet lassen“ und Texte der Dauer-Mitteilung (Android) */
+  background: string;
+  backgroundTitle: string;
+  backgroundMessage: string;
 };
 
 /** Alle 15 Sekunden die jeweils neueste Position senden; ohne Netz sammeln und später nachreichen. */
@@ -22,8 +27,22 @@ const SEND_EVERY_MS = 15_000;
 const MAX_QUEUE = 100;
 
 /**
- * Teilt während der Schicht den Standort mit dem eigenen Unternehmen. Läuft im Browser, solange
- * die Seite geöffnet ist; der Bildschirm wird dafür (wo möglich) wach gehalten.
+ * Sendet Positionen an den Server. Android drosselt Anfragen aus der Web-Ansicht nach einigen Minuten
+ * im Hintergrund, deshalb geht der Versand dort über die native Schicht der App.
+ */
+async function postPositions(batch: Fix[]): Promise<{ ok: boolean; status: number }> {
+  if (nativePlatform() === "android") {
+    const http = await nativeHttp();
+    const res = await http.request({ url: new URL("/api/driver/positions", window.location.origin).href, method: "POST", headers: { "Content-Type": "application/json" }, data: batch });
+    return { ok: res.status >= 200 && res.status < 300, status: res.status };
+  }
+  return fetch("/api/driver/positions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(batch), keepalive: true });
+}
+
+/**
+ * Teilt während der Schicht den Standort mit dem eigenen Unternehmen. Im Browser läuft das, solange
+ * die Seite geöffnet ist; der Bildschirm wird dafür (wo möglich) wach gehalten. In der nativen App
+ * übernimmt die Hintergrund-Ortung: sie sendet auch bei gesperrtem Bildschirm weiter.
  */
 export function ShiftTracker({ text }: { text: TrackerText }) {
   const router = useRouter();
@@ -34,36 +53,72 @@ export function ShiftTracker({ text }: { text: TrackerText }) {
   const [sentAt, setSentAt] = useState<Date | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [offline, setOffline] = useState(false);
+  const [isNative, setIsNative] = useState(false);
   // Texte über eine Ref, damit ein Neuladen der Seite die Ortung nicht neu startet.
   const textRef = useRef(text);
   textRef.current = text;
 
   useEffect(() => {
-    if (!("geolocation" in navigator)) {
+    const native = nativePlatform() !== null;
+    setIsNative(native);
+    let lastFlush = 0;
+
+    function onFix(f: Fix) {
+      const first = !latest.current;
+      latest.current = f;
+      setFix(f);
+      setProblem(null);
+      // In der App ruft das System diese Funktion auch im Hintergrund auf, wo Zeitgeber pausieren können.
+      if (first || (native && Date.now() - lastFlush >= SEND_EVERY_MS)) void flush();
+    }
+
+    let stopWatch = () => {};
+    let cancelled = false;
+    if (native) {
+      void (async () => {
+        const bg = await backgroundGeolocation();
+        const id = await bg.addWatcher(
+          { backgroundTitle: textRef.current.backgroundTitle, backgroundMessage: textRef.current.backgroundMessage, requestPermissions: true, stale: false, distanceFilter: 10 },
+          (loc, err) => {
+            if (err || !loc) {
+              setProblem(err?.code === "NOT_AUTHORIZED" ? textRef.current.denied : textRef.current.unavailable);
+              return;
+            }
+            onFix({
+              lat: loc.latitude,
+              lng: loc.longitude,
+              accuracy: loc.accuracy ?? null,
+              speed: loc.speed != null && loc.speed >= 0 ? loc.speed : null,
+              heading: loc.bearing != null && loc.bearing >= 0 && loc.bearing <= 360 ? loc.bearing : null,
+              at: loc.time ?? Date.now(),
+            });
+          },
+        );
+        if (cancelled) void bg.removeWatcher({ id });
+        else stopWatch = () => void bg.removeWatcher({ id }).catch(() => {});
+      })().catch(() => setProblem(textRef.current.unavailable));
+    } else if (!("geolocation" in navigator)) {
       setProblem(textRef.current.unsupported);
       return;
+    } else {
+      const watch = navigator.geolocation.watchPosition(
+        (p) =>
+          onFix({
+            lat: p.coords.latitude,
+            lng: p.coords.longitude,
+            accuracy: p.coords.accuracy ?? null,
+            speed: p.coords.speed != null && p.coords.speed >= 0 ? p.coords.speed : null,
+            heading: p.coords.heading != null && !Number.isNaN(p.coords.heading) ? p.coords.heading : null,
+            at: p.timestamp || Date.now(),
+          }),
+        (err) => setProblem(err.code === err.PERMISSION_DENIED ? textRef.current.denied : textRef.current.unavailable),
+        { enableHighAccuracy: true, maximumAge: 5_000, timeout: 30_000 },
+      );
+      stopWatch = () => navigator.geolocation.clearWatch(watch);
     }
-    const watch = navigator.geolocation.watchPosition(
-      (p) => {
-        const f: Fix = {
-          lat: p.coords.latitude,
-          lng: p.coords.longitude,
-          accuracy: p.coords.accuracy ?? null,
-          speed: p.coords.speed != null && p.coords.speed >= 0 ? p.coords.speed : null,
-          heading: p.coords.heading != null && !Number.isNaN(p.coords.heading) ? p.coords.heading : null,
-          at: p.timestamp || Date.now(),
-        };
-        const first = !latest.current;
-        latest.current = f;
-        setFix(f);
-        setProblem(null);
-        if (first) void flush();
-      },
-      (err) => setProblem(err.code === err.PERMISSION_DENIED ? textRef.current.denied : textRef.current.unavailable),
-      { enableHighAccuracy: true, maximumAge: 5_000, timeout: 30_000 },
-    );
 
     async function flush() {
+      lastFlush = Date.now();
       const f = latest.current;
       if (f && f.at > lastQueuedAt.current) {
         queue.current = [...queue.current, f].slice(-MAX_QUEUE);
@@ -72,12 +127,7 @@ export function ShiftTracker({ text }: { text: TrackerText }) {
       if (queue.current.length === 0) return;
       const batch = queue.current;
       try {
-        const res = await fetch("/api/driver/positions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(batch),
-          keepalive: true,
-        });
+        const res = await postPositions(batch);
         if (res.ok) {
           queue.current = queue.current.filter((x) => !batch.includes(x));
           setSentAt(new Date());
@@ -109,15 +159,17 @@ export function ShiftTracker({ text }: { text: TrackerText }) {
     }
     function onVisible() {
       if (document.visibilityState === "visible") {
-        void keepAwake();
+        if (!native) void keepAwake();
         void flush();
       }
     }
-    void keepAwake();
+    // In der App läuft die Ortung im Hintergrund weiter, der Bildschirm darf ausgehen.
+    if (!native) void keepAwake();
     document.addEventListener("visibilitychange", onVisible);
 
     return () => {
-      navigator.geolocation.clearWatch(watch);
+      cancelled = true;
+      stopWatch();
       clearInterval(sender);
       clearInterval(refresher);
       document.removeEventListener("visibilitychange", onVisible);
@@ -139,7 +191,7 @@ export function ShiftTracker({ text }: { text: TrackerText }) {
             {offline && <> · {text.offline}</>}
           </small>
         )}
-        <small>{text.keepOpen}</small>
+        <small>{isNative ? text.background : text.keepOpen}</small>
       </div>
     </div>
   );
