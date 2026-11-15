@@ -67,7 +67,7 @@ export async function listThreads(actor: Actor | null, requestId: string) {
     take: 500,
   });
   const orgIds = [...new Set([...a.allowed, ...messages.map((m) => m.threadOrgId)])].filter((id) => id !== actor.org.id);
-  const names = new Map((await db.organization.findMany({ where: { id: { in: [...orgIds, actor.org.id] } }, select: { id: true, name: true } })).map((o) => [o.id, o.name]));
+  const names = new Map((await db.organization.findMany({ where: { id: { in: [...orgIds, actor.org.id, a.req.requesterOrgId] } }, select: { id: true, name: true } })).map((o) => [o.id, o.name]));
   const threadIds = a.role === "requester" ? orgIds : [actor.org.id];
   const threads = threadIds.map((id) => ({
     threadOrgId: id,

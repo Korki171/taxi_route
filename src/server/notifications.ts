@@ -261,6 +261,14 @@ export async function notifyRequestCancelled(requestId: string) {
   );
 }
 
+/** Die Disposition hat einem Fahrer eine Fahrt zugewiesen: Mitteilung nur an dessen Geräte (keine E-Mail). */
+export async function notifyDriverAssigned(bookingId: string) {
+  const b = await db.booking.findUniqueOrThrow({ where: { id: bookingId }, include: { request: true, providerOrg: { select: orgSelect } } });
+  if (!b.driverId) return;
+  const n = note(b.providerOrg, b.request, "Neue Fahrt für Sie: {route}", ["Abholung {pickup}. Details stehen unter „Meine Fahrten“."], { email: false });
+  await sendPushes([{ ...n.push, userIds: [b.driverId], message: { ...n.push.message, url: "/fahrer" } }]);
+}
+
 /** Benachrichtigungen sind nachrangig: ein Fehler darf die bereits gespeicherte Aktion nicht als gescheitert melden. */
 export function notificationFailed(e: unknown) {
   console.error("Benachrichtigung fehlgeschlagen", e);

@@ -202,6 +202,13 @@ a.badge:hover { text-decoration: underline; }
 .push-banner p, .push-toggle p { margin: 0; }
 .push-banner > div, .push-toggle > div { flex: 1 1 240px; }
 .push-error { color: var(--bad); }
+/* Erster Start der Fahrer-Ansicht: drei nummerierte Schritte */
+ol.setup-steps { list-style: none; counter-reset: step; margin: 0; padding: 0; }
+ol.setup-steps li { counter-increment: step; position: relative; padding: 0 0 16px 40px; }
+ol.setup-steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--band); color: var(--band-ink); font-weight: 600; display: grid; place-items: center; }
+ol.setup-steps li:last-child { padding-bottom: 0; }
+ol.setup-steps strong { display: block; line-height: 28px; }
+.consent details { margin-top: 8px; font-size: 14px; color: var(--muted); }
 .muted { color: var(--muted); }
 .stars { font-weight: 600; font-variant-numeric: tabular-nums; }
 .star-pick { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; }
