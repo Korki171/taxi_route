@@ -1400,4 +1400,12 @@ export const EN: Record<string, string> = {
   "Live-Status": "Live status",
   "Ihre Fahrt {route} live verfolgen: {url}": "Track your trip {route} live: {url}",
   "Link per WhatsApp senden": "Send link via WhatsApp",
+  // Umkreissuche und Karte in der Börse
+  "Umkreis um „Von“": "Radius around “From”",
+  "Nur dieser Ort": "This place only",
+  "{n} km": "{n} km",
+  "Karte ausblenden": "Hide map",
+  "Auf der Karte zeigen": "Show on map",
+  "Karte der offenen Aufträge": "Map of open jobs",
+  "Preis offen": "price open",
 };

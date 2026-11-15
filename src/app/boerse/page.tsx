@@ -5,6 +5,7 @@ import { AppShell } from "@/components/AppShell";
 import { PushSetup } from "@/components/PushSetup";
 import { Empty, Load, PlaceSelect, Route, VehicleSelect } from "@/components/market";
 import { Badge, Flash, Stars, type SP } from "@/components/ui";
+import { BoardMap, type BoardMapPoint } from "@/components/BoardMap";
 import { ratingSummaries } from "@/server/services/ratings";
 import { fmtDateTime, fmtMinutes, fmtTime } from "@/lib/format";
 import {
@@ -15,7 +16,7 @@ import {
   VEHICLE_LABEL,
 } from "@/lib/labels";
 import { formatCents } from "@/lib/money";
-import { REGION_LABEL, placeName } from "@/lib/places";
+import { REGION_LABEL, getPlace, placeName } from "@/lib/places";
 import { actorCan, type OrgActor } from "@/server/authz/context";
 import { listMarketCapacity } from "@/server/services/fleet";
 import {
@@ -57,7 +58,7 @@ const GROUPS: { id: string; label: string; views: string[] }[] = [
 /** Chips: „Neue Aufträge“ ist ein Filter (Schalter im Filter), kein eigener Knopf. */
 const CHIP_HIDDEN = new Set(["neu"]);
 
-const FILTER_KEYS = ["from", "to", "fromRegion", "toRegion", "country", "dateFrom", "dateTo", "vehicleCategory", "minPassengers", "maxPassengers", "maxPrice", "priceMode", "newOnly"];
+const FILTER_KEYS = ["from", "to", "radiusKm", "fromRegion", "toRegion", "country", "dateFrom", "dateTo", "vehicleCategory", "minPassengers", "maxPassengers", "maxPrice", "priceMode", "newOnly"];
 
 async function PriceCell({ mode, cents, share = 0 }: { mode: "FIXED" | "NEGOTIABLE"; cents: number | null; share?: number }) {
   const { t, f } = await getI18n();
@@ -130,6 +131,23 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
   const rows = await searchBoard(actor, { ...filter, maxPrice: maxPriceCents, newOnly: sp.newOnly });
   const active = FILTER_KEYS.some((k) => sp[k]);
   const stars = await ratingSummaries(rows.map((r) => r.requesterOrg.id));
+  // Karte: ein Punkt je Abholort, nur auf Wunsch geladen (?map=1)
+  const showMap = sp.map === "1";
+  const mapQuery = new URLSearchParams({ view: "markt", ...Object.fromEntries(FILTER_KEYS.filter((k) => sp[k]).map((k) => [k, sp[k]!])), ...(showMap ? {} : { map: "1" }) }).toString();
+  const mapPoints: BoardMapPoint[] = [];
+  if (showMap) {
+    for (const r of rows) {
+      const place = getPlace(r.pickupPlaceId);
+      if (!place) continue;
+      let point = mapPoints.find((x) => x.id === place.id);
+      if (!point) mapPoints.push((point = { id: place.id, name: t(place.name), lat: place.lat, lng: place.lng, jobs: [] }));
+      point.jobs.push({
+        href: `/boerse/auftrag/${r.id}`,
+        label: `${t(placeName(r.pickupPlaceId))} → ${t(placeName(r.dropoffPlaceId))}`,
+        note: `${f.dateTime(r.pickupAt)} · ${r.priceCents ? f.money(r.priceCents) : t("Preis offen")}`,
+      });
+    }
+  }
   return (
     <>
       {(rows.length > 0 || active) && <form className="card filters" method="get" aria-label={t("Filter")}>
@@ -140,6 +158,12 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
         <input type="checkbox" id="more-filters" className="more-check" defaultChecked={FILTER_KEYS.some((k) => !["from", "to", "dateFrom"].includes(k) && sp[k])} />
         <label htmlFor="more-filters" className="more-toggle">{t("Mehr Filter")}</label>
         <div className="more">
+        <label>{t("Umkreis um „Von“")}
+          <select name="radiusKm" defaultValue={sp.radiusKm ?? ""}>
+            <option value="">{t("Nur dieser Ort")}</option>
+            {[25, 50, 100].map((km) => <option key={km} value={km}>{t("{n} km", { n: km })}</option>)}
+          </select>
+        </label>
         <label>{t("Region Start")}
           <select name="fromRegion" defaultValue={sp.fromRegion ?? ""}>
             <option value="">{t("Alle")}</option>
@@ -176,7 +200,13 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
         </div>
       </form>}
       <section className="card">
-        {rows.length > 0 && <h2>{rows.length === 1 ? t("1 offener Auftrag") : t("{n} offene Aufträge", { n: rows.length })}{sp.newOnly ? " " + t("aus den letzten 24 Stunden") : ""}</h2>}
+        {rows.length > 0 && (
+          <div className="head-row">
+            <h2>{rows.length === 1 ? t("1 offener Auftrag") : t("{n} offene Aufträge", { n: rows.length })}{sp.newOnly ? " " + t("aus den letzten 24 Stunden") : ""}</h2>
+            <Link href={`/boerse?${mapQuery}`} className="btn secondary">{t(showMap ? "Karte ausblenden" : "Auf der Karte zeigen")}</Link>
+          </div>
+        )}
+        {showMap && rows.length > 0 && <BoardMap points={mapPoints} label={t("Karte der offenen Aufträge")} />}
         {rows.length === 0 ? (
           active ? (
             <Empty>{t("Keine offenen Aufträge für diese Filter.")}</Empty>

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { FREE_CANCEL_HOURS, LATE_CANCEL_PERCENT, lateCancelFeeCents, noShowAllowedFrom } from "@/lib/cancellation";
 import { MAX_HANDOFF_SHARE_PERCENT, splitHandoff } from "@/lib/handoff";
-import { estimateMinutes, isPlaceId, PLACES, type Place } from "@/lib/places";
+import { estimateMinutes, getPlace, haversineKm, isPlaceId, PLACES, type Place } from "@/lib/places";
 import { actorCan, requirePermission, type Actor, type OrgActor } from "../authz/context";
 import { conflict, forbidden, invalid, notFound } from "../errors";
 import { parse } from "../validation";
@@ -346,6 +346,8 @@ export async function cancelTransferRequest(actor: Actor | null, requestId: stri
 export const boardFilterSchema = z.object({
   from: z.string().optional(),
   to: z.string().optional(),
+  /** Umkreis in km um den Ort „Von“: Aufträge mit Abholung in diesem Umkreis */
+  radiusKm: optInt(500),
   fromRegion: z.string().optional(),
   toRegion: z.string().optional(),
   country: z.string().optional(),
@@ -370,7 +372,9 @@ export async function searchBoard(actor: Actor | null, rawFilter: unknown = {}) 
   const now = new Date();
   const and: Prisma.TransferRequestWhereInput[] = [OPEN_FOR_MARKET(now), VISIBLE_TO(actor.org.id), { requesterOrgId: { not: actor.org.id } }];
 
-  if (f.from) and.push({ pickupPlaceId: f.from });
+  const center = f.from && f.radiusKm ? getPlace(f.from) : undefined;
+  if (center) and.push({ pickupPlaceId: { in: PLACE_IDS_IN((p) => haversineKm(center, p) <= f.radiusKm!) } });
+  else if (f.from) and.push({ pickupPlaceId: f.from });
   if (f.to) and.push({ dropoffPlaceId: f.to });
   if (f.fromRegion) and.push({ pickupPlaceId: { in: PLACE_IDS_IN((p) => p.region === f.fromRegion) } });
   if (f.toRegion) and.push({ dropoffPlaceId: { in: PLACE_IDS_IN((p) => p.region === f.toRegion) } });
