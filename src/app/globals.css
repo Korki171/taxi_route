@@ -561,3 +561,6 @@ label.check input { width: 20px; height: 20px; margin-top: 2px; flex: none; }
 /* Auswertung: Zeitraum wählen */
 .period { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
 .period .btn { padding: 8px 14px; font-size: 14px; }
+
+/* Konto-Menü: Zwei-Faktor-Anmeldung */
+.acct-2fa { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 12px; font-size: 14px; color: var(--muted); }
