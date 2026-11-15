@@ -111,7 +111,7 @@ export default async function NewRequestPage({ searchParams }: { searchParams: S
                 <label><input type="radio" name="audience" value="OWN" />{t("Erst mein Betrieb")}</label>
               </div>
               <label>{t("Danach automatisch weitergeben nach")}
-                <select name="escalateAfterMinutes" defaultValue="60">
+                <select name="escalateAfterMinutes" defaultValue="30">
                   <option value="30">{t("30 Minuten")}</option>
                   <option value="60">{t("1 Stunde")}</option>
                   <option value="120">{t("2 Stunden")}</option>

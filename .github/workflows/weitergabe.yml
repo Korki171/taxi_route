@@ -1,0 +1,25 @@
+# Zeitgeber für die automatische Weitergabe: ruft alle 5 Minuten die Börse auf, damit Aufträge,
+# die niemand übernommen hat, pünktlich an die nächste Stufe (Partner, dann ganze Börse) gehen.
+# Vercel Hobby erlaubt nur einen täglichen Cron; dieser Zeitgeber ist kostenlos, solange das
+# Repository öffentlich ist. GitHub startet geplante Läufe manchmal einige Minuten später.
+name: Weitergabe
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: weitergabe
+  cancel-in-progress: false
+
+jobs:
+  weitergabe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Fällige Aufträge weitergeben
+        run: curl --fail --silent --show-error --max-time 60 -X POST "${APP_URL}/api/cron/escalate"
+        env:
+          APP_URL: ${{ vars.APP_URL || 'https://www.transferborsa.com' }}

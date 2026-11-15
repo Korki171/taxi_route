@@ -88,3 +88,25 @@ describe("Partnernetzwerk und Veröffentlichungsstufen", () => {
     expect((await searchBoard(partner.actor, {})).map((r) => r.id)).toEqual([req.id]);
   });
 });
+
+describe("Zeitgeber für die Weitergabe", () => {
+  it("der Aufruf gibt fällige Aufträge weiter, benachrichtigt den nächsten Kreis und ist wiederholbar", async () => {
+    const { sentPushes } = await import("@/server/push");
+    const { savePushSubscription } = await import("@/server/services/push");
+    const { POST } = await import("@/app/api/cron/escalate/route");
+    const { poster, partner, stranger } = await setup();
+    for (const [i, x] of [partner, stranger].entries()) {
+      await savePushSubscription(x.actor, null, { endpoint: `https://push.example.com/${i}`, keys: { p256dh: "p".repeat(40), auth: "a".repeat(20) } });
+    }
+    const req = await createTransferRequest(poster.actor, requestInput({ audience: "PARTNERS", escalateAfterMinutes: 30, priceMode: "FIXED" }));
+    expect(await (await POST()).json()).toEqual({ escalated: 0 });
+
+    // 31 Minuten später ohne Übernahme
+    await db.transferRequest.update({ where: { id: req.id }, data: { audienceSince: new Date(Date.now() - 31 * 60_000) } });
+    sentPushes.length = 0;
+    expect(await (await POST()).json()).toEqual({ escalated: 1 });
+    expect(sentPushes.map((p) => p.userId)).toEqual([stranger.user.id]);
+    expect(sentPushes[0].message.takeRequestId).toBe(req.id);
+    expect(await (await POST()).json()).toEqual({ escalated: 0 });
+  });
+});
