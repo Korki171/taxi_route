@@ -12,9 +12,9 @@ export const dynamic = "force-dynamic";
  * Dauerschleife aufrufen (Last, Kosten), verlangt er das Geheimnis CRON_SECRET, sobald es gesetzt ist.
  * Vercel-Cron schickt es von selbst mit; GitHub Actions liest es aus dem Repository-Secret CRON_SECRET.
  */
-async function run(req?: Request) {
+async function run(req: Request) {
   const secret = process.env.CRON_SECRET;
-  if (secret && req?.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Nicht erlaubt." }, { status: 401 });
   }
   return NextResponse.json({ escalated: await escalateDueRequests() }, { headers: { "Cache-Control": "no-store" } });
