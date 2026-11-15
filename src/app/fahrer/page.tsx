@@ -110,7 +110,7 @@ export default async function DriverPage({ searchParams }: { searchParams: SP })
                 <label className="check"><input type="checkbox" name="consent" required /> {t("Ich bin einverstanden, dass mein Standort während der Schicht übertragen wird.")}</label>
                 <details>
                   <summary>{t("Was wird übertragen?")}</summary>
-                  <p>{t("Während einer Schicht überträgt Transferborsa etwa alle 15 Sekunden Ihren Standort an die Disposition Ihres Unternehmens, damit Fahrten koordiniert werden können. Außerhalb der Schicht wird nichts übertragen. Der Verlauf wird nach 30 Tagen gelöscht.")}</p>
+                  <p>{t("Während einer Schicht überträgt Transferborsa etwa alle 15 Sekunden Ihren Standort an die Disposition Ihres Unternehmens, damit Fahrten koordiniert werden können. Während einer Fahrt sehen auch Auftraggeber und Fahrgast, wo das Fahrzeug ist. Außerhalb der Schicht wird nichts übertragen. Der Verlauf wird nach 30 Tagen gelöscht.")}</p>
                 </details>
               </div>
             )}

@@ -234,6 +234,8 @@ model Organization {
   ratingsReceived   Rating[]           @relation("RatingsReceived")
   jobAlerts         JobAlert[]
   locations         OrgLocation[]
+  tenders           Tender[]
+  tenderBids        TenderBid[]
 }
 
 /// Sperrliste: gesperrte Unternehmen sehen keine Aufträge dieses Unternehmens.
@@ -779,4 +781,61 @@ model OrgLocation {
   createdAt      DateTime     @default(now())
 
   @@unique([organizationId, placeId])
+}
+
+enum TenderStatus {
+  OPEN
+  AWARDED
+  CLOSED
+}
+
+/// Ausschreibung: ein Auftraggeber schreibt viele Fahrten auf einer Strecke für einen Zeitraum aus
+/// (Saison- oder Gruppentransfers). Betriebe bieten einen festen Preis je Fahrt, einer erhält den Zuschlag.
+/// Die einzelnen Fahrten stellt der Auftraggeber danach als gezielte Aufträge an diesen Betrieb ein.
+model Tender {
+  id              String           @id @default(cuid())
+  number          Int              @unique @default(autoincrement())
+  requesterOrgId  String
+  requesterOrg    Organization     @relation(fields: [requesterOrgId], references: [id], onDelete: Cascade)
+  createdById     String
+  pickupPlaceId   String
+  dropoffPlaceId  String
+  bothDirections  Boolean          @default(true)
+  dateFrom        DateTime
+  dateTo          DateTime
+  estimatedTrips  Int
+  passengers      Int?
+  vehicleCategory VehicleCategory?
+  notes           String?
+  bidDeadline     DateTime
+  status          TenderStatus     @default(OPEN)
+  awardedBidId    String?          @unique
+  awardedBid      TenderBid?       @relation("AwardedBid", fields: [awardedBidId], references: [id], onDelete: SetNull)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  bids TenderBid[]
+
+  @@index([requesterOrgId])
+  @@index([status, bidDeadline])
+}
+
+model TenderBid {
+  id                String       @id @default(cuid())
+  tenderId          String
+  tender            Tender       @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+  providerOrgId     String
+  providerOrg       Organization @relation(fields: [providerOrgId], references: [id], onDelete: Cascade)
+  createdById       String
+  pricePerTripCents Int
+  message           String?
+  status            QuoteStatus  @default(SUBMITTED)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  awardedFor Tender? @relation("AwardedBid")
+
+  /// Ein Angebot je Betrieb und Ausschreibung (neu abgeben ersetzt das alte)
+  @@unique([tenderId, providerOrgId])
+  @@index([providerOrgId])
 }

@@ -31,8 +31,8 @@ export default async function NewRequestPage({ searchParams }: { searchParams: S
       <form action={createTransferRequestAction} className="stack order-form">
         <section className="card stack">
           <div className="fields">
-            <label>{t("Von")}<PlaceSelect name="pickupPlaceId" required /></label>
-            <label>{t("Nach")}<PlaceSelect name="dropoffPlaceId" required /></label>
+            <label>{t("Von")}<PlaceSelect name="pickupPlaceId" required defaultValue={sp.from} /></label>
+            <label>{t("Nach")}<PlaceSelect name="dropoffPlaceId" required defaultValue={sp.to} /></label>
             <label>{t("Abholung")}<input type="datetime-local" name="pickupAt" required /></label>
             <label>{t("Personen")}<input type="number" name="passengers" min={1} max={60} required defaultValue={2} /></label>
           </div>
@@ -50,7 +50,7 @@ export default async function NewRequestPage({ searchParams }: { searchParams: S
         </section>
 
         <section className="card stack">
-          <label>{t("Festpreis in €")}<input name="price" inputMode="decimal" placeholder="180,00" required={!targeted} /></label>
+          <label>{t("Festpreis in €")}<input name="price" inputMode="decimal" placeholder="180,00" required={!targeted} defaultValue={sp.price} /></label>
           <RouteGuide text={{ line: t("Etwa {km} km, {time} Fahrzeit. Üblich sind rund € {low} bis € {high}."), hint: t("Schätzung aus der Entfernung, ohne Maut und Wartezeit.") }} />
           <p className="price-note">{t("Das erste geprüfte Unternehmen kann den Auftrag direkt zu diesem Preis übernehmen. Die Abrechnung läuft direkt zwischen den Unternehmen.")}</p>
         </section>

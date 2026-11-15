@@ -68,7 +68,7 @@ export const VEHICLE_LABEL: Record<VehicleCategory, string> = {
 };
 
 export function statusTone(s: string): "ok" | "warn" | "bad" | "neutral" {
-  if (["VERIFIED", "APPROVED", "ACTIVE", "CONFIRMED", "ACCEPTED", "COMPLETED", "ASSIGNED", "RESPONDED"].includes(s)) return "ok";
+  if (["VERIFIED", "APPROVED", "ACTIVE", "CONFIRMED", "ACCEPTED", "COMPLETED", "ASSIGNED", "RESPONDED", "AWARDED"].includes(s)) return "ok";
   if (["PENDING_REVIEW", "PENDING", "RESTRICTED", "SUBMITTED", "IN_PROGRESS", "PLANNED", "OPEN"].includes(s)) return "warn";
   if (["REJECTED", "SUSPENDED", "CANCELLED", "DISPUTED", "DECLINED", "NO_SHOW"].includes(s)) return "bad";
   return "neutral";
@@ -131,4 +131,10 @@ export const INVITATION_STATUS_LABEL: Record<string, string> = {
 export const VISIBILITY_LABEL: Record<string, string> = {
   MARKET: "Ganze Börse",
   INVITED: "Gezielte Anfrage",
+};
+
+export const TENDER_STATUS_LABEL: Record<string, string> = {
+  OPEN: "Offen",
+  AWARDED: "Vergeben",
+  CLOSED: "Beendet",
 };

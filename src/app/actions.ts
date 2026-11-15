@@ -10,6 +10,7 @@ import { deleteDocument, uploadDocument } from "@/server/services/documents";
 import { addJobAlert, removeJobAlert, sendMessage, updateJobAlerts } from "@/server/services/messages";
 import { returnBooking, uploadBookingDocument } from "@/server/services/booking-extras";
 import { rateBooking } from "@/server/services/ratings";
+import { awardTender, closeTender, createTender, submitTenderBid, withdrawTenderBid } from "@/server/services/tenders";
 import { addPartner, advanceAudience, blockOrg, removePartner, takeOwnRequest, unblockOrg } from "@/server/services/partners";
 import {
   acceptInvitation,
@@ -480,6 +481,48 @@ export async function uploadBookingDocumentAction(fd: FormData) {
       bytes: new Uint8Array(await file.arrayBuffer()),
     });
     return withParam(`/boerse/auftrag/${id}`, "ok", "Dokument hochgeladen.");
+  });
+}
+
+// ---------- Ausschreibungen ----------
+
+export async function createTenderAction(fd: FormData) {
+  await runAction("/boerse/ausschreibung/neu", async () => {
+    const tender = await createTender(await getActor(), {
+      ...formObject(fd, ["pickupPlaceId", "dropoffPlaceId", "dateFrom", "dateTo", "estimatedTrips", "passengers", "vehicleCategory", "notes", "bidDeadline"]),
+      bothDirections: fd.get("bothDirections") === "on",
+    });
+    return withParam(`/boerse/ausschreibung/${tender.id}`, "ok", "Ausschreibung veröffentlicht.");
+  });
+}
+
+export async function submitTenderBidAction(fd: FormData) {
+  const id = str(fd, "tenderId");
+  await runAction(`/boerse/ausschreibung/${id}`, async () => {
+    await submitTenderBid(await getActor(), id, { pricePerTripCents: cents(fd, "price"), message: str(fd, "message") });
+    return withParam(`/boerse/ausschreibung/${id}`, "ok", "Angebot abgegeben.");
+  });
+}
+
+export async function withdrawTenderBidAction(fd: FormData) {
+  const id = str(fd, "tenderId");
+  await runAction(`/boerse/ausschreibung/${id}`, async () => {
+    await withdrawTenderBid(await getActor(), id);
+  });
+}
+
+export async function awardTenderAction(fd: FormData) {
+  const id = str(fd, "tenderId");
+  await runAction(`/boerse/ausschreibung/${id}`, async () => {
+    await awardTender(await getActor(), str(fd, "bidId"));
+    return withParam(`/boerse/ausschreibung/${id}`, "ok", "Zuschlag erteilt. Der Betrieb wurde benachrichtigt.");
+  });
+}
+
+export async function closeTenderAction(fd: FormData) {
+  const id = str(fd, "tenderId");
+  await runAction(`/boerse/ausschreibung/${id}`, async () => {
+    await closeTender(await getActor(), id);
   });
 }
 
