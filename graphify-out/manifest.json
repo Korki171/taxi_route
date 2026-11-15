@@ -72,9 +72,9 @@
     "semantic_hash": ""
   },
   "src/app/boerse/auftrag/[id]/page.tsx": {
-    "mtime": 1794763669.4478285,
-    "seen": 1794763806.1767683,
-    "ast_hash": "f8db4e1746430254c0eebfc036e155dc",
+    "mtime": 1794763936.2009969,
+    "seen": 1794764098.0527484,
+    "ast_hash": "a18469a737b1a320c682d75ef124ebcc",
     "semantic_hash": ""
   },
   "src/app/boerse/neu/page.tsx": {
@@ -102,9 +102,9 @@
     "semantic_hash": ""
   },
   "src/app/fahrer/page.tsx": {
-    "mtime": 1794763455.9733076,
-    "seen": 1794763806.176778,
-    "ast_hash": "cc12689483bc588512c3ff9a8b7e97e2",
+    "mtime": 1794763936.2015185,
+    "seen": 1794764098.0528295,
+    "ast_hash": "18f774a96a262c96152291edfecdb18d",
     "semantic_hash": ""
   },
   "src/app/flotte/live/page.tsx": {
@@ -330,9 +330,9 @@
     "semantic_hash": ""
   },
   "src/lib/i18n-en.ts": {
-    "mtime": 1794763694.2684119,
-    "seen": 1794763806.1768866,
-    "ast_hash": "9f9d954b66bca94ddac342ccc7910a0f",
+    "mtime": 1794763970.9052176,
+    "seen": 1794764098.0536997,
+    "ast_hash": "756f4029990d8cca0f513ad04993310a",
     "semantic_hash": ""
   },
   "src/lib/i18n.ts": {
@@ -969,6 +969,36 @@
     "mtime": 1794763455.95456,
     "seen": 1794763806.1770458,
     "ast_hash": "e8001afeb7e04b89c2655dc79837770f",
+    "semantic_hash": ""
+  },
+  "src/app/api/track/[token]/route.ts": {
+    "mtime": 1794763936.1854243,
+    "seen": 1794764098.0527458,
+    "ast_hash": "cfad445ffb38860e4260ff37d292b164",
+    "semantic_hash": ""
+  },
+  "src/app/t/[token]/page.tsx": {
+    "mtime": 1794763936.1877172,
+    "seen": 1794764098.0531714,
+    "ast_hash": "19794fcd847eb4b99b0a9e75657f2fdd",
+    "semantic_hash": ""
+  },
+  "src/components/TrackLive.tsx": {
+    "mtime": 1794763936.1865978,
+    "seen": 1794764098.0534055,
+    "ast_hash": "b913b9043c3373d0b7f9964e6c0e713f",
+    "semantic_hash": ""
+  },
+  "src/server/services/tracking.ts": {
+    "mtime": 1794763936.1840634,
+    "seen": 1794764098.05439,
+    "ast_hash": "c2e57f2601e5eb1c1daf30242bb20e12",
+    "semantic_hash": ""
+  },
+  "tests/tracking.test.ts": {
+    "mtime": 1794763951.2729578,
+    "seen": 1794764098.0548255,
+    "ast_hash": "206ed369cfbbbff3d42bb48757bde21a",
     "semantic_hash": ""
   },
   "package-lock.json": {

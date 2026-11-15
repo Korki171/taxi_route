@@ -604,6 +604,8 @@ model Booking {
   acceptedById        String
   completedAt         DateTime?
   completionNote      String?
+  /// Geheimer Schlüssel für den Live-Status-Link (/t/…), den Auftraggeber und Fahrgast ohne Login öffnen.
+  trackToken          String          @unique @default(dbgenerated("replace((gen_random_uuid())::text, '-'::text, ''::text)"))
 
   documents BookingDocument[]
   ratings   Rating[]

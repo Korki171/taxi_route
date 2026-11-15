@@ -20,6 +20,7 @@ import { splitHandoff } from "@/lib/handoff";
 import { formatCents } from "@/lib/money";
 import { placeName } from "@/lib/places";
 import { actorCan } from "@/server/authz/context";
+import { appUrl } from "@/server/email";
 import { AppError } from "@/server/errors";
 import { listVehicles } from "@/server/services/fleet";
 import { escalateDueRequests } from "@/server/services/partners";
@@ -102,6 +103,8 @@ export default async function RequestDetailPage({ params, searchParams }: { para
   const theirRating = ratings.find((x) => x.toOrgId === actor.org.id);
   const canRate = rateable && !myRating && (actorCan(actor, "bookings.manage") || actorCan(actor, "jobs.accept"));
   const otherName = booking ? (role === "requester" ? booking.providerOrg.name : r.requesterOrg.name) : "";
+  // Live-Status-Link für Auftraggeber und Fahrgast (ohne Login), solange die Buchung aktiv ist
+  const trackUrl = booking && (booking.status === "CONFIRMED" || booking.status === "IN_PROGRESS") ? appUrl(`/t/${booking.trackToken}`) : null;
   const scope = booking?.scope as { vehicleCategory?: VehicleCategory | null } | undefined;
   const share = r.handoffSharePercent;
   const giver = role === "requester" ? t("Ihr Unternehmen") : r.requesterOrg.name;
@@ -383,6 +386,12 @@ export default async function RequestDetailPage({ params, searchParams }: { para
           <p className="price-note">{t("Der Leistungsumfang ist zum Zeitpunkt der Vereinbarung festgehalten und ändert sich nicht mehr.")}</p>
           <div className="actions-row gap-top">
             <a href={`/api/bookings/${booking.id}/confirmation`} className="btn secondary" target="_blank" rel="noopener">{t("Auftragsbestätigung (PDF)")}</a>
+            {trackUrl && (
+              <>
+                <a href={trackUrl} className="btn secondary" target="_blank" rel="noopener">{t("Live-Status")}</a>
+                <a href={`https://wa.me/?text=${encodeURIComponent(t("Ihre Fahrt {route} live verfolgen: {url}", { route: `${t(placeName(r.pickupPlaceId))} → ${t(placeName(r.dropoffPlaceId))}`, url: trackUrl }))}`} className="btn secondary" target="_blank" rel="noopener">{t("Link per WhatsApp senden")}</a>
+              </>
+            )}
             {role === "provider" && booking.status === "CONFIRMED" && (
               <form action={bookingTransitionAction}>
                 <input type="hidden" name="requestId" value={r.id} />

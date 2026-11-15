@@ -301,6 +301,11 @@ details.more-actions > summary { color: var(--muted); font-size: 14px; min-heigh
 /* ---------- Anmeldung und Registrierung: Papier oben, Navy unten wie der Hero ---------- */
 
 /* ---------- Rechtstexte ---------- */
+.track-state { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; background: var(--band); color: var(--band-ink); padding: 14px 16px; margin-top: 16px; }
+.track-state strong { font-size: 18px; }
+.track-state .muted { color: var(--band-muted); }
+.track-map { height: min(52vh, 440px); min-height: 280px; z-index: 0; background: var(--stone); margin-bottom: var(--gap); }
+main.legal.track .legal-top { margin-bottom: 24px; }
 main.legal { max-width: 800px; margin: 0 auto; padding: 32px var(--margin) 64px; }
 .legal-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
 .legal h2 { margin-top: 32px; }
