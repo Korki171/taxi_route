@@ -162,6 +162,12 @@ export default async function Dashboard({ searchParams }: { searchParams: SP }) 
           <section className="card">
             <h2>{t("Nächste Schritte")}</h2>
             <ul className="steps">
+              {(canMarket || canRequest) && (
+                <li>
+                  <span>{t("Umsatz, Fahrten und häufigste Strecken")}</span>
+                  <Link href="/statistik">{t("Auswertung")}</Link>
+                </li>
+              )}
               <li>
                 <span>{t("{n} Teammitglied(er)", { n: org._count.memberships })}</span>
                 <Link href="/organization/members">{t("Team verwalten")}</Link>

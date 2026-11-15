@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { ORG_TYPE_LABEL, ROLE_LABEL } from "@/lib/labels";
 import type { Actor } from "@/server/authz/context";
 import { actorCan } from "@/server/authz/context";
-import { logoutAction, switchOrgAction } from "@/app/actions";
+import { logoutAction, setTwoFactorAction, switchOrgAction } from "@/app/actions";
 import { getI18n } from "@/server/i18n";
 import { LangSwitch } from "./LangSwitch";
 import { ShellNav, type NavItem } from "./ShellNav";
@@ -16,6 +16,7 @@ export async function AppShell({ actor, children, narrow, path }: { actor: Actor
     select: { organization: { select: { id: true, name: true } } },
     orderBy: { createdAt: "asc" },
   });
+  const me = await db.user.findUnique({ where: { id: actor.userId }, select: { twoFactorEmail: true } });
   const isDriver = actor.org?.role === "DRIVER";
   const items: NavItem[] = [];
   // Reisebüros: nur Übersicht, Aufträge und Konto, keine Börse und keine Flottenfunktionen.
@@ -58,6 +59,12 @@ export async function AppShell({ actor, children, narrow, path }: { actor: Actor
                   <button className="secondary" type="submit">{t("Wechseln")}</button>
                 </form>
               )}
+              <form action={setTwoFactorAction} className="acct-2fa">
+                <input type="hidden" name="back" value={path ?? (isDriver ? "/fahrer" : "/dashboard")} />
+                <input type="hidden" name="on" value={me?.twoFactorEmail ? "0" : "1"} />
+                <span>{me?.twoFactorEmail ? t("Anmeldung mit E-Mail-Code: an") : t("Anmeldung mit E-Mail-Code: aus")}</span>
+                <button type="submit" className="link">{me?.twoFactorEmail ? t("Ausschalten") : t("Einschalten")}</button>
+              </form>
               <div className="acct-row">
                 <LangSwitch path={path ?? "/dashboard"} />
                 <form action={logoutAction}>

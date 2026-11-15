@@ -63,11 +63,21 @@ vorbereitet (`src/lib/native.ts`), der Server verschickt über Firebase Cloud Me
 liegt unter `mobile/` (Anleitung in `mobile/README.md`). Offen: Firebase-Projekt, Apple-Developer- und
 Google-Play-Konto, erster Bau und Test auf echten Geräten, Einreichung in den Stores.
 
+## Abgleich mit TIMOCOM (Stand 15. November 2026)
+
+Gebaut sind: Bewertungen nach der Fahrt, Live-Status-Link für Auftraggeber und Fahrgast, Umkreissuche und Karte
+in der Börse, bis zu 5 gespeicherte Strecken mit Benachrichtigung, Ablaufwarnung für Nachweise, Strecken- und
+Preisrichtwert beim Einstellen, Firmenverzeichnis, mehrere Standorte pro Betrieb, Storno- und No-Show-Regeln,
+Ausschreibungen für Saison- und Gruppentransfers, Auswertung (`/statistik`) und Zwei-Faktor-Anmeldung per
+E-Mail-Code.
+
+Bewusst nicht gebaut: KI-Assistent (verworfen), Schnittstelle zu Dispo-Software, Inkasso und Bonitätsauskunft.
+
+**Danach:** keine neuen Funktionen, sondern Oberfläche. Die Fahrer-App soll schön und übersichtlich sein, und
+Taxibetriebe sollen in der Web-App so wenig wie möglich ausfüllen müssen (siehe Punkt 3 oben).
+
 ## Später (nach dem Pilot, wenn die Zahlen stimmen)
 
-- Umkreissuche und Karte in der Börse
-- Ausschreibungen für Saison- und Gruppentransfers
-- Stornofristen und No-Show-Regeln, mehrere Suchfilter, mehrere Standorte pro Betrieb
 - Online-Zahlung (Stripe; bisher Rechnung)
 - Straßen-Routing statt Luftlinie (z. B. OpenRouteService)
 - Weitere Regionen: Salzburg/Pinzgau, Bayern, Südtirol, Schweiz

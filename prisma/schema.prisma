@@ -102,6 +102,8 @@ model User {
   passwordHash      String
   status            UserStatus           @default(ACTIVE)
   isPlatformAdmin   Boolean              @default(false)
+  /// Zwei-Faktor-Anmeldung: nach dem Passwort zusätzlich ein Code per E-Mail
+  twoFactorEmail    Boolean              @default(false)
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
   memberships       Membership[]
@@ -110,6 +112,7 @@ model User {
   driverBookings    Booking[]            @relation("DriverBookings")
   driverShifts      DriverShift[]
   pushSubscriptions PushSubscription[]
+  loginChallenges   LoginChallenge[]
 }
 
 /// Ein Gerät, das Mitteilungen erhält. WEB: Web-Push (Browser, PWA) mit Endpunkt und Schlüsseln.
@@ -142,6 +145,20 @@ model PushSubscription {
 }
 
 /// Einmal-Link zum Zurücksetzen des Passworts. Gespeichert wird nur der SHA-256 des Tokens.
+/// Offene Anmeldung mit zweitem Faktor: Passwort stimmte, der Code aus der E-Mail fehlt noch.
+/// `id` ist der Hash des Tokens im Link, `codeHash` der Hash des sechsstelligen Codes.
+model LoginChallenge {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
 model PasswordResetToken {
   id        String    @id @default(cuid())
   userId    String

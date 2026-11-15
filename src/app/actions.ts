@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createSession, invalidateSession } from "@/server/auth/session";
 import { AppError, invalid } from "@/server/errors";
 import { adminReviewCapability, adminReviewDocument, adminSetOrganizationPlan, adminSetOrganizationStatus } from "@/server/services/admin";
-import { login, switchActiveOrganization } from "@/server/services/auth";
+import { login, setTwoFactorEmail, switchActiveOrganization, verifyLoginCode } from "@/server/services/auth";
 import { deleteDocument, uploadDocument } from "@/server/services/documents";
 import { addJobAlert, removeJobAlert, sendMessage, updateJobAlerts } from "@/server/services/messages";
 import { returnBooking, uploadBookingDocument } from "@/server/services/booking-extras";
@@ -86,9 +86,34 @@ export async function loginAction(fd: FormData) {
   const next = str(fd, "next");
   await runAction("/login", async () => {
     const s = await login({ email: str(fd, "email"), password: str(fd, "password") }, { ip: await clientIp() });
+    // Zwei-Faktor-Anmeldung: erst den Code aus der E-Mail abfragen
+    if ("challenge" in s) return `/login/code?c=${encodeURIComponent(s.challenge)}&next=${encodeURIComponent(safeInternalPath(next, ""))}`;
     await setSessionCookie(s.token, s.expiresAt);
     // Nur interne Pfade als Rücksprungziel (kein Open Redirect).
     return safeInternalPath(next, "/dashboard");
+  });
+}
+
+export async function verifyLoginCodeAction(fd: FormData) {
+  const c = str(fd, "c");
+  const next = str(fd, "next");
+  await runAction(`/login/code?c=${encodeURIComponent(c)}&next=${encodeURIComponent(next)}`, async () => {
+    const ip = await clientIp();
+    if (ip) await rateLimit(`login-code:ip:${ip}`, 30, 15);
+    const s = await verifyLoginCode(c, str(fd, "code"));
+    await setSessionCookie(s.token, s.expiresAt);
+    return safeInternalPath(next, "/dashboard");
+  });
+}
+
+export async function setTwoFactorAction(fd: FormData) {
+  const back = safeInternalPath(str(fd, "back"), "/dashboard");
+  await runAction(back, async () => {
+    const actor = await getActor();
+    if (!actor) throw invalid("Bitte melden Sie sich an.");
+    const on = str(fd, "on") === "1";
+    await setTwoFactorEmail(actor.userId, on);
+    return withParam(back, "ok", on ? "Anmeldung mit E-Mail-Code ist eingeschaltet." : "Anmeldung mit E-Mail-Code ist ausgeschaltet.");
   });
 }
 
