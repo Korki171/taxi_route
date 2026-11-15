@@ -92,8 +92,10 @@ bestätigter Preis (`Booking`). Doppelte Annahme verhindert ein Unique-Constrain
 2. ✅ **Phase 2** – Organisationen, Nutzer, Rollen, Auth, Profile, Verifizierung, Admin-Prüfung
 3. ✅ **Phase 3** – Fahrzeuge, Transferaufträge in der Börse, Filter, Preisangebote, Übernahme (Szenario A), freie Kapazitäten/Rückfahrten mit Matching (Szenario C)
 4. ✅ **Phase 4** – Reisebüro-Dashboard, gezielte Angebotsanfragen, Angebotsvergleich, Buchungsbestätigung, Referenzen, Buchungsbestätigung als PDF (Szenario B)
-5. **Phase 5** – Statusmaschine, Buchungsereignisse, auftragsbezogene Nachrichten, E-Mail-Benachrichtigungen, Partnernetzwerk
+5. ✅ **Phase 5** – Statusmaschine, Buchungsereignisse, auftragsbezogene Nachrichten, E-Mail-Benachrichtigungen, Partnernetzwerk
 6. **Phase 6** – End-to-End-Tests aller Szenarien, Sicherheitsprüfung, Rate-Limiting, Deployment
+
+Wie es danach weitergeht (Pilot-Schwerpunkte, native Fahrer-App): siehe [`ROADMAP.md`](ROADMAP.md).
 
 ## Pilotbetrieb: Sprache, E-Mails, Missbrauchsschutz
 
