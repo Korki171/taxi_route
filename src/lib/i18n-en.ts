@@ -1354,6 +1354,11 @@ export const EN: Record<string, string> = {
   "UID ohne Leerzeichen, z. B. ATU12345678": "VAT ID without spaces, e.g. ATU12345678",
   // Mitteilungen aufs Gerät
   "Ansehen": "View",
+  "In 3 Schritten startklar": "Ready in 3 steps",
+  "Standort erlauben": "Allow location",
+  "Nur während der Schicht sieht Ihre Disposition, wo Sie sind.": "Dispatch only sees where you are during your shift.",
+  "Standort ist erlaubt.": "Location is allowed.",
+  "Was wird übertragen?": "What is shared?",
   "Neue Fahrt für Sie: {route}": "New trip for you: {route}",
   "Abholung {pickup}. Details stehen unter „Meine Fahrten“.": "Pick-up {pickup}. Details are under “My trips”.",
   "Neue Fahrten sofort aufs Handy": "New trips straight to your phone",

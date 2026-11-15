@@ -28,8 +28,10 @@ export async function purgeOldPositions() {
 /** Alles, was die Fahrer-Ansicht braucht: Schicht, Zustimmung, Fahrzeuge und die eigenen Fahrten. */
 export async function driverOverview(actor: Actor | null) {
   requirePermission(actor, "trips.drive");
-  const [shift, membership, vehicles, trips] = await Promise.all([
+  const [shift, lastShift, membership, vehicles, trips] = await Promise.all([
     openShift(actor),
+    // Fahrzeug der letzten Schicht als Vorauswahl
+    db.driverShift.findFirst({ where: { userId: actor.userId, organizationId: actor.org.id, endedAt: { not: null } }, orderBy: { startedAt: "desc" }, select: { vehicleId: true } }),
     db.membership.findUnique({ where: { userId_organizationId: { userId: actor.userId, organizationId: actor.org.id } } }),
     db.vehicle.findMany({ where: { organizationId: actor.org.id, active: true }, orderBy: { label: "asc" } }),
     db.booking.findMany({
@@ -47,7 +49,8 @@ export async function driverOverview(actor: Actor | null) {
       },
     }),
   ]);
-  return { shift, consentAt: membership?.trackingConsentAt ?? null, vehicles, trips };
+  const lastVehicleId = vehicles.some((v) => v.id === lastShift?.vehicleId) ? lastShift!.vehicleId : null;
+  return { shift, consentAt: membership?.trackingConsentAt ?? null, vehicles, trips, lastVehicleId };
 }
 
 const startSchema = z.object({
