@@ -12,6 +12,7 @@ import {
   BOOKING_STATUS_LABEL,
   CAPACITY_STATUS_LABEL,
   QUOTE_STATUS_LABEL,
+  TENDER_STATUS_LABEL,
   TRANSFER_STATUS_LABEL,
   VEHICLE_LABEL,
 } from "@/lib/labels";
@@ -29,6 +30,7 @@ import {
   searchBoard,
 } from "@/server/services/marketplace";
 import { splitHandoff } from "@/lib/handoff";
+import { listOpenTenders, listOwnTenders } from "@/server/services/tenders";
 import { listCapacityWithMatches } from "@/server/services/matching";
 import { requireOrgActor } from "@/server/web";
 import { addJobAlertAction, setCapacityStatusAction } from "../actions";
@@ -40,9 +42,11 @@ const VIEWS: View[] = [
   { id: "markt", label: "Passende Aufträge", allowed: (a) => actorCan(a, "jobs.accept") },
   { id: "anfragen", label: "Direktanfragen", allowed: (a) => actorCan(a, "jobs.accept") },
   { id: "neu", label: "Neue Aufträge", allowed: (a) => actorCan(a, "jobs.accept") },
+  { id: "ausschreibungen", label: "Ausschreibungen", allowed: (a) => actorCan(a, "jobs.accept") },
   { id: "kapazitaeten", label: "Freie Kapazitäten", allowed: (a) => actorCan(a, "jobs.accept") },
   { id: "rueckfahrten", label: "Passende Rückfahrten", allowed: (a) => actorCan(a, "capacity.publish") },
   { id: "meine", label: "Eigene Aufträge", allowed: (a) => actorCan(a, "transfers.request") },
+  { id: "meine-ausschreibungen", label: "Ausschreibungen", allowed: (a) => actorCan(a, "transfers.request") },
   { id: "angebote", label: "Angebote", allowed: (a) => actorCan(a, "bookings.manage") || actorCan(a, "quotes.submit") },
   { id: "uebernommen", label: "Übernommene Aufträge", allowed: (a) => actorCan(a, "jobs.accept") },
   { id: "fahrten", label: "Laufend und abgeschlossen", allowed: () => true },
@@ -51,8 +55,8 @@ const VIEWS: View[] = [
 
 /** Obere Reiter: wenige Gruppen. Innerhalb einer Gruppe wählt man mit kleinen Knöpfen („Chips“) die Ansicht. */
 const GROUPS: { id: string; label: string; views: string[] }[] = [
-  { id: "finden", label: "Aufträge finden", views: ["markt", "neu", "anfragen"] },
-  { id: "meine", label: "Meine Aufträge", views: ["meine", "angebote", "uebernommen", "fahrten", "probleme"] },
+  { id: "finden", label: "Aufträge finden", views: ["markt", "neu", "anfragen", "ausschreibungen"] },
+  { id: "meine", label: "Meine Aufträge", views: ["meine", "angebote", "uebernommen", "fahrten", "probleme", "meine-ausschreibungen"] },
   { id: "fahrzeuge", label: "Freie Fahrzeuge", views: ["kapazitaeten", "rueckfahrten"] },
 ];
 /** Chips: „Neue Aufträge“ ist ein Filter (Schalter im Filter), kein eigener Knopf. */
@@ -114,6 +118,8 @@ export default async function BoersePage({ searchParams }: { searchParams: SP })
       {view.id === "markt" && <MarketView actor={actor} sp={sp} />}
       {view.id === "neu" && <MarketView actor={actor} sp={{ ...sp, newOnly: "1" }} />}
       {view.id === "anfragen" && <InvitationsView actor={actor} />}
+      {view.id === "ausschreibungen" && <OpenTendersView actor={actor} />}
+      {view.id === "meine-ausschreibungen" && <OwnTendersView actor={actor} />}
       {view.id === "kapazitaeten" && <CapacityMarketView actor={actor} />}
       {view.id === "rueckfahrten" && <ReturnTripsView actor={actor} />}
       {view.id === "meine" && <OwnRequestsView actor={actor} />}
@@ -405,6 +411,66 @@ async function OwnRequestsView({ actor }: { actor: OrgActor }) {
                   <td className="num">{r.booking ? <span className="price-fixed">{f.money(r.booking.agreedPriceCents)}<span className="price-note">{t("bestätigt")}</span>{r.booking.handoffShareCents > 0 && <span className="price-note price-share">{t("Ihr Anteil {amount}", { amount: f.money(r.booking.handoffShareCents) })}</span>}</span> : <PriceCell mode={r.priceMode} cents={r.priceCents} share={r.handoffSharePercent} />}</td>
                   <td><Badge status={r.status}>{t(TRANSFER_STATUS_LABEL[r.status])}</Badge></td>
                   <td>{r.booking ? r.booking.providerOrg.name : r.status === "OPEN" ? (r._count.quotes ? <Link href={`/boerse/auftrag/${r.id}`}>{t(r._count.quotes > 1 ? "{n} Angebote vergleichen" : "{n} Angebot vergleichen", { n: r._count.quotes })}</Link> : <span className="muted">{t("noch keine")}</span>) : "–"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
+async function OpenTendersView({ actor }: { actor: OrgActor }) {
+  const { t, f } = await getI18n();
+  const rows = await listOpenTenders(actor);
+  return (
+    <section className="card">
+      <h2>{t("Offene Ausschreibungen")}</h2>
+      {rows.length === 0 ? <Empty>{t("Derzeit keine offenen Ausschreibungen. Hier erscheinen Saison- und Gruppentransfers, für die Sie einen Preis je Fahrt bieten können.")}</Empty> : (
+        <div className="table-wrap">
+          <table className="responsive">
+            <thead><tr><th>{t("Strecke")}</th><th>{t("Zeitraum")}</th><th>{t("Fahrten")}</th><th>{t("Auftraggeber")}</th><th>{t("Angebote bis")}</th><th>{t("Ihr Stand")}</th></tr></thead>
+            <tbody>
+              {rows.map((x) => (
+                <tr key={x.id}>
+                  <td><Route from={x.pickupPlaceId} to={x.dropoffPlaceId} href={`/boerse/ausschreibung/${x.id}`} /></td>
+                  <td data-label={t("Zeitraum")} className="nowrap">{f.date(x.dateFrom)} {t("bis")} {f.date(x.dateTo)}</td>
+                  <td data-label={t("Fahrten")}>{t("etwa {n}", { n: x.estimatedTrips })}</td>
+                  <td data-label={t("Auftraggeber")}>{x.requesterOrg.name}<span className="price-note">{x.requesterOrg.city}</span></td>
+                  <td data-label={t("Angebote bis")} className="nowrap">{f.date(x.bidDeadline)}</td>
+                  <td className="nowrap">{x.bids[0] && x.bids[0].status === "SUBMITTED" ? <Badge status="SUBMITTED">{t("Ihr Angebot")} {f.money(x.bids[0].pricePerTripCents)}</Badge> : <Link href={`/boerse/ausschreibung/${x.id}`}>{t("Angebot abgeben")}</Link>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
+async function OwnTendersView({ actor }: { actor: OrgActor }) {
+  const { t, f } = await getI18n();
+  const rows = await listOwnTenders(actor);
+  return (
+    <section className="card">
+      <div className="head-row">
+        <h2>{t("Eigene Ausschreibungen")}</h2>
+        <Link href="/boerse/ausschreibung/neu" className="btn secondary">{t("Ausschreibung erstellen")}</Link>
+      </div>
+      {rows.length === 0 ? <Empty>{t("Noch keine Ausschreibungen. Schreiben Sie viele Fahrten auf einer Strecke auf einmal aus, zum Beispiel alle Transfers einer Saison.")}</Empty> : (
+        <div className="table-wrap">
+          <table className="responsive">
+            <thead><tr><th>{t("Strecke")}</th><th>{t("Zeitraum")}</th><th>{t("Fahrten")}</th><th>{t("Status")}</th><th>{t("Angebote / Ausführung")}</th></tr></thead>
+            <tbody>
+              {rows.map((x) => (
+                <tr key={x.id}>
+                  <td><Route from={x.pickupPlaceId} to={x.dropoffPlaceId} href={`/boerse/ausschreibung/${x.id}`} /></td>
+                  <td data-label={t("Zeitraum")} className="nowrap">{f.date(x.dateFrom)} {t("bis")} {f.date(x.dateTo)}</td>
+                  <td data-label={t("Fahrten")}>{t("etwa {n}", { n: x.estimatedTrips })}</td>
+                  <td><Badge status={x.status}>{t(TENDER_STATUS_LABEL[x.status])}</Badge></td>
+                  <td>{x.awardedBid ? `${x.awardedBid.providerOrg.name}, ${f.money(x.awardedBid.pricePerTripCents)}` : x._count.bids ? <Link href={`/boerse/ausschreibung/${x.id}`}>{t(x._count.bids > 1 ? "{n} Angebote vergleichen" : "{n} Angebot vergleichen", { n: x._count.bids })}</Link> : <span className="muted">{t("noch keine")}</span>}</td>
                 </tr>
               ))}
             </tbody>
