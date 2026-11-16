@@ -31,6 +31,8 @@ async function access(actor: OrgActor, requestId: string) {
     return { req, role: "requester" as const, allowed };
   }
   const isProvider = req.booking?.providerOrgId === actor.org.id;
+  // Gesperrt: kein Lesen und Schreiben mehr, auch nicht in einem schon begonnenen Gespräch.
+  if (!isProvider && (await db.orgBlock.count({ where: { orgId: req.requesterOrgId, blockedOrgId: actor.org.id } })) > 0) throw notFound();
   const ownThread = (await db.message.count({ where: { requestId, threadOrgId: actor.org.id } })) > 0;
   const visible = req.status === "OPEN" && actorCan(actor, "jobs.accept") && (await db.transferRequest.count({ where: { id: requestId, ...VISIBLE_TO(actor.org.id) } })) === 1;
   if (!isProvider && !visible && !ownThread) throw notFound();

@@ -17,8 +17,12 @@ export async function login(input: unknown, meta: { ip?: string } = {}) {
     z.object({ email: emailSchema, password: z.string().min(1).max(200) }),
     input,
   );
-  // Schutz gegen Passwort-Raten: je E-Mail und je IP-Adresse
-  await rateLimit(`login:email:${email}`, 10, 15);
+  // Schutz gegen Passwort-Raten. Streng je E-Mail und IP-Adresse (10 in 15 Min.), damit ein Fremder
+  // ein Konto nicht für dessen Besitzer sperren kann; dazu eine lockere Obergrenze je E-Mail gegen
+  // verteiltes Raten und eine je IP-Adresse gegen das Durchprobieren vieler Konten.
+  const pairKey = `login:email:${email}:${meta.ip ?? "-"}`;
+  await rateLimit(pairKey, 10, 15);
+  await rateLimit(`login:email:${email}`, 100, 60);
   if (meta.ip) await rateLimit(`login:ip:${meta.ip}`, 50, 15);
   const user = await db.user.findUnique({
     where: { email },
@@ -29,7 +33,7 @@ export async function login(input: unknown, meta: { ip?: string } = {}) {
   if (!user || !ok || user.status !== "ACTIVE") {
     throw new AppError("UNAUTHENTICATED", "E-Mail oder Passwort ist falsch.");
   }
-  await resetRateLimit(`login:email:${email}`);
+  await resetRateLimit(pairKey);
   if (user.twoFactorEmail) return { challenge: await startLoginChallenge(user) };
   return createSession(user.id, user.memberships[0]?.organizationId ?? null);
 }

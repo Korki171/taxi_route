@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { actorCan, requirePermission, type Actor, type OrgActor } from "../authz/context";
+import { actorCan, requireBookingSide, requirePermission, type Actor, type OrgActor } from "../authz/context";
 import { AppError, forbidden, invalid, notFound } from "../errors";
 import { notificationFailed, notifyBookingReturned, notifyNewRequest } from "../notifications";
 import { checkUpload, type UploadFile } from "./documents";
@@ -27,7 +27,8 @@ export async function returnBooking(actor: Actor | null, bookingId: string, reas
   await db.$transaction(async (tx) => {
     const del = await tx.booking.deleteMany({ where: { id: b.id, status: "CONFIRMED" } });
     if (del.count !== 1) throw invalid("Dieser Statuswechsel ist im aktuellen Zustand nicht möglich.");
-    await tx.transferRequest.update({ where: { id: b.requestId }, data: { status: "OPEN", audienceSince: new Date(), ...(b.request.visibility === "MARKET" ? { audience: "MARKET" } : {}) } });
+    // Der Kreis bleibt, den der Auftraggeber gewählt hat (z. B. nur Partner); die Frist bis zur Weitergabe läuft neu.
+    await tx.transferRequest.update({ where: { id: b.requestId }, data: { status: "OPEN", audienceSince: new Date() } });
     await tx.quote.updateMany({ where: { requestId: b.requestId, providerOrgId: actor.org.id }, data: { status: "WITHDRAWN" } });
     await transferEvent(tx, b.requestId, "booking.returned", { userId: actor.userId, orgId: actor.org.id }, { note: r });
   });
@@ -42,7 +43,7 @@ export async function returnBooking(actor: Actor | null, bookingId: string, reas
 async function participantBooking(actor: OrgActor, bookingId: string) {
   const b = await db.booking.findFirst({
     where: { id: bookingId, OR: [{ providerOrgId: actor.org.id }, { requesterOrgId: actor.org.id }] },
-    select: { id: true, requestId: true, status: true },
+    select: { id: true, requestId: true, status: true, providerOrgId: true, requesterOrgId: true },
   });
   if (!b) throw notFound();
   return b;
@@ -54,6 +55,7 @@ export async function uploadBookingDocument(actor: Actor | null, bookingId: stri
   const t = title.trim().slice(0, 160);
   if (!t) throw invalid("Bitte einen Titel angeben.");
   const b = await participantBooking(actor, bookingId);
+  requireBookingSide(actor, b);
   if (b.status === "CANCELLED") throw invalid("Zu stornierten Buchungen können keine Dokumente hochgeladen werden.");
   const fileName = checkUpload(file);
   if ((await db.bookingDocument.count({ where: { bookingId } })) >= MAX_BOOKING_DOCUMENTS) throw invalid("Höchstens 10 Dokumente je Buchung.");
