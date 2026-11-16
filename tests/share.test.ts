@@ -40,3 +40,20 @@ describe("Auftrag per Link teilen", () => {
     expect(await sharedRequest(await token(open.id), new Date(Date.now() + 80 * 3600_000))).toBeNull();
   });
 });
+
+import { registerQuick } from "@/server/services/registration";
+
+describe("Kurze Registrierung", () => {
+  it("legt mit sechs Angaben ein Transferunternehmen an und leitet das Land aus der Vorwahl ab", async () => {
+    const { user, organization } = await registerQuick({
+      company: "Taxi Schnell", name: "Anna Schnell", city: "Kufstein", phone: "+49 171 1234567",
+      email: "anna@schnell.test", password: "sehr-langes-passwort",
+    });
+    expect(user.name).toBe("Anna Schnell");
+    expect(organization).toMatchObject({ type: "TRANSPORT_COMPANY", name: "Taxi Schnell", city: "Kufstein", country: "DE", street: "", email: "anna@schnell.test" });
+  });
+
+  it("lehnt eine Nummer ohne Landesvorwahl ab", async () => {
+    await expect(registerQuick({ company: "X", name: "Y", city: "Z", phone: "0664 1234567", email: "y@x.test", password: "sehr-langes-passwort" })).rejects.toThrow(/Landesvorwahl/);
+  });
+});

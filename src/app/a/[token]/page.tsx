@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { LangSwitch } from "@/components/LangSwitch";
 import { Logo } from "@/components/Logo";
 import { VEHICLE_LABEL } from "@/lib/labels";
 import { placeName } from "@/lib/places";
 import { getI18n } from "@/server/i18n";
+import { actorCan } from "@/server/authz/context";
 import { sharedRequest } from "@/server/services/share";
+import { getActor } from "@/server/web";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +31,11 @@ export default async function SharedRequestPage({ params }: Props) {
   const { token } = await params;
   const r = await sharedRequest(token);
   if (!r) notFound();
-  const orderPath = `/boerse/auftrag/${r.id}`;
+  const here = encodeURIComponent(`/a/${token}`);
+  // Angemeldet: geprüfte Betriebe gehen direkt zum Auftrag. Neue Betriebe sehen, was zur Freischaltung noch fehlt.
+  const actor = await getActor();
+  const member = !!actor?.org;
+  if (member && r.open && actorCan(actor, "jobs.accept")) redirect(`/boerse/auftrag/${r.id}`);
   return (
     <main className="legal track">
       <div className="legal-top">
@@ -49,11 +55,19 @@ export default async function SharedRequestPage({ params }: Props) {
           <dt>{t("Auftraggeber")}</dt><dd>{r.company}</dd>
           <dt>{t("Auftrag")}</dt><dd>{r.ref}</dd>
         </dl>
-        {r.open ? (
+        {r.open && member ? (
+          <>
+            <p className="flash ok gap-top">{t("Ihr Betrieb ist registriert. Übernehmen können Sie, sobald Konzession und Versicherung geprüft sind.")}</p>
+            <div className="actions-row gap-top">
+              <Link href="/organization/documents" className="btn accent">{t("Konzession und Versicherung hochladen")}</Link>
+            </div>
+            <p className="price-note">{t("Ein Foto vom Handy genügt. Danach schalten wir Ihren Betrieb frei.")}</p>
+          </>
+        ) : r.open ? (
           <>
             <div className="actions-row gap-top">
-              <Link href={`/login?next=${encodeURIComponent(orderPath)}`} className="btn accent">{r.priceMode === "FIXED" ? t("Anmelden und übernehmen") : t("Anmelden und anbieten")}</Link>
-              <Link href="/register" className="btn secondary">{t("Unternehmen registrieren")}</Link>
+              <Link href={`/register/schnell?next=${here}`} className="btn accent">{t("Neu hier? In einer Minute registrieren")}</Link>
+              <Link href={`/login?next=${here}`} className="btn secondary">{r.priceMode === "FIXED" ? t("Anmelden und übernehmen") : t("Anmelden und anbieten")}</Link>
             </div>
             <p className="price-note">{t("Adressen und Fahrgastdaten sehen Sie nach der Übernahme. Übernehmen können geprüfte Taxi- und Transferunternehmen.")}</p>
           </>
