@@ -123,6 +123,11 @@ h2 small { font-weight: 400; font-size: 13px; }
 .grid > .card { margin-bottom: 0; }
 .kv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--gap); margin-bottom: var(--gap); }
 .kv-grid > .card { margin-bottom: 0; }
+/* Auftrag: Leistung und Abholung links (breit), Preis und Auftraggeber rechts */
+.detail-cols { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--gap); margin-bottom: var(--gap); align-items: start; }
+.detail-col { display: grid; gap: var(--gap); min-width: 0; }
+.detail-col > .card { margin-bottom: 0; }
+@media (max-width: 860px) { .detail-cols { grid-template-columns: 1fr; } }
 .split { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--gap); align-items: start; margin-bottom: var(--gap); }
 .split > .card { margin-bottom: 0; }
 .col { display: grid; gap: var(--gap); align-content: start; min-width: 0; }
@@ -214,7 +219,15 @@ ol.setup-steps li:last-child { padding-bottom: 0; }
 ol.setup-steps strong { display: block; line-height: 28px; }
 .consent details { margin-top: 8px; font-size: 14px; color: var(--muted); }
 .muted { color: var(--muted); }
-.stars { font-weight: 600; font-variant-numeric: tabular-nums; }
+.stars { display: inline-flex; align-items: baseline; gap: 4px; flex-wrap: wrap; font-size: 13px; font-variant-numeric: tabular-nums; }
+.stars b { font-weight: 600; }
+.stars-new { color: var(--muted); font-size: 13px; }
+td .stars, dd .stars { display: flex; margin-top: 2px; }
+.star-mark { flex: none; align-self: center; color: var(--text); }
+.star-row { display: inline-flex; gap: 2px; }
+.star-row .star-mark { width: 16px; height: 16px; }
+table td:has(> .route), table td:has(> a.route) { min-width: 15rem; }
+table td.org-cell { min-width: 13rem; }
 .star-pick { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; }
 .star-pick legend { padding: 0; margin-bottom: 6px; font-weight: 600; }
 .star-pick label { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 400; cursor: pointer; }
@@ -409,7 +422,7 @@ main.legal { max-width: 800px; margin: 0 auto; padding: 32px var(--margin) 64px;
 .rc-eta { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -.01em; }
 .rc-sub { margin: 2px 0 0; font-size: 12px; color: #aab2c3; }
 .rc-progress { grid-area: progress; position: relative; height: 6px; margin: 40px 4px 2px; border-radius: 3px; background: #3c4352; }
-.rc-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: linear-gradient(90deg, #1fae5b, #2f80ff); }
+.rc-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: #1fae5b; }
 .rc-knob { position: absolute; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%; background: #2f80ff; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
 .rc-knob b { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: #2f80ff; color: #fff; font-size: 12px; padding: 3px 8px; border-radius: 8px; }
 .rc-order { grid-area: order; margin: 10px 0 0; padding-top: 8px; border-top: 1px solid #343b49; font-size: 13px; }
@@ -460,6 +473,46 @@ label.check input { width: 20px; height: 20px; margin-top: 2px; flex: none; }
 .trip.current .trip-date, .trip.current .muted { color: var(--band-muted); }
 .trip.current .badge.warn { background: var(--accent); color: var(--accent-ink); }
 .section-title { font-size: 17px; font-weight: 600; margin: 32px 0 14px; }
+/* Fahrer: Schicht als schmale schwarze Leiste, die aktuelle Fahrt groß, ein Knopf je Schritt */
+.shift-bar { background: var(--band); color: var(--band-ink); padding: 12px var(--pad); margin-bottom: var(--gap); display: grid; gap: 8px; }
+.shift-bar h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.shift-bar .muted { color: var(--band-muted); font-weight: 400; }
+.shift-end { margin-top: var(--gap); }
+.shift-bar .tracker { padding: 0; background: transparent; border: 0; color: var(--band-ink); font-size: 14px; gap: 10px; }
+.shift-bar .tracker.ok .pulse { background: #5fd38a; }
+.shift-bar .tracker.wait .pulse { background: var(--band-muted); }
+.shift-bar .tracker.bad { color: #ffb4a8; }
+.shift-bar .tracker small { color: var(--band-muted); opacity: 1; }
+.now { display: grid; gap: 14px; }
+.now-label { margin: 0; font-size: 14px; font-weight: 600; color: var(--muted); }
+.now-time { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.now .trip-time { font-size: 48px; }
+.now .trip-route { margin: 0; font-size: 20px; }
+.now-address { margin: -6px 0 0; font-size: 26px; font-weight: 650; line-height: 1.2; }
+.btn.dark { background: var(--band); color: var(--band-ink); border-color: var(--band); display: flex; align-items: center; justify-content: center; text-decoration: none; }
+.now-person { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid var(--rule); }
+.now-person .price-note { display: block; }
+.now .trip-facts { padding: 0; margin: 0; }
+.now .trip-action, .later .trip-action { padding: 0; }
+.trip-note { margin: 0; }
+ol.trip-steps { list-style: none; margin: 0; padding: 14px 16px; background: var(--surface); display: grid; gap: 10px; }
+ol.trip-steps li { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; color: var(--muted); }
+ol.trip-steps .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--stone); box-sizing: border-box; }
+ol.trip-steps li.done { color: var(--text); }
+ol.trip-steps li.done .dot { background: var(--text); border-color: var(--text); }
+ol.trip-steps li.current { color: var(--text); font-weight: 600; }
+ol.trip-steps li.current .dot { background: var(--accent); border-color: var(--text); }
+.later { display: grid; gap: 0; }
+.later h2 { margin-bottom: 4px; }
+.later-trip { border-top: 1px solid var(--rule); }
+.later-trip summary { display: grid; grid-template-columns: 4.5rem 1fr; gap: 10px; align-items: baseline; padding: 12px 0; cursor: pointer; list-style: none; }
+.later-trip summary::-webkit-details-marker { display: none; }
+.later-trip summary .price-note { display: block; }
+.later-time { font-size: 18px; font-variant-numeric: tabular-nums; }
+.later-trip[open] { padding-bottom: 14px; }
+.later-trip .trip-facts { padding: 0 0 12px; margin: 0; }
+.free { display: grid; gap: 10px; }
+.free-title { font-family: var(--display); font-weight: 450; text-transform: uppercase; font-size: 34px; line-height: 1; margin: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition-duration: 0ms !important; }

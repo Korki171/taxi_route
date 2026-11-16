@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import type { VehicleCategory } from "@prisma/client";
 import { AppShell } from "@/components/AppShell";
 import { Load, ProviderPicker, Route, VehicleSelect } from "@/components/market";
-import { Badge, Flash, Stars, type SP } from "@/components/ui";
+import { Badge, Flash, StarMark, StarRow, Stars, type SP } from "@/components/ui";
 import { fmtDateTime, fmtMinutes, fmtTime } from "@/lib/format";
 import {
   BOOKING_STATUS_LABEL,
@@ -164,7 +164,8 @@ export default async function RequestDetailPage({ params, searchParams }: { para
         <p className="flash error">{t("Dieser Auftrag ist {status}.", { status: t(TRANSFER_STATUS_LABEL[r.status]).toLowerCase() })}</p>
       )}
 
-      <div className="kv-grid">
+      <div className="detail-cols">
+        <div className="detail-col">
         <section className="card">
           <h2>{t("Leistung")}</h2>
           <dl className="kv">
@@ -179,6 +180,19 @@ export default async function RequestDetailPage({ params, searchParams }: { para
           </dl>
         </section>
 
+        {role !== "market" && (
+          <section className="card">
+            <h2>{t("Abholung und Fahrgast")}</h2>
+            <dl className="kv">
+              <dt>{t("Abholadresse")}</dt><dd>{r.pickupAddress ?? t(placeName(r.pickupPlaceId))}</dd>
+              <dt>{t("Zieladresse")}</dt><dd>{r.dropoffAddress ?? t(placeName(r.dropoffPlaceId))}</dd>
+              {r.pickupNotes && <><dt>{t("Hinweise")}</dt><dd>{r.pickupNotes}</dd></>}
+              {contacts.map((c) => <Fragment key={c.id}><dt>{t("Fahrgast")}</dt><dd>{c.name}{c.phone ? `, ${c.phone}` : ""}</dd></Fragment>)}
+            </dl>
+          </section>
+        )}
+        </div>
+        <div className="detail-col">
         <section className="card">
           <h2>{t("Preis")}</h2>
           {booking ? (
@@ -221,17 +235,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
           {role === "market" && <p className="price-note">{t("Adressen, Abholhinweise und Fahrgastdaten werden erst nach der verbindlichen Vergabe sichtbar.")}</p>}
         </section>
 
-        {role !== "market" && (
-          <section className="card">
-            <h2>{t("Abholung und Fahrgast")}</h2>
-            <dl className="kv">
-              <dt>{t("Abholadresse")}</dt><dd>{r.pickupAddress ?? t(placeName(r.pickupPlaceId))}</dd>
-              <dt>{t("Zieladresse")}</dt><dd>{r.dropoffAddress ?? t(placeName(r.dropoffPlaceId))}</dd>
-              {r.pickupNotes && <><dt>{t("Hinweise")}</dt><dd>{r.pickupNotes}</dd></>}
-              {contacts.map((c) => <Fragment key={c.id}><dt>{t("Fahrgast")}</dt><dd>{c.name}{c.phone ? `, ${c.phone}` : ""}</dd></Fragment>)}
-            </dl>
-          </section>
-        )}
+        </div>
       </div>
 
       {role === "market" && r.status === "OPEN" && (
@@ -501,7 +505,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
                 <fieldset className="star-pick" key={k}>
                   <legend>{t(RATING_CATEGORY_LABEL[k])}</legend>
                   {[1, 2, 3, 4, 5].map((n) => (
-                    <label key={n}><input type="radio" name={k} value={n} required defaultChecked={n === 5} /> {"★".repeat(n)}</label>
+                    <label key={n}><input type="radio" name={k} value={n} required defaultChecked={n === 5} /> <StarRow n={n} /><span className="sr-only">{t("{n} von 5", { n })}</span></label>
                   ))}
                 </fieldset>
               ))}
@@ -512,7 +516,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
           )}
           {myRating && (
             <div className="stack">
-              <p className="flush"><strong>{t("Ihre Bewertung für {org}", { org: otherName })}</strong> <span className="stars">★ {avgText(myRating.stars)}</span></p>
+              <p className="flush"><strong>{t("Ihre Bewertung für {org}", { org: otherName })}</strong> <span className="stars"><StarMark /> <b>{avgText(myRating.stars)}</b></span></p>
               <p className="flush price-note">{RATING_CATEGORIES[myRateRole].map((k) => `${t(RATING_CATEGORY_LABEL[k])} ${myRating[k] ?? "–"}`).join(" · ")}</p>
               {myRating.comment && <p className="flush">„{myRating.comment}“</p>}
               {!myRating.visible && rateDeadline && <p className="flush price-note">{t("Sichtbar, sobald {org} ebenfalls bewertet hat, spätestens am {date}.", { org: otherName, date: f.date(rateDeadline) })}</p>}
@@ -531,7 +535,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
           )}
           {theirRating && (
             <div className="stack">
-              <p className="flush"><strong>{t("{org} hat Sie bewertet", { org: otherName })}</strong> <span className="stars">★ {avgText(theirRating.stars)}</span></p>
+              <p className="flush"><strong>{t("{org} hat Sie bewertet", { org: otherName })}</strong> <span className="stars"><StarMark /> <b>{avgText(theirRating.stars)}</b></span></p>
               <p className="flush price-note">{RATING_CATEGORIES[theirRateRole].map((k) => `${t(RATING_CATEGORY_LABEL[k])} ${theirRating[k] ?? "–"}`).join(" · ")}</p>
               {theirRating.comment && <p className="flush">„{theirRating.comment}“</p>}
               {theirRating.reply && <p className="flush">{t("Ihre Antwort:")} „{theirRating.reply}“</p>}

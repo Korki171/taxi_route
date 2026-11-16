@@ -71,6 +71,21 @@ export default async function Dashboard({ searchParams }: { searchParams: SP }) 
   if (canMarket || canRequest) figures.push({ n: upcoming.length, label: t("bestätigte Fahrten stehen an"), href: canMarket ? "/boerse?view=uebernommen" : "/boerse?view=meine" });
   const next = upcoming.slice(0, 5);
   const needsReview = org.capabilities.some((c) => c.status === "UNVERIFIED" || c.status === "REJECTED");
+  // Was eine Entscheidung braucht: Direktanfragen an das Unternehmen und Angebote auf eigene Aufträge
+  const decisions = [
+    ...(invitations ?? []).map((i) => ({
+      key: `i-${i.id}`, at: i.request.pickupAt, from: i.request.pickupPlaceId, to: i.request.dropoffPlaceId,
+      href: `/boerse/auftrag/${i.request.id}`, action: t("Antworten"),
+      note: `${t("Direktanfrage von {org}", { org: i.request.requesterOrg.name })} · ${f.dateTime(i.request.pickupAt)}`,
+    })),
+    ...(incoming ?? []).map((q) => ({
+      key: `q-${q.id}`, at: q.request.pickupAt, from: q.request.pickupPlaceId, to: q.request.dropoffPlaceId,
+      href: `/boerse/auftrag/${q.request.id}`, action: t("Angebot prüfen"),
+      note: `${t("{org} bietet {price}", { org: q.providerOrg.name, price: f.money(q.amountCents) })} · ${f.dateTime(q.request.pickupAt)}`,
+    })),
+  ].sort((x, y) => x.at.getTime() - y.at.getTime());
+  const blocked = FEATURES.map((x) => ({ ...x, ...decide(input, x.permission) })).filter((x) => !x.allowed);
+  const allClear = blocked.length === 0 && org.capabilities.every((c) => c.status === "VERIFIED");
 
   return (
     <AppShell actor={actor}>
@@ -189,37 +204,57 @@ export default async function Dashboard({ searchParams }: { searchParams: SP }) 
         </div>
 
         <div className="col">
-          <section className="card">
-            <h2>{t("Verifizierung je Geschäftsfunktion")}</h2>
-            <table>
-              <tbody>
-                {org.capabilities.map((c) => (
-                  <tr key={c.id}>
-                    <td>{t(CAPABILITY_LABEL[c.capability])}</td>
-                    <td className="num"><Badge status={c.status}>{t(VERIFICATION_LABEL[c.status])}</Badge></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="price-note">{t("Eine Verifizierung bestätigt nicht automatisch jede Strecke oder Beförderungsart. Strecken- und grenzüberschreitende Berechtigungen werden gesondert geprüft.")}</p>
-            {actorCan(actor, "org.update") && <p className="flush"><Link href="/organization">{t("Unternehmensdaten und Prüfung verwalten")} →</Link></p>}
-          </section>
+          {(invitations || incoming) && (
+            <section className="card">
+              <div className="head-row">
+                <h2>{t("Braucht Ihre Entscheidung")}</h2>
+                {decisions.length > 5 && <Link href="/boerse?view=anfragen">{t("Alle {n} ansehen", { n: decisions.length })}</Link>}
+              </div>
+              {decisions.length === 0 ? (
+                <p className="empty">{t("Nichts offen. Neue Direktanfragen und Angebote erscheinen hier.")}</p>
+              ) : (
+                <ul className="steps">
+                  {decisions.slice(0, 5).map((d) => (
+                    <li key={d.key}>
+                      <span>
+                        <Route from={d.from} to={d.to} href={d.href} />
+                        <span className="price-note">{d.note}</span>
+                      </span>
+                      <Link href={d.href} className="nowrap">{d.action}</Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
 
           <section className="card">
-            <h2>{t("Ihre Funktionen")}</h2>
-            <table>
-              <tbody>
-                {FEATURES.map((x) => {
-                  const d = decide(input, x.permission);
-                  return (
+            <h2>{t("Prüfung und Freischaltung")}</h2>
+            {allClear ? (
+              <p className="flush">
+                <Badge status="VERIFIED">{t("Geprüft")}</Badge>{" "}
+                {org.capabilities.map((c) => t(c.capability === "TRANSPORT_PROVIDER" ? "Beförderung" : "Auftraggeber")).join(" · ")}
+              </p>
+            ) : (
+              <table>
+                <tbody>
+                  {org.capabilities.map((c) => (
+                    <tr key={c.id}>
+                      <td>{t(CAPABILITY_LABEL[c.capability])}</td>
+                      <td className="num"><Badge status={c.status}>{t(VERIFICATION_LABEL[c.status])}</Badge></td>
+                    </tr>
+                  ))}
+                  {blocked.map((x) => (
                     <tr key={x.permission}>
                       <td>{t(x.label)}</td>
-                      <td className="num">{d.allowed ? <Badge status="VERIFIED">{t("Freigeschaltet")}</Badge> : <span className="muted wrap">{t(d.reason)}</span>}</td>
+                      <td className="num"><span className="muted wrap">{t(x.reason)}</span></td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <p className="price-note">{t("Eine Verifizierung bestätigt nicht automatisch jede Strecke oder Beförderungsart. Strecken- und grenzüberschreitende Berechtigungen werden gesondert geprüft.")}</p>
+            {actorCan(actor, "org.update") && <p className="flush"><Link href="/organization">{t("Unternehmensdaten und Prüfung verwalten")}</Link></p>}
           </section>
         </div>
       </div>}

@@ -50,7 +50,26 @@ export async function driverOverview(actor: Actor | null) {
     }),
   ]);
   const lastVehicleId = vehicles.some((v) => v.id === lastShift?.vehicleId) ? lastShift!.vehicleId : null;
-  return { shift, consentAt: membership?.trackingConsentAt ?? null, vehicles, trips, lastVehicleId };
+  const dayStart = new Date();
+  dayStart.setHours(0, 0, 0, 0);
+  const [doneToday, steps] = await Promise.all([
+    // Heute erledigte Fahrten dieses Fahrers
+    db.booking.findMany({
+      where: { driverId: actor.userId, providerOrgId: actor.org.id, status: "COMPLETED", completedAt: { gte: dayStart } },
+      orderBy: { completedAt: "asc" },
+      select: { id: true, completedAt: true, request: { select: { pickupAt: true, pickupPlaceId: true, dropoffPlaceId: true } } },
+    }),
+    // Uhrzeiten der Schritte der aktuellen Fahrt (für die Schrittleiste)
+    trips[0]
+      ? db.transferEvent.findMany({
+          where: { requestId: trips[0].requestId, type: { in: ["booking.started", "booking.at_pickup", "booking.on_board"] } },
+          orderBy: { createdAt: "asc" },
+          select: { type: true, createdAt: true },
+        })
+      : [],
+  ]);
+  const stepTimes = Object.fromEntries(steps.map((e) => [e.type, e.createdAt])) as Partial<Record<"booking.started" | "booking.at_pickup" | "booking.on_board", Date>>;
+  return { shift, consentAt: membership?.trackingConsentAt ?? null, vehicles, trips, lastVehicleId, doneToday, stepTimes };
 }
 
 const startSchema = z.object({

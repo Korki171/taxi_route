@@ -72,9 +72,9 @@
     "semantic_hash": ""
   },
   "src/app/boerse/auftrag/[id]/page.tsx": {
-    "mtime": 1794859198.8347192,
-    "seen": 1794859467.726742,
-    "ast_hash": "d51c4db71bf7869d6f95b25c9aa96f51",
+    "mtime": 1794860049.7030478,
+    "seen": 1794860391.157357,
+    "ast_hash": "0d5d76dabdf113fd68140f6032491229",
     "semantic_hash": ""
   },
   "src/app/boerse/neu/page.tsx": {
@@ -84,15 +84,15 @@
     "semantic_hash": ""
   },
   "src/app/boerse/page.tsx": {
-    "mtime": 1794834498.8620698,
-    "seen": 1794834950.796461,
-    "ast_hash": "314c7dfd21604b556dd1c2fbe3f7644f",
+    "mtime": 1794860072.5385325,
+    "seen": 1794860391.157474,
+    "ast_hash": "45fa6e1098e75b1e7f6abbbd9153e403",
     "semantic_hash": ""
   },
   "src/app/dashboard/page.tsx": {
-    "mtime": 1794834498.8629286,
-    "seen": 1794834950.796462,
-    "ast_hash": "2d7d4541a93afe294ec469e8f80afc87",
+    "mtime": 1794860117.2895498,
+    "seen": 1794860391.157475,
+    "ast_hash": "ff3e8e6bf41159e8268211bef43cb579",
     "semantic_hash": ""
   },
   "src/app/datenschutz/page.tsx": {
@@ -102,9 +102,9 @@
     "semantic_hash": ""
   },
   "src/app/fahrer/page.tsx": {
-    "mtime": 1794834653.4458473,
-    "seen": 1794834950.796463,
-    "ast_hash": "a86cbf0d87d98e8aa6e37afd76a641f8",
+    "mtime": 1794860351.937043,
+    "seen": 1794860391.157501,
+    "ast_hash": "aee39dc90b4007b938e706ccb6ff5d12",
     "semantic_hash": ""
   },
   "src/app/flotte/live/page.tsx": {
@@ -300,15 +300,15 @@
     "semantic_hash": ""
   },
   "src/components/market.tsx": {
-    "mtime": 1794336722.1995387,
-    "seen": 1794834950.796507,
-    "ast_hash": "5f83a00a8e3fa053757c378b0698ed1a",
+    "mtime": 1794860029.4035997,
+    "seen": 1794860391.158805,
+    "ast_hash": "ab4ce554206d2b698d718ec0a347d9b8",
     "semantic_hash": ""
   },
   "src/components/ui.tsx": {
-    "mtime": 1794859144.489904,
-    "seen": 1794859467.728286,
-    "ast_hash": "438443366de545fb3aed286e7bd0226a",
+    "mtime": 1794860029.4038804,
+    "seen": 1794860391.158806,
+    "ast_hash": "f99aae42cccd9d14ac7a326efae55d45",
     "semantic_hash": ""
   },
   "src/lib/db.ts": {
@@ -330,9 +330,9 @@
     "semantic_hash": ""
   },
   "src/lib/i18n-en.ts": {
-    "mtime": 1794859276.329589,
-    "seen": 1794859467.728385,
-    "ast_hash": "e20d14e341f743fce1873bf7cb8202a8",
+    "mtime": 1794860249.6002042,
+    "seen": 1794860391.1588988,
+    "ast_hash": "c77e373f99ad02c30eb7ec42e20b236d",
     "semantic_hash": ""
   },
   "src/lib/i18n.ts": {
@@ -474,9 +474,9 @@
     "semantic_hash": ""
   },
   "src/server/services/driver.ts": {
-    "mtime": 1794834498.8772762,
-    "seen": 1794834950.796536,
-    "ast_hash": "44e2bb5afb038fe815f4fc3b96e9f460",
+    "mtime": 1794860142.3203125,
+    "seen": 1794860391.15964,
+    "ast_hash": "ef3a5a205a79679a499fb62408e11e89",
     "semantic_hash": ""
   },
   "src/server/services/fleet.ts": {
@@ -1254,9 +1254,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/bewertungen/page.tsx": {
-    "mtime": 1794859215.009906,
-    "seen": 1794859467.726403,
-    "ast_hash": "953e94d49255d1ad43f173253cbe88dc",
+    "mtime": 1794860035.245517,
+    "seen": 1794860391.156992,
+    "ast_hash": "51812922ff467ecfa4e161e535ca7f81",
     "semantic_hash": ""
   },
   "src/lib/rating-rules.ts": {

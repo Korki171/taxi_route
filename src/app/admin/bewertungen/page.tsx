@@ -27,7 +27,7 @@ export default async function AdminRatingReportsPage({ searchParams }: { searchP
           {reports.map((rep) => (
             <section key={rep.id} className="card stack">
               <p className="flush">
-                <strong>Bewertung für {rep.rating.toOrg.name}</strong> · ★ {rep.rating.stars.toFixed(1).replace(".", ",")} ·{" "}
+                <strong>Bewertung für {rep.rating.toOrg.name}</strong> · {rep.rating.stars.toFixed(1).replace(".", ",")} von 5 Sternen ·{" "}
                 gemeldet am {fmtDate(rep.createdAt, "de")} von {rep.orgId === rep.rating.toOrgId ? "der bewerteten Firma" : "der bewertenden Firma"}
                 {" · "}<Link href={`/boerse/auftrag/${rep.rating.booking.requestId}`}>Auftrag</Link>
               </p>

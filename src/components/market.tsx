@@ -8,7 +8,7 @@ export async function Route({ from, to, href }: { from: string; to: string; href
   const { t } = await getI18n();
   const text = (
     <>
-      {t(placeName(from))} <span className="muted">→</span> {t(placeName(to))}
+      <span className="nowrap">{t(placeName(from))}</span> <span className="nowrap"><span className="muted">→</span> {t(placeName(to))}</span>
     </>
   );
   return href ? <Link href={href} className="route">{text}</Link> : <span className="route">{text}</span>;
