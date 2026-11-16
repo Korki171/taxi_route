@@ -24,6 +24,7 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
     <AppShell actor={actor}>
       <h1>Administration</h1>
       <p className="sub">Unternehmen prüfen, freischalten, einschränken oder sperren</p>
+      <p><Link href="/admin/bewertungen">Gemeldete Bewertungen</Link></p>
       <form className="card inline" method="get">
         <input name="q" placeholder="Firmenname" defaultValue={sp.q ?? ""} />
         <select name="type" defaultValue={type ?? ""}>

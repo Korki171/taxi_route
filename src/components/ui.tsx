@@ -1,5 +1,6 @@
 import { statusTone } from "@/lib/labels";
 import type { T } from "@/lib/i18n";
+import { RATING_MIN_PUBLIC } from "@/lib/rating-rules";
 import { getI18n } from "@/server/i18n";
 
 /** Übersetzt Meldungen aus den Services, auch in der Form "feld: Meldung". */
@@ -24,14 +25,21 @@ export async function Flash({ searchParams }: { searchParams: { error?: string; 
 
 export type SP = Promise<{ error?: string; ok?: string; [k: string]: string | undefined }>;
 
-/** Schnitt der Bewertungen einer Firma, z. B. „★ 4,8 (12)“. Ohne Bewertung wird nichts gezeigt. */
-export async function Stars({ rating }: { rating?: { avg: number; count: number } }) {
+/**
+ * Ruf einer Firma: Schnitt der sichtbaren Bewertungen ab 3 Bewertungen, z. B. „★ 4,8 (12) · 30 Fahrten“,
+ * vorher „Neu“. Stornos und No-Shows stehen hier bewusst nicht.
+ */
+export async function Stars({ rating }: { rating?: { avg: number; count: number; rides: number } }) {
   if (!rating) return null;
   const { t, locale } = await getI18n();
+  const rides = rating.rides > 0 ? <span className="muted"> · {t(rating.rides === 1 ? "1 Fahrt" : "{n} Fahrten", { n: rating.rides })}</span> : null;
+  if (rating.count < RATING_MIN_PUBLIC) {
+    return <span className="stars nowrap"><span className="muted">{t("Neu, noch wenig Bewertungen")}</span>{rides}</span>;
+  }
   const avg = rating.avg.toFixed(1).replace(".", locale === "en" ? "." : ",");
   return (
     <span className="stars nowrap" title={t("{avg} von 5 Sternen aus {n} Bewertungen", { avg, n: rating.count })}>
-      <span aria-hidden="true">★</span> {avg} <span className="muted">({rating.count})</span>
+      <span aria-hidden="true">★</span> {avg} <span className="muted">({rating.count})</span>{rides}
     </span>
   );
 }
