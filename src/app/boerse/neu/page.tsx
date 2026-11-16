@@ -1,3 +1,5 @@
+import { EscalateSelect } from "@/components/EscalateSelect";
+import { escalationDefault } from "@/server/services/partners";
 import { DEFAULT_FREE_CANCEL_HOURS, DEFAULT_LATE_CANCEL_PERCENT, FREE_CANCEL_HOURS, LATE_CANCEL_PERCENT } from "@/lib/cancellation";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -18,6 +20,7 @@ export default async function NewRequestPage({ searchParams }: { searchParams: S
   const actor = await requireOrgActor();
   if (!actorCan(actor, "transfers.request")) redirect("/boerse?error=" + encodeURIComponent("Ihr Unternehmen ist noch nicht als Auftraggeber freigegeben."));
   const providers = await listProviderDirectory(actor);
+  const escalateDefault = await escalationDefault(actor);
   // ?partner=<id> (aus dem Dashboard) wählt ein Unternehmen vor und stellt auf gezielte Anfrage.
   const preselected = sp.partner ? [sp.partner] : [];
   const targeted = !!sp.partner || sp.gezielt === "1";
@@ -113,15 +116,9 @@ export default async function NewRequestPage({ searchParams }: { searchParams: S
                 <label><input type="radio" name="audience" value="OWN" />{t("Erst mein Betrieb")}</label>
               </div>
               <label>{t("Danach automatisch weitergeben nach")}
-                <select name="escalateAfterMinutes" defaultValue="30">
-                  <option value="30">{t("30 Minuten")}</option>
-                  <option value="60">{t("1 Stunde")}</option>
-                  <option value="120">{t("2 Stunden")}</option>
-                  <option value="240">{t("4 Stunden")}</option>
-                  <option value="">{t("Nicht automatisch")}</option>
-                </select>
+                <EscalateSelect name="escalateAfterMinutes" value={escalateDefault} />
               </label>
-              <p className="price-note">{t("Zuerst sieht nur der gewählte Kreis den Auftrag. Übernimmt niemand, geht er automatisch an Ihre Partner und dann an die ganze Börse. Partner pflegen Sie unter „Unternehmen“.")}</p>
+              <p className="price-note">{t("Zuerst sieht nur der gewählte Kreis den Auftrag. Übernimmt niemand, geht er automatisch an Ihre Partner und dann an die ganze Börse. Partner und die übliche Frist pflegen Sie unter „Unternehmen“.")}</p>
             </fieldset>
             <fieldset id="anbieter">
               <legend>{t("Wer soll anbieten?")}</legend>

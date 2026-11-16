@@ -223,7 +223,9 @@ model Organization {
   planUpdatedAt DateTime?
 
   /// E-Mail bei neuen Börsenaufträgen. Gespeicherte Strecken (Suchagent) stehen in JobAlert: keine = alle Orte.
-  mailNewJobs Boolean @default(true)
+  /// Standardfrist für die automatische Weitergabe neuer Aufträge in Minuten (null = nicht automatisch)
+  escalateDefaultMinutes Int?    @default(30)
+  mailNewJobs            Boolean @default(true)
 
   capabilities     OrganizationCapability[]
   memberships      Membership[]

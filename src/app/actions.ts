@@ -11,7 +11,7 @@ import { addJobAlert, removeJobAlert, sendMessage, updateJobAlerts } from "@/ser
 import { returnBooking, uploadBookingDocument } from "@/server/services/booking-extras";
 import { rateBooking } from "@/server/services/ratings";
 import { awardTender, closeTender, createTender, submitTenderBid, withdrawTenderBid } from "@/server/services/tenders";
-import { addPartner, advanceAudience, blockOrg, removePartner, takeOwnRequest, unblockOrg } from "@/server/services/partners";
+import { addPartner, advanceAudience, blockOrg, removePartner, takeOwnRequest, unblockOrg, setEscalation, updateEscalationDefault } from "@/server/services/partners";
 import {
   acceptInvitation,
   changeMemberRole,
@@ -386,6 +386,21 @@ export async function advanceAudienceAction(fd: FormData) {
   await runAction(`/boerse/auftrag/${id}`, async () => {
     await advanceAudience(await getActor(), id);
     return withParam(`/boerse/auftrag/${id}`, "ok", "Auftrag an die nächste Stufe weitergegeben.");
+  });
+}
+
+export async function setEscalationAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await setEscalation(await getActor(), id, str(fd, "escalateAfterMinutes"));
+    return withParam(`/boerse/auftrag/${id}`, "ok", "Frist für die Weitergabe gespeichert.");
+  });
+}
+
+export async function updateEscalationDefaultAction(fd: FormData) {
+  await runAction("/organization", async () => {
+    await updateEscalationDefault(await getActor(), str(fd, "escalateDefaultMinutes"));
+    return withParam("/organization", "ok", "Frist für die Weitergabe gespeichert.");
   });
 }
 
