@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import type { VehicleCategory } from "@prisma/client";
 import { AppShell } from "@/components/AppShell";
 import { Load, ProviderPicker, Route, VehicleSelect } from "@/components/market";
-import { Badge, Flash, Stars, type SP } from "@/components/ui";
+import { Badge, Flash, StarMark, StarRow, Stars, type SP } from "@/components/ui";
 import { fmtDateTime, fmtMinutes, fmtTime } from "@/lib/format";
 import {
   BOOKING_STATUS_LABEL,
@@ -17,7 +17,7 @@ import {
   VEHICLE_LABEL,
   priceStateLabel,
 } from "@/lib/labels";
-import { cancelRuleText, freeCancelUntil, lateCancelFeeCents, noShowAllowedFrom } from "@/lib/cancellation";
+import { isCancelClosed, noShowAllowedFrom } from "@/lib/cancellation";
 import { splitHandoff } from "@/lib/handoff";
 import { formatCents } from "@/lib/money";
 import { placeName } from "@/lib/places";
@@ -28,7 +28,8 @@ import { listVehicles } from "@/server/services/fleet";
 import { escalateDueRequests } from "@/server/services/partners";
 import { listThreads } from "@/server/services/messages";
 import { listBookingDocuments } from "@/server/services/booking-extras";
-import { listBookingRatings, ratingSummaries } from "@/server/services/ratings";
+import { listBookingRatings, ratingDeadline, ratingSummaries } from "@/server/services/ratings";
+import { RATING_CATEGORIES, RATING_CATEGORY_LABEL } from "@/lib/rating-rules";
 import { getTransferRequest, listProviderDirectory, MAX_INVITATIONS, referenceOf } from "@/server/services/marketplace";
 import { EVENT_LABEL } from "@/server/services/transfer-events";
 import { requireOrgActor } from "@/server/web";
@@ -42,6 +43,8 @@ import {
   declineInvitationAction,
   inviteProvidersAction,
   rateBookingAction,
+  replyRatingAction,
+  reportRatingAction,
   openToMarketAction,
   rejectQuoteAction,
   submitQuoteAction,
@@ -65,7 +68,7 @@ function stageIndex(status: string, hasQuotes: boolean) {
 }
 
 export default async function RequestDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: SP }) {
-  const { t, f } = await getI18n();
+  const { t, f, locale } = await getI18n();
   const { id } = await params;
   const sp = await searchParams;
   const actor = await requireOrgActor();
@@ -91,20 +94,27 @@ export default async function RequestDetailPage({ params, searchParams }: { para
       : quotes.find((q) => q.providerOrgId === orgId)?.providerOrg.name
         ?? invitations.find((i) => i.providerOrgId === orgId)?.providerOrg.name ?? t("Anbieter");
   const chat = await listThreads(actor, id).catch(() => null);
-  // Storno und No-Show (Regeln in src/lib/cancellation.ts)
+  // Storno und No-Show (src/lib/cancellation.ts): nur dokumentiert, die Folgen regeln die Unternehmen selbst
   const now = new Date();
-  const cancelFee = booking ? lateCancelFeeCents(booking, r.pickupAt, booking.agreedPriceCents, now) : 0;
-  const freeUntil = booking ? freeCancelUntil(booking, r.pickupAt) : null;
-  const noShowOpen = !!booking && booking.status === "IN_PROGRESS" && booking.tripStage === "AT_PICKUP" && now >= noShowAllowedFrom(r.pickupAt) && actorCan(actor, "jobs.accept");
+  const noShowOpen = !!booking && booking.status === "IN_PROGRESS" && booking.tripStage === "AT_PICKUP" && now >= noShowAllowedFrom(r.pickupAt, r.flightNumber) && actorCan(actor, "jobs.accept");
+  const cancelClosed = !!booking && isCancelClosed(booking.status);
+  const canStatement = cancelClosed && (actorCan(actor, "bookings.manage") || actorCan(actor, "jobs.accept"))
+    && !events.some((e) => e.type === "booking.statement" && e.actorOrgId === actor.org.id);
   const bookingDocs = booking && booking.status !== "CANCELLED" ? await listBookingDocuments(actor, booking.id) : [];
   const canDocs = !!booking && booking.status !== "CANCELLED" && (actorCan(actor, "bookings.manage") || actorCan(actor, "jobs.accept"));
   // Bewertungen: Schnitt je Firma und die Bewertungen zu dieser Buchung
   const stars = await ratingSummaries([r.requesterOrg.id, ...(booking ? [booking.providerOrgId] : []), ...quotes.map((q) => q.providerOrgId)]);
   const rateable = !!booking && booking.status === "COMPLETED" && booking.providerOrgId !== booking.requesterOrgId;
+  const rateDeadline = booking ? ratingDeadline(booking) : null;
   const ratings = rateable ? await listBookingRatings(actor, booking.id) : [];
   const myRating = ratings.find((x) => x.fromOrgId === actor.org.id);
+  // Die Bewertung der anderen Seite kommt erst, wenn sie sichtbar ist
   const theirRating = ratings.find((x) => x.toOrgId === actor.org.id);
-  const canRate = rateable && !myRating && (actorCan(actor, "bookings.manage") || actorCan(actor, "jobs.accept"));
+  const canManageBooking = actorCan(actor, "bookings.manage") || actorCan(actor, "jobs.accept");
+  const canRate = rateable && !myRating && canManageBooking && !!rateDeadline && now <= rateDeadline;
+  const myRateRole = role === "requester" ? "requester" : "provider";
+  const theirRateRole = myRateRole === "requester" ? "provider" : "requester";
+  const avgText = (n: number) => n.toFixed(1).replace(".", locale === "en" ? "." : ",");
   const otherName = booking ? (role === "requester" ? booking.providerOrg.name : r.requesterOrg.name) : "";
   // Live-Status-Link für Auftraggeber und Fahrgast (ohne Login), solange die Buchung aktiv ist
   const trackUrl = booking && (booking.status === "CONFIRMED" || booking.status === "IN_PROGRESS") ? appUrl(`/t/${booking.trackToken}`) : null;
@@ -154,7 +164,8 @@ export default async function RequestDetailPage({ params, searchParams }: { para
         <p className="flash error">{t("Dieser Auftrag ist {status}.", { status: t(TRANSFER_STATUS_LABEL[r.status]).toLowerCase() })}</p>
       )}
 
-      <div className="kv-grid">
+      <div className="detail-cols">
+        <div className="detail-col">
         <section className="card">
           <h2>{t("Leistung")}</h2>
           <dl className="kv">
@@ -165,10 +176,23 @@ export default async function RequestDetailPage({ params, searchParams }: { para
             {r.requirements && <><dt>{t("Anforderungen")}</dt><dd>{r.requirements}</dd></>}
             {r.flightNumber && <><dt>{t("Flug")}</dt><dd>{r.flightNumber}{r.flightArrivalAt ? `, Landung ${f.time(r.flightArrivalAt)}` : ""}</dd></>}
             {r.bookingTerms && <><dt>{t("Bedingungen")}</dt><dd>{r.bookingTerms}</dd></>}
-            {(cancelRuleText(t, r) || r.cancellationTerms) && <><dt>{t("Storno")}</dt><dd>{[cancelRuleText(t, r), r.cancellationTerms].filter(Boolean).join(" ")}</dd></>}
+            <dt>{t("Storno")}</dt><dd>{r.cancellationTerms || t("Keine Stornobedingungen vereinbart")}</dd>
           </dl>
         </section>
 
+        {role !== "market" && (
+          <section className="card">
+            <h2>{t("Abholung und Fahrgast")}</h2>
+            <dl className="kv">
+              <dt>{t("Abholadresse")}</dt><dd>{r.pickupAddress ?? t(placeName(r.pickupPlaceId))}</dd>
+              <dt>{t("Zieladresse")}</dt><dd>{r.dropoffAddress ?? t(placeName(r.dropoffPlaceId))}</dd>
+              {r.pickupNotes && <><dt>{t("Hinweise")}</dt><dd>{r.pickupNotes}</dd></>}
+              {contacts.map((c) => <Fragment key={c.id}><dt>{t("Fahrgast")}</dt><dd>{c.name}{c.phone ? `, ${c.phone}` : ""}</dd></Fragment>)}
+            </dl>
+          </section>
+        )}
+        </div>
+        <div className="detail-col">
         <section className="card">
           <h2>{t("Preis")}</h2>
           {booking ? (
@@ -211,17 +235,7 @@ export default async function RequestDetailPage({ params, searchParams }: { para
           {role === "market" && <p className="price-note">{t("Adressen, Abholhinweise und Fahrgastdaten werden erst nach der verbindlichen Vergabe sichtbar.")}</p>}
         </section>
 
-        {role !== "market" && (
-          <section className="card">
-            <h2>{t("Abholung und Fahrgast")}</h2>
-            <dl className="kv">
-              <dt>{t("Abholadresse")}</dt><dd>{r.pickupAddress ?? t(placeName(r.pickupPlaceId))}</dd>
-              <dt>{t("Zieladresse")}</dt><dd>{r.dropoffAddress ?? t(placeName(r.dropoffPlaceId))}</dd>
-              {r.pickupNotes && <><dt>{t("Hinweise")}</dt><dd>{r.pickupNotes}</dd></>}
-              {contacts.map((c) => <Fragment key={c.id}><dt>{t("Fahrgast")}</dt><dd>{c.name}{c.phone ? `, ${c.phone}` : ""}</dd></Fragment>)}
-            </dl>
-          </section>
-        )}
+        </div>
       </div>
 
       {role === "market" && r.status === "OPEN" && (
@@ -231,6 +245,9 @@ export default async function RequestDetailPage({ params, searchParams }: { para
               <h2>{t("Zum Festpreis übernehmen")}</h2>
               <p className="muted">{t("Mit der Übernahme ist der Auftrag verbindlich vergeben. Wer zuerst bestätigt, erhält ihn, eine doppelte Vergabe ist ausgeschlossen.")}</p>
               {listedSplit && <p className="price-note price-share">{t("{org} behält {p} % ({share}). Sie fahren für {amount}.", { org: r.requesterOrg.name, p: share, share: f.money(listedSplit.shareCents), amount: f.money(listedSplit.providerCents) })}</p>}
+              <p className="price-note">{r.cancellationTerms
+                ? t("Mit der Übernahme gelten die Stornobedingungen von {org}: {terms}", { org: r.requesterOrg.name, terms: r.cancellationTerms })
+                : t("Mit der Übernahme gilt: Es sind keine Stornobedingungen vereinbart.")}</p>
               <form action={takeFixedPriceAction} className="inline">
                 <input type="hidden" name="requestId" value={r.id} />
                 {vehicles.length > 0 && (
@@ -248,6 +265,9 @@ export default async function RequestDetailPage({ params, searchParams }: { para
               <h2>{myQuote?.status === "SUBMITTED" ? t("Ihr Angebot ändern") : t("Angebot abgeben")}</h2>
               {myQuote && <p><Badge status={myQuote.status}>{t(QUOTE_STATUS_LABEL[myQuote.status])}</Badge> {f.money(myQuote.amountCents)} · {t(VEHICLE_LABEL[myQuote.vehicleCategory])}{share > 0 ? ` · ${t("Sie erhalten {amount}", { amount: f.money(splitHandoff(myQuote.amountCents, share).providerCents) })}` : ""}</p>}
               {share > 0 && <p className="price-note price-share">{t("Ihr Preis ist der Fahrpreis. Davon behält {org} {p} % als Abgabe-Anteil.", { org: r.requesterOrg.name, p: share })}</p>}
+              <p className="price-note">{r.cancellationTerms
+                ? t("Wird Ihr Angebot angenommen, gelten die Stornobedingungen von {org}: {terms}", { org: r.requesterOrg.name, terms: r.cancellationTerms })
+                : t("Wird Ihr Angebot angenommen, gilt: Es sind keine Stornobedingungen vereinbart.")}</p>
               {(!myQuote || myQuote.status === "SUBMITTED" || myQuote.status === "WITHDRAWN") && (
                 <form action={submitQuoteAction} className="stack">
                   <input type="hidden" name="requestId" value={r.id} />
@@ -379,16 +399,14 @@ export default async function RequestDetailPage({ params, searchParams }: { para
               <><dt>{t("Fahrer")}</dt><dd>{booking.driver?.name ?? <span className="muted">{t("noch nicht zugewiesen")}</span>}{actorCan(actor, "fleet.manage") && (booking.status === "CONFIRMED" || booking.status === "IN_PROGRESS") && <> · <Link href="/flotte/live#disposition">{t("Disposition")}</Link></>}</dd></>
             )}
             {booking.tripStage && <><dt>{t("Fortschritt")}</dt><dd>{t(TRIP_STAGE_LABEL[booking.tripStage])}</dd></>}
-            <dt>{t("Storno")}</dt><dd>{[cancelRuleText(t, booking), booking.cancellationTerms].filter(Boolean).join(" ") || t("keine gesonderten Bedingungen")}</dd>
-            {booking.feeCents != null && booking.feeCents > 0 && (
-              <><dt>{booking.status === "NO_SHOW" ? t("No-Show-Gebühr") : t("Stornogebühr")}</dt><dd className="price-fixed">{f.money(booking.feeCents)} <span className="price-note">{t("an {org}, direkt abzurechnen", { org: booking.providerOrg.name })}</span></dd></>
-            )}
+            <dt>{t("Storno")}</dt><dd>{booking.cancellationTerms || t("Keine Stornobedingungen vereinbart")}</dd>
             <dt>{t("Vereinbart")}</dt><dd>{f.dateTime(booking.acceptedAt)}{" "}{booking.quoteId ? t("durch Annahme eines Angebots") : t("durch Übernahme zum Festpreis")}</dd>
             {booking.completedAt && <><dt>{t("Abgeschlossen")}</dt><dd>{f.dateTime(booking.completedAt)}{booking.completionNote ? `, ${booking.completionNote}` : ""}</dd></>}
           </dl>
           <p className="price-note">{t("Der Leistungsumfang ist zum Zeitpunkt der Vereinbarung festgehalten und ändert sich nicht mehr.")}</p>
           <div className="actions-row gap-top">
             <a href={`/api/bookings/${booking.id}/confirmation`} className="btn secondary" target="_blank" rel="noopener">{t("Auftragsbestätigung (PDF)")}</a>
+            {cancelClosed && <a href={`/api/bookings/${booking.id}/storno-beleg`} className="btn secondary" target="_blank" rel="noopener">{t("Storno-Beleg (PDF)")}</a>}
             {trackUrl && (
               <>
                 <a href={trackUrl} className="btn secondary" target="_blank" rel="noopener">{t("Live-Status")}</a>
@@ -421,7 +439,19 @@ export default async function RequestDetailPage({ params, searchParams }: { para
               </form>
             )}
           </div>
-          {booking.status !== "CANCELLED" && booking.status !== "DISPUTED" && (
+          {canStatement && (
+            <form action={bookingTransitionAction} className="stack gap-top">
+              <input type="hidden" name="requestId" value={r.id} />
+              <input type="hidden" name="bookingId" value={booking.id} />
+              <input type="hidden" name="to" value="statement" />
+              <label>{t("Stellungnahme")} <small>{t("einmal je Unternehmen")}</small>
+                <textarea name="note" rows={2} maxLength={1000} required />
+                <span className="price-note">{t("Steht im Verlauf und auf dem Storno-Beleg. Den Status ändert sie nicht, klären müssen Sie das direkt miteinander.")}</span>
+              </label>
+              <div><button type="submit" className="secondary">{t("Stellungnahme abgeben")}</button></div>
+            </form>
+          )}
+          {booking.status !== "CANCELLED" && booking.status !== "DISPUTED" && booking.status !== "NO_SHOW" && (
             <details className="more-actions gap-top">
               <summary>{t("Stornieren oder Problem melden")}</summary>
               <div className="stack gap-top">
@@ -434,13 +464,11 @@ export default async function RequestDetailPage({ params, searchParams }: { para
                     <button type="submit" className="danger">{t("Auftrag zurückgeben")}</button>
                   </form>
                 )}
-                {booking.status === "CONFIRMED" && role === "requester" && (
+                {booking.status === "CONFIRMED" && (
                   <p className="flush">
-                    {cancelFee > 0
-                      ? t("Die kostenlose Stornofrist ist vorbei. Storno jetzt: {fee} an {org}.", { fee: f.money(cancelFee), org: booking.providerOrg.name })
-                      : freeUntil
-                        ? t("Kostenlos stornierbar bis {when}.", { when: f.dateTime(freeUntil) })
-                        : t("Für diese Buchung gilt keine feste Stornogebühr.")}
+                    {booking.cancellationTerms
+                      ? t("Vereinbarte Stornobedingungen: {terms}", { terms: booking.cancellationTerms })
+                      : t("Für diese Buchung sind keine Stornobedingungen vereinbart.")}
                   </p>
                 )}
                 {booking.status === "CONFIRMED" && (role === "requester" || r.pickupAt <= new Date()) && (
@@ -472,19 +500,64 @@ export default async function RequestDetailPage({ params, searchParams }: { para
             <form action={rateBookingAction} className="stack">
               <input type="hidden" name="requestId" value={r.id} />
               <input type="hidden" name="bookingId" value={booking.id} />
-              <fieldset className="star-pick">
-                <legend>{t("Wie war die Zusammenarbeit mit {org}?", { org: otherName })}</legend>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <label key={n}><input type="radio" name="stars" value={n} required defaultChecked={n === 5} /> {"★".repeat(n)}</label>
-                ))}
-              </fieldset>
-              <label>{t("Kommentar, optional")}<input name="comment" maxLength={300} placeholder={t("z. B. pünktlich, sauberes Fahrzeug, schnell bezahlt")} /></label>
+              <p className="flush">{t("Wie war die Zusammenarbeit mit {org}?", { org: otherName })}</p>
+              {RATING_CATEGORIES[myRateRole].map((k) => (
+                <fieldset className="star-pick" key={k}>
+                  <legend>{t(RATING_CATEGORY_LABEL[k])}</legend>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <label key={n}><input type="radio" name={k} value={n} required defaultChecked={n === 5} /> <StarRow n={n} /><span className="sr-only">{t("{n} von 5", { n })}</span></label>
+                  ))}
+                </fieldset>
+              ))}
+              <label>{t("Kommentar, optional")}<textarea name="comment" rows={2} maxLength={300} placeholder={t("z. B. pünktlich, sauberes Fahrzeug, schnell bezahlt")} /></label>
+              {rateDeadline && <p className="price-note">{t("Bewerten können Sie bis {date}. Sichtbar wird Ihre Bewertung, sobald {org} ebenfalls bewertet hat.", { date: f.date(rateDeadline), org: otherName })}</p>}
               <div><button type="submit">{t("Bewertung abgeben")}</button></div>
             </form>
           )}
-          {myRating && <p className="flush">{t("Ihre Bewertung für {org}:", { org: otherName })} <span className="stars">{"★".repeat(myRating.stars)}</span>{myRating.comment ? ` „${myRating.comment}“` : ""}</p>}
-          {theirRating && <p className="flush">{t("{org} hat Sie bewertet:", { org: otherName })} <span className="stars">{"★".repeat(theirRating.stars)}</span>{theirRating.comment ? ` „${theirRating.comment}“` : ""}</p>}
-          <p className="price-note">{t("Bewertungen sind für alle Betriebe als Schnitt sichtbar und lassen sich nicht mehr ändern.")}</p>
+          {myRating && (
+            <div className="stack">
+              <p className="flush"><strong>{t("Ihre Bewertung für {org}", { org: otherName })}</strong> <span className="stars"><StarMark /> <b>{avgText(myRating.stars)}</b></span></p>
+              <p className="flush price-note">{RATING_CATEGORIES[myRateRole].map((k) => `${t(RATING_CATEGORY_LABEL[k])} ${myRating[k] ?? "–"}`).join(" · ")}</p>
+              {myRating.comment && <p className="flush">„{myRating.comment}“</p>}
+              {!myRating.visible && rateDeadline && <p className="flush price-note">{t("Sichtbar, sobald {org} ebenfalls bewertet hat, spätestens am {date}.", { org: otherName, date: f.date(rateDeadline) })}</p>}
+              {myRating.reply && (
+                <p className="flush">{t("Antwort von {org}:", { org: otherName })} „{myRating.reply}“</p>
+              )}
+              {myRating.reply && !myRating.reportedByMe && (
+                <form action={reportRatingAction} className="inline">
+                  <input type="hidden" name="requestId" value={r.id} />
+                  <input type="hidden" name="ratingId" value={myRating.id} />
+                  <input name="reason" placeholder={t("Grund, optional")} aria-label={t("Grund der Meldung")} maxLength={500} />
+                  <button type="submit" className="secondary">{t("Antwort melden")}</button>
+                </form>
+              )}
+            </div>
+          )}
+          {theirRating && (
+            <div className="stack">
+              <p className="flush"><strong>{t("{org} hat Sie bewertet", { org: otherName })}</strong> <span className="stars"><StarMark /> <b>{avgText(theirRating.stars)}</b></span></p>
+              <p className="flush price-note">{RATING_CATEGORIES[theirRateRole].map((k) => `${t(RATING_CATEGORY_LABEL[k])} ${theirRating[k] ?? "–"}`).join(" · ")}</p>
+              {theirRating.comment && <p className="flush">„{theirRating.comment}“</p>}
+              {theirRating.reply && <p className="flush">{t("Ihre Antwort:")} „{theirRating.reply}“</p>}
+              {!theirRating.reply && !theirRating.commentHiddenAt && canManageBooking && (
+                <form action={replyRatingAction} className="stack">
+                  <input type="hidden" name="requestId" value={r.id} />
+                  <input type="hidden" name="ratingId" value={theirRating.id} />
+                  <label>{t("Antworten, einmal möglich")}<textarea name="reply" rows={2} maxLength={300} required /></label>
+                  <div><button type="submit" className="secondary">{t("Antwort senden")}</button></div>
+                </form>
+              )}
+              {theirRating.comment && !theirRating.reportedByMe && (
+                <form action={reportRatingAction} className="inline">
+                  <input type="hidden" name="requestId" value={r.id} />
+                  <input type="hidden" name="ratingId" value={theirRating.id} />
+                  <input name="reason" placeholder={t("Grund, optional")} aria-label={t("Grund der Meldung")} maxLength={500} />
+                  <button type="submit" className="secondary">{t("Kommentar melden")}</button>
+                </form>
+              )}
+            </div>
+          )}
+          <p className="price-note">{t("Kommentare und Antworten sehen nur Sie und {org}. Andere Betriebe sehen nur den Sterne-Schnitt, ab 3 Bewertungen.", { org: otherName })}</p>
         </section>
       )}
 
@@ -607,14 +680,13 @@ export default async function RequestDetailPage({ params, searchParams }: { para
           <h2>{t("Verlauf")}</h2>
           <ol className="timeline">
             {events.map((e) => {
-              const d = (e.data ?? {}) as { note?: string; amountCents?: number; feeCents?: number };
+              const d = (e.data ?? {}) as { note?: string; amountCents?: number };
               return (
                 <li key={e.id}>
                   <time dateTime={e.createdAt.toISOString()}>{f.dateTime(e.createdAt)}</time>
                   <span>
                     {t(EVENT_LABEL[e.type] ?? e.type)} · {orgName(e.actorOrgId)}
                     {typeof d.amountCents === "number" ? `, ${f.money(d.amountCents)}` : ""}
-                    {typeof d.feeCents === "number" && d.feeCents > 0 ? `, ${t("Gebühr {fee}", { fee: f.money(d.feeCents) })}` : ""}
                     {d.note ? <span className="price-note">„{d.note}“</span> : null}
                   </span>
                 </li>

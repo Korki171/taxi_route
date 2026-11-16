@@ -3,16 +3,15 @@ import type { VehicleCategory } from "@prisma/client";
 import { fmtDate, fmtMinutes, fmtTime } from "@/lib/format";
 import { makeT, type Locale } from "@/lib/i18n";
 import { BOOKING_STATUS_LABEL, VEHICLE_LABEL } from "@/lib/labels";
-import { cancelRuleText } from "@/lib/cancellation";
 import { formatCents } from "@/lib/money";
 import { placeName } from "@/lib/places";
 import { bookingReference, type BookingConfirmation } from "../services/confirmation";
 import { referenceOf } from "../services/marketplace";
 
-// Farben wie in der App (globals.css)
-const NAVY = rgb(0x1f / 255, 0x2b / 255, 0x4d / 255);
-const MUTED = rgb(0x55 / 255, 0x5d / 255, 0x72 / 255);
-const ORANGE = rgb(0xf7 / 255, 0x94 / 255, 0x1d / 255);
+// Farben wie in der App (globals.css): Schwarz, Taxigelb, Papier
+const NAVY = rgb(0x11 / 255, 0x11 / 255, 0x11 / 255);
+const MUTED = rgb(0x5a / 255, 0x5a / 255, 0x57 / 255);
+const ORANGE = rgb(0xf5 / 255, 0xc5 / 255, 0x18 / 255);
 const SURFACE = rgb(0xf4 / 255, 0xf4 / 255, 0xf2 / 255);
 const RULE = rgb(0xe3 / 255, 0xe1 / 255, 0xdc / 255);
 const WHITE = rgb(1, 1, 1);
@@ -79,15 +78,19 @@ class Writer {
   }
 }
 
-/** Erstellt die Auftragsbestätigung als PDF (A4) in der Sprache des Nutzers. */
-export async function renderConfirmationPdf(data: BookingConfirmation, locale: Locale): Promise<Uint8Array> {
+/**
+ * Erstellt die Auftragsbestätigung oder den Storno-Beleg als PDF (A4) in der Sprache des Nutzers.
+ * Der Storno-Beleg zeigt zusätzlich, wer wann storniert oder den No-Show gemeldet hat, und die Stellungnahmen.
+ */
+export async function renderConfirmationPdf(data: BookingConfirmation, locale: Locale, kind: "confirmation" | "cancellation" = "confirmation"): Promise<Uint8Array> {
   const t = makeT(locale);
   // In der Bestätigung immer mit Jahr
   const full = (d: Date) => `${fmtDate(d, locale)}, ${fmtTime(d, locale)}`;
   const { booking: b, request: r, role } = data;
   const doc = await PDFDocument.create();
   const ref = bookingReference(r.number);
-  doc.setTitle(`${t("Auftragsbestätigung")} ${ref}`);
+  const title = kind === "cancellation" ? t("Storno-Beleg") : t("Auftragsbestätigung");
+  doc.setTitle(`${title} ${ref}`);
   doc.setAuthor("Transferborsa");
   doc.setCreator("Transferborsa");
   doc.setLanguage(locale === "en" ? "en-GB" : "de-AT");
@@ -102,7 +105,7 @@ export async function renderConfirmationPdf(data: BookingConfirmation, locale: L
   w.text(tagline, M, H - 70, { size: 8.5, color: rgb(0xc4 / 255, 0xca / 255, 0xd8 / 255) });
 
   w.y = H - 136;
-  w.text(t("Auftragsbestätigung").toUpperCase(), M, w.y, { font: w.bold, size: 20 });
+  w.text(title.toUpperCase(), M, w.y, { font: w.bold, size: 20 });
   const status = t(BOOKING_STATUS_LABEL[b.status]);
   const statusWidth = w.bold.widthOfTextAtSize(w.safe(status), 9) + 16;
   w.page.drawRectangle({ x: W - M - statusWidth, y: w.y - 4, width: statusWidth, height: 18, color: b.status === "CANCELLED" || b.status === "DISPUTED" || b.status === "NO_SHOW" ? rgb(0xfd / 255, 0xe6 / 255, 0xe2 / 255) : rgb(0xdc / 255, 0xf3 / 255, 0xe3 / 255) });
@@ -212,8 +215,7 @@ export async function renderConfirmationPdf(data: BookingConfirmation, locale: L
   section(t("Bedingungen"));
   kv([
     [t("Buchungsbedingungen"), r.bookingTerms ?? t("keine gesonderten Bedingungen")],
-    [t("Stornobedingungen"), [cancelRuleText(t, b), b.cancellationTerms].filter(Boolean).join(" ") || t("keine gesonderten Bedingungen")],
-    ...(b.feeCents ? [[b.status === "NO_SHOW" ? t("No-Show-Gebühr") : t("Stornogebühr"), formatCents(b.feeCents, locale)] as [string, string]] : []),
+    [t("Stornobedingungen"), b.cancellationTerms || t("Keine Stornobedingungen vereinbart")],
     [t("Vereinbart"), `${full(b.acceptedAt)}, ${b.quoteId ? t("durch Annahme eines Angebots") : t("durch Übernahme zum Festpreis")}${data.acceptedByName ? ` (${data.acceptedByName})` : ""}`],
     ...(b.completedAt ? [[t("Abgeschlossen"), full(b.completedAt)] as [string, string]] : []),
   ]);
@@ -221,6 +223,28 @@ export async function renderConfirmationPdf(data: BookingConfirmation, locale: L
   const scopeNote = w.wrap(t("Der Leistungsumfang ist zum Zeitpunkt der Vereinbarung festgehalten und ändert sich nicht mehr."), w.regular, 8.5, W - 2 * M);
   w.ensure(scopeNote.length * 11);
   scopeNote.forEach((l, i) => w.text(l, M, w.y - i * 11, { size: 8.5, color: MUTED }));
+  w.y -= scopeNote.length * 11 + 14;
+
+  if (kind === "cancellation") {
+    const orgName = (id: string | null) => (id === b.providerOrgId ? b.providerOrg.name : id === b.requesterOrgId ? b.requesterOrg.name : "");
+    const label: Record<string, string> = {
+      "booking.cancelled": t("Storniert"),
+      "booking.no_show": t("Fahrgast nicht erschienen"),
+      "booking.statement": t("Stellungnahme"),
+    };
+    section(b.status === "NO_SHOW" ? t("Nicht erschienen") : t("Storno"));
+    kv(data.closing.map((e) => {
+      const note = (e.data as { note?: string } | null)?.note;
+      return [label[e.type] ?? e.type, `${full(e.createdAt)}, ${orgName(e.actorOrgId)}${note ? `: ${note}` : ""}`] as [string, string];
+    }));
+    w.y -= 4;
+    const legal = w.wrap(
+      t("Transferborsa ist nicht Vertragspartei. Was aus dem Storno oder No-Show folgt, regeln die Unternehmen nach den vereinbarten Stornobedingungen direkt miteinander. Transferborsa rechnet keine Gebühren aus und zieht kein Geld ein."),
+      w.regular, 8.5, W - 2 * M,
+    );
+    w.ensure(legal.length * 11);
+    legal.forEach((l, i) => w.text(l, M, w.y - i * 11, { size: 8.5, color: MUTED }));
+  }
 
   // Fußzeile auf jeder Seite
   const copy = role === "requester" ? t("Exemplar für den Auftraggeber") : t("Exemplar für das ausführende Unternehmen");

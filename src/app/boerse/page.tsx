@@ -251,7 +251,7 @@ async function MarketView({ actor, sp }: { actor: OrgActor; sp: Record<string, s
                       <td><Route from={r.pickupPlaceId} to={r.dropoffPlaceId} href={`/boerse/auftrag/${r.id}`} /><span className="price-note">{t("ca. {n}", { n: f.minutes(r.estimatedMinutes) })}{r.flightNumber ? ` · ${t("Flug")} ${r.flightNumber}` : ""}</span></td>
                       <td data-label={t("Fahrgäste")}><Load passengers={r.passengers} luggage={r.luggage} ski={r.skiEquipment} /></td>
                       <td data-label={t("Fahrzeug")}>{r.vehicleCategory ? t(VEHICLE_LABEL[r.vehicleCategory]) : <span className="muted">{t("beliebig")}</span>}</td>
-                      <td data-label={t("Auftraggeber")}>{r.requesterOrg.name}<span className="price-note">{r.requesterOrg.city} · {t(r.requesterOrg.type === "TRANSPORT_COMPANY" ? "Konzession geprüft" : "geprüft")}</span><Stars rating={stars.get(r.requesterOrg.id)} /></td>
+                      <td data-label={t("Auftraggeber")} className="org-cell">{r.requesterOrg.name}<span className="price-note">{r.requesterOrg.city} · {t(r.requesterOrg.type === "TRANSPORT_COMPANY" ? "Konzession geprüft" : "geprüft")}</span><Stars rating={stars.get(r.requesterOrg.id)} /></td>
                       <td className="num"><PriceCell mode={r.priceMode} cents={r.priceCents} share={r.handoffSharePercent} /></td>
                       <td className="nowrap">{r.invitations[0]?.status === "PENDING" && <span className="badge warn">{t("Direktanfrage")}</span>}{mine ? <Badge status={mine.status}>{t("Ihr Angebot")} {f.money(mine.amountCents)}</Badge> : <Link href={`/boerse/auftrag/${r.id}`}>{r.priceMode === "FIXED" ? t("Übernehmen") : t("Angebot abgeben")}</Link>}</td>
                     </tr>
@@ -285,7 +285,7 @@ async function InvitationsView({ actor }: { actor: OrgActor }) {
                     <td className="nowrap">{f.dateTime(r.pickupAt)}{r.quoteDeadline && <span className="price-note">{t("Angebote bis")} {f.dateTime(r.quoteDeadline)}</span>}</td>
                     <td><Route from={r.pickupPlaceId} to={r.dropoffPlaceId} href={`/boerse/auftrag/${r.id}`} /><span className="price-note">{t("angefragt {date}", { date: f.dateTime(createdAt) })}{r.visibility === "INVITED" ? ` · ${t("nur für ausgewählte Unternehmen")}` : ""}</span></td>
                     <td data-label={t("Fahrgäste")}><Load passengers={r.passengers} luggage={r.luggage} ski={r.skiEquipment} /></td>
-                    <td data-label={t("Auftraggeber")}>{r.requesterOrg.name}<span className="price-note">{r.requesterOrg.city}</span></td>
+                    <td data-label={t("Auftraggeber")} className="org-cell">{r.requesterOrg.name}<span className="price-note">{r.requesterOrg.city}</span></td>
                     <td className="num"><PriceCell mode={r.priceMode} cents={r.priceCents} share={r.handoffSharePercent} /></td>
                     <td className="nowrap">{mine ? <Badge status={mine.status}>{t("Ihr Angebot")} {f.money(mine.amountCents)}</Badge> : <Link href={`/boerse/auftrag/${r.id}`}>{r.priceMode === "FIXED" ? t("Übernehmen oder ablehnen") : t("Angebot abgeben oder ablehnen")}</Link>}</td>
                   </tr>

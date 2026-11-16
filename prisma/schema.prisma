@@ -510,10 +510,6 @@ model TransferRequest {
   quoteDeadline        DateTime?
   bookingTerms         String?
   cancellationTerms    String?
-  /// Stornoregel: kostenlos bis so viele Stunden vor Abholung (null = keine feste Regel)
-  freeCancelHours      Int?
-  /// Stornoregel: danach so viel Prozent des Fahrpreises (0, 50 oder 100)
-  lateCancelPercent    Int?
   clientReference      String?
   /// MARKET: in der Börse; INVITED: nur für die Unternehmen in QuoteInvitation sichtbar
   visibility           RequestVisibility @default(MARKET)
@@ -615,13 +611,8 @@ model Booking {
   currency            String          @default("EUR")
   /// Leistungsumfang zum Zeitpunkt der Annahme (unveränderlich)
   scope               Json
+  /// Stornobedingungen (Freitext) zum Zeitpunkt der Annahme, gelten mit der Annahme
   cancellationTerms   String?
-  /// Stornoregel zum Zeitpunkt der Annahme (unveränderlich), siehe TransferRequest
-  freeCancelHours     Int?
-  lateCancelPercent   Int?
-  /// Spätstorno- oder No-Show-Gebühr in Cent, vom Auftraggeber an das ausführende Unternehmen.
-  /// Wird nur berechnet und festgehalten, bezahlt wird direkt zwischen den Firmen.
-  feeCents            Int?
   cancelledAt         DateTime?
   cancelledByOrgId    String?
   status              BookingStatus   @default(CONFIRMED)
@@ -762,21 +753,57 @@ model PositionPing {
   @@index([recordedAt])
 }
 
-/// Bewertung nach der Fahrt: jede der beiden Firmen bewertet die andere einmal je Buchung (1 bis 5 Sterne).
+/// Bewertung nach der Fahrt: jede der beiden Firmen bewertet die andere einmal je Buchung, bis 104 Tage
+/// nach dem Abschluss, in drei Kategorien je Rolle (1 bis 5 Sterne). `stars` ist der Schnitt der drei.
+/// Sichtbar wird eine Bewertung, sobald beide bewertet haben (`revealedAt`), sonst nach Ablauf der Frist.
+/// Kommentar und Antwort sehen nur die beiden Firmen; andere sehen nur den Schnitt.
 model Rating {
-  id        String       @id @default(cuid())
-  bookingId String
-  booking   Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  fromOrgId String
-  toOrgId   String
-  toOrg     Organization @relation("RatingsReceived", fields: [toOrgId], references: [id], onDelete: Cascade)
-  createdBy String
-  stars     Int
-  comment   String?
-  createdAt DateTime     @default(now())
+  id              String         @id @default(cuid())
+  bookingId       String
+  booking         Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  fromOrgId       String
+  toOrgId         String
+  toOrg           Organization   @relation("RatingsReceived", fields: [toOrgId], references: [id], onDelete: Cascade)
+  createdBy       String
+  /// Schnitt der Kategorien
+  stars           Float
+  /// Beide Rollen
+  communication   Int
+  /// Auftraggeber bewertet das ausführende Unternehmen
+  punctuality     Int?
+  passengerCare   Int?
+  /// Ausführendes Unternehmen bewertet den Auftraggeber
+  fairness        Int?
+  payment         Int?
+  comment         String?
+  /// Eine Antwort der bewerteten Firma
+  reply           String?
+  replyAt         DateTime?
+  revealedAt      DateTime?
+  /// Von einem Admin ausgeblendet (Kommentar und Antwort); die Sterne zählen weiter
+  commentHiddenAt DateTime?
+  commentHiddenBy String?
+  createdAt       DateTime       @default(now())
+  reports         RatingReport[]
 
   @@unique([bookingId, fromOrgId])
   @@index([toOrgId])
+}
+
+/// Meldung eines Kommentars oder einer Antwort an die Plattform-Admins.
+model RatingReport {
+  id         String    @id @default(cuid())
+  ratingId   String
+  rating     Rating    @relation(fields: [ratingId], references: [id], onDelete: Cascade)
+  orgId      String
+  userId     String
+  reason     String?
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+  resolvedBy String?
+
+  @@unique([ratingId, orgId])
+  @@index([resolvedAt])
 }
 
 /// Suchagent: gespeicherte Strecke eines Betriebs. Neue Aufträge werden nur gemeldet, wenn eine der
