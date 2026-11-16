@@ -202,10 +202,11 @@ const STATUS_SUBJECT: Record<string, string> = {
   "booking.disputed": "Problem gemeldet zu {ref}",
   "booking.completed": "Fahrt {ref} durchgeführt",
   "booking.no_show": "Fahrgast nicht erschienen: {ref}",
+  "booking.statement": "Stellungnahme zu {ref}",
 };
 
-/** Storno, Beanstandung oder Abschluss: an die jeweils andere Seite. */
-export async function notifyBookingStatus(bookingId: string, eventType: string, actorOrgId: string, reason?: string, feeCents?: number) {
+/** Storno, Beanstandung, Abschluss oder Stellungnahme: an die jeweils andere Seite. */
+export async function notifyBookingStatus(bookingId: string, eventType: string, actorOrgId: string, reason?: string) {
   const subject = STATUS_SUBJECT[eventType];
   if (!subject) return;
   const b = await db.booking.findUniqueOrThrow({
@@ -213,17 +214,21 @@ export async function notifyBookingStatus(bookingId: string, eventType: string, 
     include: { request: true, providerOrg: { select: orgSelect }, requesterOrg: { select: orgSelect } },
   });
   const [actor, other] = actorOrgId === b.providerOrgId ? [b.providerOrg, b.requesterOrg] : [b.requesterOrg, b.providerOrg];
+  const lines = eventType === "booking.statement"
+    ? ["{actor} hat zur Buchung {ref} ({route}, {pickup}) eine Stellungnahme abgegeben: {note}"]
+    : [
+        "{actor} hat den Status der Buchung {ref} ({route}, {pickup}) geändert: {status}.",
+        ...(reason ? ["Begründung: {note}"] : []),
+        ...(eventType === "booking.cancelled" || eventType === "booking.no_show"
+          ? ["Was daraus folgt, regeln Sie nach den vereinbarten Stornobedingungen direkt miteinander. Den Storno-Beleg finden Sie in Transferborsa."]
+          : []),
+      ];
   await deliver([
-    note(other, b.request, subject, [
-      "{actor} hat den Status der Buchung {ref} ({route}, {pickup}) geändert: {status}.",
-      ...(reason ? ["Begründung: {note}"] : []),
-      ...(feeCents ? ["Laut vereinbarter Stornoregel fällt eine Gebühr von {fee} an. Sie wird direkt zwischen den Unternehmen abgerechnet."] : []),
-    ], {
+    note(other, b.request, subject, lines, {
       vars: {
         actor: actor.name,
-        status: makeT(localeOf(other.country))(STATUS_WORD[eventType]),
+        status: STATUS_WORD[eventType] ? makeT(localeOf(other.country))(STATUS_WORD[eventType]) : "",
         note: reason ?? "",
-        fee: feeCents ? new Intl.NumberFormat(localeOf(other.country) === "en" ? "en-GB" : "de-AT", { style: "currency", currency: b.currency }).format(feeCents / 100) : "",
       },
     }),
   ]);

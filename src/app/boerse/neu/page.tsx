@@ -1,6 +1,5 @@
 import { EscalateSelect } from "@/components/EscalateSelect";
 import { escalationDefault } from "@/server/services/partners";
-import { DEFAULT_FREE_CANCEL_HOURS, DEFAULT_LATE_CANCEL_PERCENT, FREE_CANCEL_HOURS, LATE_CANCEL_PERCENT } from "@/lib/cancellation";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
@@ -83,23 +82,10 @@ export default async function NewRequestPage({ searchParams }: { searchParams: S
             <label>{t("Hinweise zur Abholung")}<textarea name="pickupNotes" rows={2} maxLength={500} placeholder={t("Namensschild, Treffpunkt")} /></label>
             <label>{t("Besondere Anforderungen")}<textarea name="requirements" rows={2} maxLength={500} /></label>
             <label>{t("Buchungsbedingungen")}<textarea name="bookingTerms" rows={2} maxLength={1000} placeholder={t("Wartezeit am Flughafen inklusive bis 60 Minuten nach Landung")} /></label>
-            <fieldset>
-              <legend>{t("Stornoregel")}</legend>
-              <div className="fields">
-                <label>{t("Kostenlos stornierbar bis")}
-                  <select name="freeCancelHours" defaultValue={String(DEFAULT_FREE_CANCEL_HOURS)}>
-                    {FREE_CANCEL_HOURS.map((h) => <option key={h} value={h}>{t("{h} Stunden vor Abholung", { h })}</option>)}
-                  </select>
-                </label>
-                <label>{t("Danach fällig")}
-                  <select name="lateCancelPercent" defaultValue={String(DEFAULT_LATE_CANCEL_PERCENT)}>
-                    {LATE_CANCEL_PERCENT.map((p) => <option key={p} value={p}>{p === 0 ? t("nichts (immer kostenlos)") : t("{p} % des Preises", { p })}</option>)}
-                  </select>
-                </label>
-              </div>
-              <p className="price-note">{t("Gilt, wenn Sie als Auftraggeber stornieren. Erscheint der Fahrgast nicht, ist der volle Preis fällig. Abgerechnet wird direkt zwischen den Unternehmen.")}</p>
-              <label>{t("Weitere Stornobedingungen")} <small>{t("optional")}</small><textarea name="cancellationTerms" rows={2} maxLength={500} /></label>
-            </fieldset>
+            <label>{t("Stornobedingungen")} <small>{t("optional")}</small>
+              <textarea name="cancellationTerms" rows={3} maxLength={1000} placeholder={t("z. B. Kostenlos bis 24 Stunden vor Abholung, danach 50 % des Fahrpreises. No-Show: voller Fahrpreis.")} />
+              <span className="price-note">{t("Gelten mit der Annahme zwischen Ihnen und dem ausführenden Unternehmen. Transferborsa rechnet keine Gebühren aus und zieht kein Geld ein.")}</span>
+            </label>
             <fieldset>
               <legend>{t("Preisart")}</legend>
               <div className="choice">
