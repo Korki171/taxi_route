@@ -1,103 +1,81 @@
 import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
-import { lateCancelFeeCents, noShowAllowedFrom } from "@/lib/cancellation";
-import { cancelBooking, createTransferRequest, disputeBooking, reportNoShow, takeFixedPriceRequest } from "@/server/services/marketplace";
+import { noShowAllowedFrom } from "@/lib/cancellation";
+import { addBookingStatement, cancelBooking, createTransferRequest, disputeBooking, reportNoShow, takeFixedPriceRequest } from "@/server/services/marketplace";
+import { getBookingConfirmation } from "@/server/services/confirmation";
+import { renderConfirmationPdf } from "@/server/pdf/confirmation";
 import { requestInput, verifiedAgency, verifiedTaxi } from "./helpers";
 
 const hours = (h: number) => new Date(Date.now() + h * 3600_000);
+const TERMS = "Kostenlos bis 24 Stunden vor Abholung, danach 50 % des Fahrpreises.";
 
-/** Gebucht zum Festpreis 200 €, mit Stornoregel „kostenlos bis 24 h vorher, danach 50 %“. */
-async function booked(pickupInHours: number, rule: Record<string, unknown> = { freeCancelHours: 24, lateCancelPercent: 50 }) {
-  const agency = await verifiedAgency("Reisebüro A");
+/** Zum Festpreis 200 € gebucht, mit Stornobedingungen als Freitext. */
+async function booked(pickupInHours: number, extra: Record<string, unknown> = {}) {
+  const agency = await verifiedAgency("Taxi Auftraggeber");
   const taxi = await verifiedTaxi("Taxi B");
-  const req = await createTransferRequest(agency.actor, requestInput({ priceMode: "FIXED", priceCents: 20000, ...rule }));
+  const req = await createTransferRequest(agency.actor, requestInput({ priceMode: "FIXED", priceCents: 20000, cancellationTerms: TERMS, ...extra }));
   const booking = await takeFixedPriceRequest(taxi.actor, req.id);
-  // Abholzeit nachträglich setzen, damit Fristen und No-Show ohne Warten prüfbar sind
+  // Abholzeit nachträglich setzen, damit No-Show ohne Warten prüfbar ist
   await db.transferRequest.update({ where: { id: req.id }, data: { pickupAt: hours(pickupInHours) } });
   return { agency, taxi, req, booking };
 }
 
-describe("Stornoregel berechnen", () => {
-  const rule = { freeCancelHours: 24, lateCancelPercent: 50 };
-  it("kostenlos vor der Frist, danach Prozent vom Preis, ohne Regel nie", () => {
-    expect(lateCancelFeeCents(rule, hours(48), 20000)).toBe(0);
-    expect(lateCancelFeeCents(rule, hours(10), 20000)).toBe(10000);
-    expect(lateCancelFeeCents({ freeCancelHours: 24, lateCancelPercent: 0 }, hours(1), 20000)).toBe(0);
-    expect(lateCancelFeeCents({ freeCancelHours: null, lateCancelPercent: null }, hours(1), 20000)).toBe(0);
+describe("Stornobedingungen als Freitext", () => {
+  it("werden mit der Annahme unverändert in die Buchung übernommen", async () => {
+    const { booking } = await booked(48);
+    expect(booking.cancellationTerms).toBe(TERMS);
   });
 });
 
-describe("Auftrag mit Stornoregel", () => {
-  it("Regel wird gespeichert und unverändert in die Buchung übernommen", async () => {
-    const { req, booking } = await booked(48);
-    const r = await db.transferRequest.findUniqueOrThrow({ where: { id: req.id } });
-    expect([r.freeCancelHours, r.lateCancelPercent]).toEqual([24, 50]);
-    expect([booking.freeCancelHours, booking.lateCancelPercent]).toEqual([24, 50]);
-  });
-
-  it("nur eine Hälfte der Regel oder ungültige Werte werden abgelehnt", async () => {
-    const agency = await verifiedAgency();
-    await expect(createTransferRequest(agency.actor, requestInput({ freeCancelHours: 24 }))).rejects.toMatchObject({ code: "VALIDATION" });
-    await expect(createTransferRequest(agency.actor, requestInput({ freeCancelHours: 5, lateCancelPercent: 50 }))).rejects.toMatchObject({ code: "VALIDATION" });
-    await expect(createTransferRequest(agency.actor, requestInput({ freeCancelHours: 24, lateCancelPercent: 30 }))).rejects.toMatchObject({ code: "VALIDATION" });
-  });
-});
-
-describe("Storno durch den Auftraggeber", () => {
-  it("innerhalb der Frist kostenlos", async () => {
-    const { agency, booking } = await booked(48);
-    await cancelBooking(agency.actor, booking.id, "Gast krank");
-    const b = await db.booking.findUniqueOrThrow({ where: { id: booking.id } });
-    expect(b.status).toBe("CANCELLED");
-    expect(b.feeCents).toBeNull();
-    expect(b.cancelledByOrgId).toBe(agency.org.id);
-  });
-
-  it("nach der Frist wird die Gebühr berechnet und im Verlauf festgehalten", async () => {
-    const { agency, req, booking } = await booked(10);
+describe("Storno", () => {
+  it("durch den Auftraggeber: storniert und dokumentiert, ohne Gebühr", async () => {
+    const { agency, req, booking } = await booked(2);
     await cancelBooking(agency.actor, booking.id, "Flug gestrichen");
     const b = await db.booking.findUniqueOrThrow({ where: { id: booking.id } });
-    expect(b.feeCents).toBe(10000);
+    expect(b.status).toBe("CANCELLED");
+    expect(b.cancelledByOrgId).toBe(agency.org.id);
+    expect(b.cancelledAt).toBeInstanceOf(Date);
     const ev = await db.transferEvent.findFirstOrThrow({ where: { requestId: req.id, type: "booking.cancelled" } });
-    expect(ev.data).toMatchObject({ note: "Flug gestrichen", feeCents: 10000 });
+    expect(ev.data).toEqual({ note: "Flug gestrichen" });
   });
-});
 
-describe("Storno durch das ausführende Unternehmen", () => {
-  it("vor der Abholzeit geht die Fahrt zurück in die Börse, ohne Gebühr", async () => {
+  it("durch das ausführende Unternehmen vor der Abholzeit: zurück in die Börse", async () => {
     const { taxi, req, booking } = await booked(10);
     await cancelBooking(taxi.actor, booking.id, "Fahrzeug defekt");
     expect(await db.booking.count({ where: { id: booking.id } })).toBe(0);
     expect((await db.transferRequest.findUniqueOrThrow({ where: { id: req.id } })).status).toBe("OPEN");
   });
 
-  it("nach der Abholzeit wird storniert, ohne Gebühr", async () => {
+  it("durch das ausführende Unternehmen nach der Abholzeit: storniert", async () => {
     const { taxi, booking } = await booked(-1);
     await cancelBooking(taxi.actor, booking.id, "Fahrer krank");
-    const b = await db.booking.findUniqueOrThrow({ where: { id: booking.id } });
-    expect(b.status).toBe("CANCELLED");
-    expect(b.feeCents).toBeNull();
+    expect((await db.booking.findUniqueOrThrow({ where: { id: booking.id } })).status).toBe("CANCELLED");
   });
 });
 
 describe("No-Show", () => {
-  async function atPickup(pickupInHours: number) {
-    const ctx = await booked(pickupInHours);
+  async function atPickup(pickupInHours: number, extra: Record<string, unknown> = {}) {
+    const ctx = await booked(pickupInHours, extra);
     await db.booking.update({ where: { id: ctx.booking.id }, data: { status: "IN_PROGRESS", tripStage: "AT_PICKUP" } });
     await db.transferRequest.update({ where: { id: ctx.req.id }, data: { status: "IN_PROGRESS" } });
     return ctx;
   }
 
-  it("erst am Abholort und 30 Minuten nach der Abholzeit; dann voller Preis als Gebühr", async () => {
+  it("Wartezeit 30 Minuten, mit Flugnummer 60", () => {
+    expect(noShowAllowedFrom(new Date(0)).getTime()).toBe(30 * 60_000);
+    expect(noShowAllowedFrom(new Date(0), "LH 2471").getTime()).toBe(60 * 60_000);
+  });
+
+  it("erst am Abholort nach der Wartezeit; nur dokumentiert", async () => {
     const early = await atPickup(-0.25);
     await expect(reportNoShow(early.taxi.actor, early.booking.id)).rejects.toMatchObject({ code: "VALIDATION" });
-    expect(noShowAllowedFrom(new Date(0)).getTime()).toBe(30 * 60_000);
+
+    const flight = await atPickup(-0.75, { flightNumber: "LH 2471" });
+    await expect(reportNoShow(flight.taxi.actor, flight.booking.id)).rejects.toMatchObject({ code: "VALIDATION" });
 
     const { taxi, req, booking } = await atPickup(-1);
     await reportNoShow(taxi.actor, booking.id, "45 Minuten gewartet");
-    const b = await db.booking.findUniqueOrThrow({ where: { id: booking.id } });
-    expect(b.status).toBe("NO_SHOW");
-    expect(b.feeCents).toBe(20000);
+    expect((await db.booking.findUniqueOrThrow({ where: { id: booking.id } })).status).toBe("NO_SHOW");
     expect((await db.transferRequest.findUniqueOrThrow({ where: { id: req.id } })).status).toBe("NO_SHOW");
   });
 
@@ -107,11 +85,32 @@ describe("No-Show", () => {
     await expect(reportNoShow(agency.actor, booking.id)).rejects.toBeTruthy();
   });
 
-  it("der Auftraggeber kann über „Problem melden“ widersprechen", async () => {
-    const { agency, taxi, booking } = await atPickup(-1);
+  it("kein „Problem melden“ mehr, stattdessen je Seite eine Stellungnahme", async () => {
+    const { agency, taxi, req, booking } = await atPickup(-1);
     await reportNoShow(taxi.actor, booking.id);
-    await disputeBooking(agency.actor, booking.id, "Fahrgast stand am anderen Ausgang");
-    expect((await db.booking.findUniqueOrThrow({ where: { id: booking.id } })).status).toBe("DISPUTED");
+    await expect(disputeBooking(agency.actor, booking.id, "Fahrgast stand am anderen Ausgang")).rejects.toMatchObject({ code: "VALIDATION" });
+
+    await addBookingStatement(agency.actor, booking.id, "Fahrgast stand am Ausgang B");
+    await addBookingStatement(taxi.actor, booking.id, "Ausgang B war gesperrt");
+    await expect(addBookingStatement(agency.actor, booking.id, "Noch etwas")).rejects.toMatchObject({ code: "CONFLICT" });
+    expect((await db.booking.findUniqueOrThrow({ where: { id: booking.id } })).status).toBe("NO_SHOW");
+    expect(await db.transferEvent.count({ where: { requestId: req.id, type: "booking.statement" } })).toBe(2);
   });
 });
 
+describe("Stellungnahme und Storno-Beleg", () => {
+  it("Stellungnahme nur zu Storno oder No-Show", async () => {
+    const { agency, booking } = await booked(48);
+    await expect(addBookingStatement(agency.actor, booking.id, "Hinweis")).rejects.toMatchObject({ code: "VALIDATION" });
+  });
+
+  it("Storno-Beleg enthält Storno und Stellungnahme", async () => {
+    const { agency, taxi, booking } = await booked(2);
+    await cancelBooking(agency.actor, booking.id, "Flug gestrichen");
+    await addBookingStatement(taxi.actor, booking.id, "Fahrer war schon unterwegs");
+    const data = await getBookingConfirmation(taxi.actor, booking.id);
+    expect(data.closing.map((e) => e.type)).toEqual(["booking.cancelled", "booking.statement"]);
+    const pdf = await renderConfirmationPdf(data, "de", "cancellation");
+    expect(Buffer.from(pdf).subarray(0, 5).toString()).toBe("%PDF-");
+  });
+});

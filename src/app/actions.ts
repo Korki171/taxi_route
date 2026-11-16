@@ -34,6 +34,7 @@ import {
   declineInvitation,
   disputeBooking,
   reportNoShow,
+  addBookingStatement,
   inviteProviders,
   openRequestToMarket,
   rejectQuote,
@@ -334,7 +335,7 @@ export async function createTransferRequestAction(fd: FormData) {
       ...formObject(fd, [
         "pickupPlaceId", "dropoffPlaceId", "pickupAddress", "dropoffAddress", "pickupWindowMinutes", "passengers",
         "luggage", "skiEquipment", "specialLuggage", "vehicleCategory", "childSeats", "requirements",
-        "pickupNotes", "priceMode", "handoffSharePercent", "bookingTerms", "cancellationTerms", "freeCancelHours", "lateCancelPercent", "clientReference", "passengerName", "passengerPhone",
+        "pickupNotes", "priceMode", "handoffSharePercent", "bookingTerms", "cancellationTerms", "clientReference", "passengerName", "passengerPhone",
       ]),
       pickupAt: localDate(fd, "pickupAt"),
       flightNumber: byPlane ? str(fd, "flightNumber") : "",
@@ -517,6 +518,7 @@ export async function bookingTransitionAction(fd: FormData) {
       case "dispute": await disputeBooking(actor, bookingId, note); break;
       case "return": await returnBooking(actor, bookingId, note); break;
       case "no_show": await reportNoShow(actor, bookingId, note); break;
+      case "statement": await addBookingStatement(actor, bookingId, note); break;
       default: throw invalid("Unbekannte Aktion.");
     }
   });

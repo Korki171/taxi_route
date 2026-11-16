@@ -157,13 +157,13 @@ export default async function DriverPage({ searchParams }: { searchParams: SP })
               <button type="submit" className={i === 0 ? "big accent" : "big"}>{t(next.label)}</button>
             </form>
             {b.tripStage === "AT_PICKUP" && (
-              new Date() >= noShowAllowedFrom(r.pickupAt) ? (
+              new Date() >= noShowAllowedFrom(r.pickupAt, r.flightNumber) ? (
                 <form action={reportNoShowAction} className="trip-action">
                   <input type="hidden" name="bookingId" value={b.id} />
                   <button type="submit" className="big danger">{t("Fahrgast nicht erschienen")}</button>
                 </form>
               ) : (
-                <p className="muted flush">{t("Erscheint der Fahrgast nicht, können Sie das ab {time} melden.", { time: f.time(noShowAllowedFrom(r.pickupAt)) })}</p>
+                <p className="muted flush">{t("Erscheint der Fahrgast nicht, können Sie das ab {time} melden.", { time: f.time(noShowAllowedFrom(r.pickupAt, r.flightNumber)) })}</p>
               )
             )}
           </article>

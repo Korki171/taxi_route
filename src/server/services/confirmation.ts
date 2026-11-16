@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { isCancelClosed } from "@/lib/cancellation";
 import { requirePermission, type Actor } from "../authz/context";
 import { notFound } from "../errors";
 
@@ -28,11 +29,20 @@ export async function getBookingConfirmation(actor: Actor | null, bookingId: str
   if (!b) throw notFound();
   const role = b.requesterOrgId === actor.org.id ? ("requester" as const) : ("provider" as const);
   const acceptedBy = await db.user.findUnique({ where: { id: b.acceptedById }, select: { name: true } });
+  // Für den Storno-Beleg: wer wann storniert oder den No-Show gemeldet hat, und die Stellungnahmen
+  const closing = isCancelClosed(b.status)
+    ? await db.transferEvent.findMany({
+        where: { requestId: b.requestId, type: { in: ["booking.cancelled", "booking.no_show", "booking.statement"] } },
+        orderBy: { createdAt: "asc" },
+        select: { type: true, createdAt: true, actorOrgId: true, data: true },
+      })
+    : [];
   return {
     role,
     booking: b,
     request: { ...b.request, clientReference: role === "requester" ? b.request.clientReference : null },
     acceptedByName: acceptedBy?.name ?? null,
+    closing,
   };
 }
 
