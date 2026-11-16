@@ -184,9 +184,19 @@ export async function advanceAudience(actor: Actor | null, requestId: string) {
  */
 export async function escalateDueRequests(now = new Date()) {
   const open = await db.transferRequest.findMany({
-    where: { status: "OPEN", visibility: "MARKET", audience: { not: "MARKET" }, escalateAfterMinutes: { not: null }, pickupAt: { gt: now } },
+    // Älteste zuerst und nur, was frühestens fällig sein kann (Frist mindestens 5 Minuten): so verdrängen
+    // viele frische Aufträge eines Unternehmens nicht die fälligen der anderen.
+    where: {
+      status: "OPEN",
+      visibility: "MARKET",
+      audience: { not: "MARKET" },
+      escalateAfterMinutes: { not: null },
+      pickupAt: { gt: now },
+      audienceSince: { lte: new Date(now.getTime() - 5 * 60_000) },
+    },
     select: { id: true, audience: true, audienceSince: true, escalateAfterMinutes: true },
-    take: 200,
+    orderBy: { audienceSince: "asc" },
+    take: 500,
   });
   let n = 0;
   for (const r of open) {

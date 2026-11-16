@@ -77,5 +77,6 @@ export function formObject(fd: FormData, keys: string[]) {
 /** IP-Adresse des Aufrufers (hinter Vercel/Proxy aus X-Forwarded-For). */
 export async function clientIp(): Promise<string | undefined> {
   const h = await headers();
-  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || undefined;
+  // x-vercel-forwarded-for setzt Vercel selbst; kann vom Aufrufer nicht vorgegeben werden.
+  return h.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() || h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || undefined;
 }
