@@ -42,6 +42,7 @@ export default async function OrganizationPage({ searchParams }: { searchParams:
       <p className="sub">{t("Stammdaten, Beförderungsdaten und Verifizierung")}</p>
       <Flash searchParams={sp} />
 
+      <div className="settings">
       <section className="card">
         <h2>{t("Tarif")}</h2>
         {ps.kind === "FREE_ROLE" ? (
@@ -271,6 +272,7 @@ export default async function OrganizationPage({ searchParams }: { searchParams:
           </form>
         </section>
       )}
+      </div>
     </AppShell>
   );
 }

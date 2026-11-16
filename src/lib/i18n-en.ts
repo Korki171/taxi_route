@@ -1358,6 +1358,7 @@ export const EN: Record<string, string> = {
   "Navigation öffnen": "Open navigation",
   "Anrufen": "Call",
   "Der Auftraggeber sieht jeden Schritt mit Uhrzeit.": "The client sees every step with its time.",
+  "Plätze · Gepäck · Ski": "Seats · bags · skis",
   "1 Fahrt": "1 ride",
   "{n} Fahrten": "{n} rides",
   "Neu, noch wenig Bewertungen": "New, few ratings yet",

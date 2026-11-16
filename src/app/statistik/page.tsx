@@ -42,10 +42,10 @@ export default async function StatsPage({ searchParams }: { searchParams: SP }) 
         </ul>
       </section>
 
-      <div className="split">
+      <div className="split even">
         <section className="card">
           <h2>{t("Abgeben und Übernehmen")}</h2>
-          <dl className="kv">
+          <dl className="kv figures">
             <dt>{t("Aufträge eingestellt")}</dt><dd>{s.posted}</dd>
             <dt>{t("Zeit bis zur Übernahme")}</dt><dd>{s.medianTakeMinutes == null ? "–" : `${fmtMinutes(s.medianTakeMinutes)} (${t("Median")})`}</dd>
             <dt>{t("Abgegebene Fahrten gefahren")}</dt><dd>{s.handedTrips}</dd>

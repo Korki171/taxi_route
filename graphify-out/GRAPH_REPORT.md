@@ -1,7 +1,7 @@
 # Graph Report - taxi_route-hero  (2026-11-16)
 
 ## Corpus Check
-- 209 files · ~113,229 words
+- 209 files · ~113,264 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 13 file(s) not represented in the graph (top: .css 5, (none) 4, .example 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f708e34f`
+- Built from commit: `6c361cba`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -104,10 +104,10 @@
   mobile/README.md → src/components/PushToggle.tsx
 - `Transferborsa Fahrer-App (iOS und Android)` --references--> `ShiftTracker()`  [INFERRED]
   mobile/README.md → src/components/ShiftTracker.tsx
-- `liveFleetDemo()` --calls--> `recordPositions()`  [EXTRACTED]
-  prisma/demo-boerse.ts → src/server/services/driver.ts
-- `liveFleetDemo()` --calls--> `advanceTrip()`  [EXTRACTED]
-  prisma/demo-boerse.ts → src/server/services/driver.ts
+- `driver()` --calls--> `loadActor()`  [EXTRACTED]
+  prisma/demo-boerse.ts → src/server/authz/context.ts
+- `org()` --calls--> `loadActor()`  [EXTRACTED]
+  prisma/demo-boerse.ts → src/server/authz/context.ts
 
 ## Import Cycles
 - 2-file cycle: `src/server/notifications.ts -> src/server/services/marketplace.ts -> src/server/notifications.ts`
@@ -353,16 +353,16 @@ Nodes (13): scripts, build, db:demo, db:deploy, db:migrate, db:seed, dev, lint (
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `next` connect `next` to `fahrer/page.tsx`, `package.json`, `actions.ts`, `boerse/page.tsx`, `flotte/page.tsx`, `auftrag/[id]/page.tsx`, `register/page.tsx`, `organization/page.tsx`, `organization/page.tsx`, `next.config.ts`, `native.ts`, `lib/i18n.ts`, `verification-rules.ts`, `dependencies`, `LegalPage`?**
-  _High betweenness centrality (0.054) - this node is a cross-community bridge._
+- **Why does `getI18n` connect `organization/page.tsx` to `fahrer/page.tsx`, `places.ts`, `renderConfirmationPdf`, `boerse/page.tsx`, `flotte/page.tsx`, `next`, `auftrag/[id]/page.tsx`, `register/page.tsx`, `organization/page.tsx`, `dispatch.ts`, `notifications.ts`, `native.ts`, `server/push.ts`, `LegalPage`?**
+  _High betweenness centrality (0.057) - this node is a cross-community bridge._
 - **Should `20261026102414_phase3_marketplace/migration.sql` be split into smaller, more focused modules?**
   _Cohesion score 0.14666666666666667 - nodes in this community are weakly interconnected._
-- **Why does `react` connect `next` to `fahrer/page.tsx`, `package.json`, `ClaimOrder.tsx`, `flotte/page.tsx`, `auftrag/[id]/page.tsx`, `organization/page.tsx`, `LiveMap.tsx`, `NightRoad.tsx`, `native.ts`, `TrackLive.tsx`, `dependencies`?**
-  _High betweenness centrality (0.047) - this node is a cross-community bridge._
+- **Why does `next` connect `next` to `fahrer/page.tsx`, `package.json`, `actions.ts`, `boerse/page.tsx`, `flotte/page.tsx`, `auftrag/[id]/page.tsx`, `register/page.tsx`, `organization/page.tsx`, `organization/page.tsx`, `next.config.ts`, `native.ts`, `lib/i18n.ts`, `verification-rules.ts`, `dependencies`, `LegalPage`?**
+  _High betweenness centrality (0.044) - this node is a cross-community bridge._
 - **Should `mobile/package.json` be split into smaller, more focused modules?**
   _Cohesion score 0.07862903225806452 - nodes in this community are weakly interconnected._
-- **Why does `@prisma/client` connect `db.ts` to `marketplace.ts`, `actions.ts`, `boerse/page.tsx`, `messages.ts`, `db.ts`, `organization/page.tsx`, `notFound`, `organization/page.tsx`, `errors.ts`, `server/push.ts`, `auth.ts`, `renderConfirmationPdf`, `auftrag/[id]/page.tsx`, `demo-boerse.ts`, `dispatch.ts`, `members.ts`, `parse`, `permissions.ts`, `verification-rules.ts`, `dependencies`, `places.ts`, `package.json`, `ratings.ts`?**
-  _High betweenness centrality (0.046) - this node is a cross-community bridge._
+- **Why does `react` connect `next` to `fahrer/page.tsx`, `package.json`, `ClaimOrder.tsx`, `flotte/page.tsx`, `auftrag/[id]/page.tsx`, `organization/page.tsx`, `LiveMap.tsx`, `NightRoad.tsx`, `native.ts`, `TrackLive.tsx`, `dependencies`?**
+  _High betweenness centrality (0.038) - this node is a cross-community bridge._
 - **Should `marketplace.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.08620689655172414 - nodes in this community are weakly interconnected._
 - **Should `actions.ts` be split into smaller, more focused modules?**

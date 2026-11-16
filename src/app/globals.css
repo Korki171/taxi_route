@@ -169,6 +169,16 @@ tr.match-warn td:first-child { padding-left: 12px; }
 dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 8px 20px; margin: 0; }
 dl.kv dt { color: var(--muted); }
 dl.kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+/* Kennzahlen: Bezeichnung links, Zahl rechtsbündig mit gleichen Ziffernbreiten */
+dl.kv.figures { grid-template-columns: 1fr auto; }
+dl.kv.figures dd { text-align: right; font-variant-numeric: tabular-nums; }
+/* Einstellungen: Abschnittstitel links, Inhalt rechts */
+.settings > .card { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); column-gap: 40px; align-items: start; }
+.settings > .card > h2 { grid-column: 1; grid-row: 1; margin: 0; }
+.settings > .card > :not(h2) { grid-column: 2; }
+.settings > .card.stack { gap: 16px 40px; }
+@media (max-width: 860px) { .settings > .card { grid-template-columns: 1fr; } .settings > .card > h2 { grid-row: auto; margin-bottom: 12px; } .settings > .card > :not(h2) { grid-column: 1; } }
+.split.even { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
 ul.plain { margin: 0; padding-left: 18px; }
 ul.steps { list-style: none; margin: 0; padding: 0; }
 ul.steps li { padding: 12px 0; border-bottom: 1px solid var(--rule); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -226,7 +236,8 @@ td .stars, dd .stars { display: flex; margin-top: 2px; }
 .star-mark { flex: none; align-self: center; color: var(--text); }
 .star-row { display: inline-flex; gap: 2px; }
 .star-row .star-mark { width: 16px; height: 16px; }
-table td:has(> .route), table td:has(> a.route) { min-width: 15rem; }
+table td:has(> .route), table td:has(> a.route) { min-width: 13rem; }
+table td.vehicle-cell { min-width: 9.5rem; }
 table td.org-cell { min-width: 13rem; }
 .star-pick { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; }
 .star-pick legend { padding: 0; margin-bottom: 6px; font-weight: 600; }
@@ -273,6 +284,13 @@ a.lang { color: var(--muted); font-size: 14px; }
 /* ---------- Formulare ---------- */
 form.stack, .stack { display: grid; gap: 16px; }
 .fields { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.fields.fields-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 480px) { .fields.fields-2 { grid-template-columns: 1fr; } }
+td.vehicle-state { white-space: nowrap; }
+td.vehicle-state > form { display: inline-block; margin-left: 12px; }
+details.add-vehicle { margin-top: 16px; border-top: 1px solid var(--rule); padding-top: 12px; }
+details.add-vehicle summary { cursor: pointer; font-weight: 600; min-height: 32px; display: flex; align-items: center; }
+details.add-vehicle[open] summary { margin-bottom: 12px; }
 label:where(:not(.lp *, .hp *)) { display: grid; gap: 6px; font-weight: 500; font-size: 14px; }
 label small { font-weight: 400; color: var(--muted); }
 abbr.req { text-decoration: none; font-weight: 700; color: var(--text); }
