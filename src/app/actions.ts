@@ -9,7 +9,7 @@ import { login, setTwoFactorEmail, switchActiveOrganization, verifyLoginCode } f
 import { deleteDocument, uploadDocument } from "@/server/services/documents";
 import { addJobAlert, removeJobAlert, sendMessage, updateJobAlerts } from "@/server/services/messages";
 import { returnBooking, uploadBookingDocument } from "@/server/services/booking-extras";
-import { rateBooking } from "@/server/services/ratings";
+import { adminResolveRatingReport, rateBooking, replyToRating, reportRating } from "@/server/services/ratings";
 import { awardTender, closeTender, createTender, submitTenderBid, withdrawTenderBid } from "@/server/services/tenders";
 import { addPartner, advanceAudience, blockOrg, removePartner, takeOwnRequest, unblockOrg, setEscalation, updateEscalationDefault } from "@/server/services/partners";
 import {
@@ -527,8 +527,30 @@ export async function bookingTransitionAction(fd: FormData) {
 export async function rateBookingAction(fd: FormData) {
   const id = str(fd, "requestId");
   await runAction(`/boerse/auftrag/${id}`, async () => {
-    await rateBooking(await getActor(), str(fd, "bookingId"), { stars: str(fd, "stars"), comment: str(fd, "comment") });
+    const scores = Object.fromEntries(["communication", "punctuality", "passengerCare", "fairness", "payment"].map((k) => [k, str(fd, k) || undefined]));
+    await rateBooking(await getActor(), str(fd, "bookingId"), { ...scores, comment: str(fd, "comment") });
     return withParam(`/boerse/auftrag/${id}`, "ok", "Danke für Ihre Bewertung.");
+  });
+}
+
+export async function replyRatingAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await replyToRating(await getActor(), str(fd, "ratingId"), str(fd, "reply"));
+  });
+}
+
+export async function reportRatingAction(fd: FormData) {
+  const id = str(fd, "requestId");
+  await runAction(`/boerse/auftrag/${id}`, async () => {
+    await reportRating(await getActor(), str(fd, "ratingId"), str(fd, "reason"));
+    return withParam(`/boerse/auftrag/${id}`, "ok", "Danke, die Meldung wird geprüft.");
+  });
+}
+
+export async function adminResolveRatingReportAction(fd: FormData) {
+  await runAction("/admin/bewertungen", async () => {
+    await adminResolveRatingReport(await getActor(), str(fd, "reportId"), str(fd, "hide") === "1");
   });
 }
 

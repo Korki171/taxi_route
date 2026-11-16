@@ -28,7 +28,8 @@ import { listVehicles } from "@/server/services/fleet";
 import { escalateDueRequests } from "@/server/services/partners";
 import { listThreads } from "@/server/services/messages";
 import { listBookingDocuments } from "@/server/services/booking-extras";
-import { listBookingRatings, ratingSummaries } from "@/server/services/ratings";
+import { listBookingRatings, ratingDeadline, ratingSummaries } from "@/server/services/ratings";
+import { RATING_CATEGORIES, RATING_CATEGORY_LABEL } from "@/lib/rating-rules";
 import { getTransferRequest, listProviderDirectory, MAX_INVITATIONS, referenceOf } from "@/server/services/marketplace";
 import { EVENT_LABEL } from "@/server/services/transfer-events";
 import { requireOrgActor } from "@/server/web";
@@ -42,6 +43,8 @@ import {
   declineInvitationAction,
   inviteProvidersAction,
   rateBookingAction,
+  replyRatingAction,
+  reportRatingAction,
   openToMarketAction,
   rejectQuoteAction,
   submitQuoteAction,
@@ -65,7 +68,7 @@ function stageIndex(status: string, hasQuotes: boolean) {
 }
 
 export default async function RequestDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: SP }) {
-  const { t, f } = await getI18n();
+  const { t, f, locale } = await getI18n();
   const { id } = await params;
   const sp = await searchParams;
   const actor = await requireOrgActor();
@@ -102,10 +105,16 @@ export default async function RequestDetailPage({ params, searchParams }: { para
   // Bewertungen: Schnitt je Firma und die Bewertungen zu dieser Buchung
   const stars = await ratingSummaries([r.requesterOrg.id, ...(booking ? [booking.providerOrgId] : []), ...quotes.map((q) => q.providerOrgId)]);
   const rateable = !!booking && booking.status === "COMPLETED" && booking.providerOrgId !== booking.requesterOrgId;
+  const rateDeadline = booking ? ratingDeadline(booking) : null;
   const ratings = rateable ? await listBookingRatings(actor, booking.id) : [];
   const myRating = ratings.find((x) => x.fromOrgId === actor.org.id);
+  // Die Bewertung der anderen Seite kommt erst, wenn sie sichtbar ist
   const theirRating = ratings.find((x) => x.toOrgId === actor.org.id);
-  const canRate = rateable && !myRating && (actorCan(actor, "bookings.manage") || actorCan(actor, "jobs.accept"));
+  const canManageBooking = actorCan(actor, "bookings.manage") || actorCan(actor, "jobs.accept");
+  const canRate = rateable && !myRating && canManageBooking && !!rateDeadline && now <= rateDeadline;
+  const myRateRole = role === "requester" ? "requester" : "provider";
+  const theirRateRole = myRateRole === "requester" ? "provider" : "requester";
+  const avgText = (n: number) => n.toFixed(1).replace(".", locale === "en" ? "." : ",");
   const otherName = booking ? (role === "requester" ? booking.providerOrg.name : r.requesterOrg.name) : "";
   // Live-Status-Link für Auftraggeber und Fahrgast (ohne Login), solange die Buchung aktiv ist
   const trackUrl = booking && (booking.status === "CONFIRMED" || booking.status === "IN_PROGRESS") ? appUrl(`/t/${booking.trackToken}`) : null;
@@ -487,19 +496,64 @@ export default async function RequestDetailPage({ params, searchParams }: { para
             <form action={rateBookingAction} className="stack">
               <input type="hidden" name="requestId" value={r.id} />
               <input type="hidden" name="bookingId" value={booking.id} />
-              <fieldset className="star-pick">
-                <legend>{t("Wie war die Zusammenarbeit mit {org}?", { org: otherName })}</legend>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <label key={n}><input type="radio" name="stars" value={n} required defaultChecked={n === 5} /> {"★".repeat(n)}</label>
-                ))}
-              </fieldset>
-              <label>{t("Kommentar, optional")}<input name="comment" maxLength={300} placeholder={t("z. B. pünktlich, sauberes Fahrzeug, schnell bezahlt")} /></label>
+              <p className="flush">{t("Wie war die Zusammenarbeit mit {org}?", { org: otherName })}</p>
+              {RATING_CATEGORIES[myRateRole].map((k) => (
+                <fieldset className="star-pick" key={k}>
+                  <legend>{t(RATING_CATEGORY_LABEL[k])}</legend>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <label key={n}><input type="radio" name={k} value={n} required defaultChecked={n === 5} /> {"★".repeat(n)}</label>
+                  ))}
+                </fieldset>
+              ))}
+              <label>{t("Kommentar, optional")}<textarea name="comment" rows={2} maxLength={300} placeholder={t("z. B. pünktlich, sauberes Fahrzeug, schnell bezahlt")} /></label>
+              {rateDeadline && <p className="price-note">{t("Bewerten können Sie bis {date}. Sichtbar wird Ihre Bewertung, sobald {org} ebenfalls bewertet hat.", { date: f.date(rateDeadline), org: otherName })}</p>}
               <div><button type="submit">{t("Bewertung abgeben")}</button></div>
             </form>
           )}
-          {myRating && <p className="flush">{t("Ihre Bewertung für {org}:", { org: otherName })} <span className="stars">{"★".repeat(myRating.stars)}</span>{myRating.comment ? ` „${myRating.comment}“` : ""}</p>}
-          {theirRating && <p className="flush">{t("{org} hat Sie bewertet:", { org: otherName })} <span className="stars">{"★".repeat(theirRating.stars)}</span>{theirRating.comment ? ` „${theirRating.comment}“` : ""}</p>}
-          <p className="price-note">{t("Bewertungen sind für alle Betriebe als Schnitt sichtbar und lassen sich nicht mehr ändern.")}</p>
+          {myRating && (
+            <div className="stack">
+              <p className="flush"><strong>{t("Ihre Bewertung für {org}", { org: otherName })}</strong> <span className="stars">★ {avgText(myRating.stars)}</span></p>
+              <p className="flush price-note">{RATING_CATEGORIES[myRateRole].map((k) => `${t(RATING_CATEGORY_LABEL[k])} ${myRating[k] ?? "–"}`).join(" · ")}</p>
+              {myRating.comment && <p className="flush">„{myRating.comment}“</p>}
+              {!myRating.visible && rateDeadline && <p className="flush price-note">{t("Sichtbar, sobald {org} ebenfalls bewertet hat, spätestens am {date}.", { org: otherName, date: f.date(rateDeadline) })}</p>}
+              {myRating.reply && (
+                <p className="flush">{t("Antwort von {org}:", { org: otherName })} „{myRating.reply}“</p>
+              )}
+              {myRating.reply && !myRating.reportedByMe && (
+                <form action={reportRatingAction} className="inline">
+                  <input type="hidden" name="requestId" value={r.id} />
+                  <input type="hidden" name="ratingId" value={myRating.id} />
+                  <input name="reason" placeholder={t("Grund, optional")} aria-label={t("Grund der Meldung")} maxLength={500} />
+                  <button type="submit" className="secondary">{t("Antwort melden")}</button>
+                </form>
+              )}
+            </div>
+          )}
+          {theirRating && (
+            <div className="stack">
+              <p className="flush"><strong>{t("{org} hat Sie bewertet", { org: otherName })}</strong> <span className="stars">★ {avgText(theirRating.stars)}</span></p>
+              <p className="flush price-note">{RATING_CATEGORIES[theirRateRole].map((k) => `${t(RATING_CATEGORY_LABEL[k])} ${theirRating[k] ?? "–"}`).join(" · ")}</p>
+              {theirRating.comment && <p className="flush">„{theirRating.comment}“</p>}
+              {theirRating.reply && <p className="flush">{t("Ihre Antwort:")} „{theirRating.reply}“</p>}
+              {!theirRating.reply && !theirRating.commentHiddenAt && canManageBooking && (
+                <form action={replyRatingAction} className="stack">
+                  <input type="hidden" name="requestId" value={r.id} />
+                  <input type="hidden" name="ratingId" value={theirRating.id} />
+                  <label>{t("Antworten, einmal möglich")}<textarea name="reply" rows={2} maxLength={300} required /></label>
+                  <div><button type="submit" className="secondary">{t("Antwort senden")}</button></div>
+                </form>
+              )}
+              {theirRating.comment && !theirRating.reportedByMe && (
+                <form action={reportRatingAction} className="inline">
+                  <input type="hidden" name="requestId" value={r.id} />
+                  <input type="hidden" name="ratingId" value={theirRating.id} />
+                  <input name="reason" placeholder={t("Grund, optional")} aria-label={t("Grund der Meldung")} maxLength={500} />
+                  <button type="submit" className="secondary">{t("Kommentar melden")}</button>
+                </form>
+              )}
+            </div>
+          )}
+          <p className="price-note">{t("Kommentare und Antworten sehen nur Sie und {org}. Andere Betriebe sehen nur den Sterne-Schnitt, ab 3 Bewertungen.", { org: otherName })}</p>
         </section>
       )}
 
