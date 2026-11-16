@@ -119,6 +119,8 @@ export async function setTwoFactorAction(fd: FormData) {
 
 export async function requestPasswordResetAction(fd: FormData) {
   await runAction("/passwort-vergessen", async () => {
+    const ip = await clientIp();
+    if (ip) await rateLimit(`reset:ip:${ip}`, 10, 60);
     await requestPasswordReset({ email: str(fd, "email") });
     return withParam("/passwort-vergessen", "ok", "Falls ein Konto mit dieser E-Mail existiert, haben wir einen Link zum Zurücksetzen geschickt.");
   });
@@ -161,6 +163,8 @@ export async function acceptInvitationAction(token: string) {
 
 export async function registerViaInvitationAction(token: string, fd: FormData) {
   await runAction(`/invite/${token}`, async () => {
+    const ip = await clientIp();
+    if (ip) await rateLimit(`invite-register:ip:${ip}`, 10, 60);
     const { user, organizationId } = await registerViaInvitation(token, {
       name: str(fd, "name"),
       password: str(fd, "password"),

@@ -88,3 +88,9 @@ export function requirePlatformAdmin(actor: Actor | null): asserts actor is Acto
   if (!actor) throw new AppError("UNAUTHENTICATED", "Bitte melden Sie sich an.");
   if (!actor.isPlatformAdmin) throw forbidden("Nur für Plattformadministratoren.");
 }
+
+/** Wer auf einer Seite der Buchung handelt, braucht das passende Recht: ausführende Seite „Aufträge annehmen“, Auftraggeber „Buchungen verwalten“. */
+export function requireBookingSide(actor: OrgActor, b: { providerOrgId: string; requesterOrgId: string }) {
+  const ok = b.providerOrgId === actor.org.id ? actorCan(actor, "jobs.accept") : actorCan(actor, "bookings.manage");
+  if (!ok) throw forbidden();
+}

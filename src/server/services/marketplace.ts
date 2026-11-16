@@ -9,6 +9,7 @@ import { actorCan, requirePermission, type Actor, type OrgActor } from "../authz
 import { conflict, forbidden, invalid, notFound } from "../errors";
 import { parse } from "../validation";
 import { returnBooking } from "./booking-extras";
+import { requireBookingSide } from "../authz/context";
 import { categoryFits } from "./matching";
 import {
   notificationFailed,
@@ -430,6 +431,8 @@ export type RequestRole = "requester" | "provider" | "market";
 
 export async function getTransferRequest(actor: Actor | null, requestId: string) {
   requirePermission(actor, "org.read");
+  // Fahrer arbeiten in der Fahrer-Ansicht und sehen keine Preise, Angebote oder Verläufe.
+  if (actor.org.role === "DRIVER") throw notFound();
   const req = await db.transferRequest.findUnique({
     where: { id: requestId },
     include: {
@@ -731,6 +734,7 @@ export async function transitionBooking(
       : { id: bookingId, OR: [{ providerOrgId: actor.org.id }, { requesterOrgId: actor.org.id }] };
   const b = await db.booking.findFirst({ where });
   if (!b) throw notFound();
+  if (who === "either") requireBookingSide(actor, b);
   const now = new Date();
   await db.$transaction(async (tx) => {
     const res = await tx.booking.updateMany({
@@ -871,6 +875,8 @@ export async function listBookings(
   const orgId = actor.org.id;
   const where: Prisma.BookingWhereInput = {
     status: { in: statuses },
+    // Fahrer sehen nur die eigenen Fahrten.
+    ...(actor.org.role === "DRIVER" ? { driverId: actor.userId } : {}),
     ...(side === "provider"
       ? { providerOrgId: orgId }
       : side === "requester"
