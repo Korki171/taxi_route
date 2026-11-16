@@ -71,6 +71,19 @@ export const registrationSchema = z.object({
   }),
 });
 
+/**
+ * Kurze Registrierung am Handy (über einen geteilten Auftrag): nur das Nötigste.
+ * Adresse, UID und Nachweise reicht der Betrieb später im Profil nach.
+ */
+export const quickRegistrationSchema = z.object({
+  company: trimmed(160),
+  name: trimmed(120),
+  city: trimmed(120),
+  phone: phoneSchema,
+  email: emailSchema,
+  password: passwordSchema,
+});
+
 export const transportProfileSchema = z.object({
   concessionNumber: optionalTrimmed(80),
   vehicleCategories: z

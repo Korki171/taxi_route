@@ -202,8 +202,8 @@ a.badge:hover { text-decoration: underline; }
 .push-banner p, .push-toggle p { margin: 0; }
 .push-banner > div, .push-toggle > div { flex: 1 1 240px; }
 .push-error { color: var(--bad); }
-/* Fahrer: Live-Link an den Fahrgast senden */
-.share-row { display: flex; gap: 8px; align-items: stretch; }
+/* Auftrag per Link teilen */
+.share-row { display: flex; gap: 8px; align-items: stretch; margin: 12px 0 8px; }
 .share-row > button { flex: 1; }
 .share-row > a { display: flex; align-items: center; }
 /* Erster Start der Fahrer-Ansicht: drei nummerierte Schritte */

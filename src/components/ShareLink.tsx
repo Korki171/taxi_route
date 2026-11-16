@@ -25,7 +25,7 @@ export function ShareLink({ url, text, label, copied, whatsapp }: { url: string;
 
   return (
     <div className="share-row">
-      <button type="button" className="big" onClick={share}>{done ? copied : label}</button>
+      <button type="button" className="accent" onClick={share}>{done ? copied : label}</button>
       <a className="btn secondary" href={`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`} target="_blank" rel="noopener">{whatsapp}</a>
     </div>
   );

@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { hashPassword } from "../auth/password";
 import { conflict } from "../errors";
-import { parse, registrationSchema } from "../validation";
+import { parse, quickRegistrationSchema, registrationSchema } from "../validation";
 import { audit } from "./audit";
 
 /**
@@ -20,7 +20,32 @@ export const DEFAULT_CAPABILITIES: Record<OrganizationType, Capability[]> = {
 
 /** Registriert Nutzer + Organisation in einer Transaktion; der Nutzer wird OWNER. */
 export async function registerOrganization(input: unknown) {
-  const { user, organization } = parse(registrationSchema, input);
+  return createOrganization(parse(registrationSchema, input));
+}
+
+/** Land aus der Telefonvorwahl, damit die kurze Registrierung kein Länderfeld braucht. Ohne Treffer: AT. */
+const PHONE_COUNTRY: [string, string][] = [["+49", "DE"], ["+41", "CH"], ["+39", "IT"], ["+423", "LI"], ["+43", "AT"]];
+
+/**
+ * Kurze Registrierung für Taxi- und Transferunternehmen: sechs Felder. Straße und PLZ bleiben leer und werden
+ * später im Profil nachgetragen. An der Prüfung durch Transferborsa ändert das nichts.
+ */
+export async function registerQuick(input: unknown) {
+  const q = parse(quickRegistrationSchema, input);
+  const digits = "+" + q.phone.replace(/\D/g, "");
+  const country = PHONE_COUNTRY.find(([prefix]) => digits.startsWith(prefix))?.[1] ?? "AT";
+  return createOrganization({
+    user: { name: q.name, email: q.email, password: q.password },
+    organization: {
+      type: "TRANSPORT_COMPANY", name: q.company, contactPerson: q.name, street: "", postalCode: "",
+      city: q.city, country, email: q.email, phone: q.phone,
+    },
+  });
+}
+
+type Registration = ReturnType<typeof registrationSchema.parse>;
+
+async function createOrganization({ user, organization }: Pick<Registration, "user"> & { organization: Partial<Registration["organization"]> & Pick<Registration["organization"], "type" | "name" | "street" | "postalCode" | "city" | "country" | "email" | "phone"> }) {
   const passwordHash = await hashPassword(user.password);
 
   try {

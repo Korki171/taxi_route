@@ -5,8 +5,6 @@ import { AppShell } from "@/components/AppShell";
 import { Empty } from "@/components/market";
 import { LocationStep } from "@/components/LocationStep";
 import { PushSetup } from "@/components/PushSetup";
-import { ShareLink } from "@/components/ShareLink";
-import { appUrl } from "@/server/email";
 import { ShiftTracker } from "@/components/ShiftTracker";
 import { Flash, type SP } from "@/components/ui";
 import { TRIP_STAGE_LABEL } from "@/lib/labels";
@@ -153,15 +151,6 @@ export default async function DriverPage({ searchParams }: { searchParams: SP })
               {b.vehicle && <><dt>{t("Fahrzeug")}</dt><dd>{b.vehicle.label}</dd></>}
               <dt>{t("Auftrag")}</dt><dd>{referenceOf(r.number)} · {b.requesterOrg.name}{b.requesterOrg.phone && <> · <a href={`tel:${b.requesterOrg.phone}`}>{b.requesterOrg.phone}</a></>}</dd>
             </dl>
-            <div className="trip-action">
-              <ShareLink
-                url={appUrl(`/t/${b.trackToken}`)}
-                text={t("Ihre Fahrt {route} live verfolgen:", { route: `${from} → ${to}` })}
-                label={t("Link an Fahrgast senden")}
-                copied={t("Link kopiert")}
-                whatsapp={t("WhatsApp")}
-              />
-            </div>
             <form action={advanceTripAction} className="trip-action">
               <input type="hidden" name="bookingId" value={b.id} />
               <input type="hidden" name="step" value={next.step} />

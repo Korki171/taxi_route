@@ -21,7 +21,7 @@ import {
   revokeInvitation,
 } from "@/server/services/members";
 import { addLocation, removeLocation, requestCapabilityReview, updateOrganizationProfile, updateTransportProfile } from "@/server/services/organizations";
-import { registerOrganization } from "@/server/services/registration";
+import { registerOrganization, registerQuick } from "@/server/services/registration";
 import { createVehicle, publishCapacity, setCapacityStatus, setVehicleActive } from "@/server/services/fleet";
 import { assignBooking } from "@/server/services/dispatch";
 import { advanceTrip, endShift, startShift } from "@/server/services/driver";
@@ -79,6 +79,22 @@ export async function registerAction(fd: FormData) {
     const s = await createSession(user.id, organization.id);
     await setSessionCookie(s.token, s.expiresAt);
     return "/dashboard";
+  });
+}
+
+/** Kurze Registrierung (sechs Felder), danach zurück zum geteilten Auftrag. */
+export async function quickRegisterAction(fd: FormData) {
+  const next = safeInternalPath(str(fd, "next"), "");
+  await runAction(`/register/schnell${next ? `?next=${encodeURIComponent(next)}` : ""}`, async () => {
+    const ip = await clientIp();
+    if (ip) await rateLimit(`register:ip:${ip}`, 5, 60);
+    const { user, organization } = await registerQuick({
+      company: str(fd, "company"), name: str(fd, "name"), city: str(fd, "city"),
+      phone: str(fd, "phone"), email: str(fd, "email"), password: str(fd, "password"),
+    });
+    const s = await createSession(user.id, organization.id);
+    await setSessionCookie(s.token, s.expiresAt);
+    return next || "/dashboard";
   });
 }
 
