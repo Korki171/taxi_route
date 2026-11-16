@@ -1,3 +1,4 @@
+import { EscalateSelect } from "@/components/EscalateSelect";
 import { PushSetup } from "@/components/PushSetup";
 import { AppShell } from "@/components/AppShell";
 import { OrgProfileFields } from "@/components/OrgProfileFields";
@@ -11,7 +12,7 @@ import { listJobAlerts, MAX_JOB_ALERTS } from "@/server/services/messages";
 import { placeName } from "@/lib/places";
 import type { Capability, VehicleCategory } from "@prisma/client";
 import { PlaceSelect } from "@/components/market";
-import { addJobAlertAction, addLocationAction, addPartnerAction, removeJobAlertAction, removeLocationAction, updateJobAlertsAction, blockOrgAction, unblockOrgAction, removePartnerAction, requestCapabilityAction, updateProfileAction, updateTransportProfileAction } from "../actions";
+import { updateEscalationDefaultAction, addJobAlertAction, addLocationAction, addPartnerAction, removeJobAlertAction, removeLocationAction, updateJobAlertsAction, blockOrgAction, unblockOrgAction, removePartnerAction, requestCapabilityAction, updateProfileAction, updateTransportProfileAction } from "../actions";
 import { getI18n } from "@/server/i18n";
 import Link from "next/link";
 import { PLAN_BY_ID, planStatus } from "@/lib/plans";
@@ -179,6 +180,11 @@ export default async function OrganizationPage({ searchParams }: { searchParams:
         <section className="card stack">
           <h2>{t("Meine Partner")}</h2>
           <p className="muted">{t("Aufträge können Sie zuerst nur Ihren Partnern zeigen, bevor sie in die ganze Börse gehen.")} <Link href="/boerse/firmen">{t("Firmenverzeichnis")}</Link></p>
+          <form action={updateEscalationDefaultAction} className="actions-row">
+            <label>{t("Aufträge automatisch weitergeben nach")}<EscalateSelect name="escalateDefaultMinutes" value={org.escalateDefaultMinutes} /></label>
+            <button type="submit" className="secondary">{t("Speichern")}</button>
+          </form>
+          <p className="price-note">{t("Gilt als Vorauswahl für neue Aufträge, die zuerst nur Ihr Betrieb oder Ihre Partner sehen. Am einzelnen Auftrag können Sie die Frist ändern.")}</p>
           {partners.length > 0 && (
             <ul className="plain-list">
               {partners.map((p) => (

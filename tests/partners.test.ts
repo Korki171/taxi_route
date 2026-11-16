@@ -122,3 +122,34 @@ describe("Zeitgeber für die Weitergabe", () => {
     }
   });
 });
+
+describe("Frist für die Weitergabe", () => {
+  it("Standard des Betriebs: 30 Minuten, änderbar, auch abschaltbar", async () => {
+    const { escalationDefault, updateEscalationDefault } = await import("@/server/services/partners");
+    const { poster, partner } = await setup();
+    expect(await escalationDefault(poster.actor)).toBe(30);
+    await updateEscalationDefault(poster.actor, "120");
+    expect(await escalationDefault(poster.actor)).toBe(120);
+    await updateEscalationDefault(poster.actor, "");
+    expect(await escalationDefault(poster.actor)).toBeNull();
+    await expect(updateEscalationDefault(poster.actor, "7")).rejects.toMatchObject({ code: "VALIDATION" });
+    expect(await escalationDefault(partner.actor)).toBe(30);
+  });
+
+  it("am offenen Auftrag änderbar, nur vom Auftraggeber und nur vor der Börse", async () => {
+    const { setEscalation } = await import("@/server/services/partners");
+    const { poster, partner } = await setup();
+    const req = await createTransferRequest(poster.actor, requestInput({ audience: "PARTNERS", escalateAfterMinutes: 30 }));
+    await db.transferRequest.update({ where: { id: req.id }, data: { audienceSince: new Date(Date.now() - 31 * 60_000) } });
+
+    await setEscalation(poster.actor, req.id, "60");
+    expect(await escalateDueRequests()).toBe(0); // Frist verlängert, noch nicht fällig
+    await setEscalation(poster.actor, req.id, "");
+    expect(await escalateDueRequests(new Date(Date.now() + 86_400_000))).toBe(0); // abgeschaltet
+    await expect(setEscalation(partner.actor, req.id, "15")).rejects.toMatchObject({ code: "NOT_FOUND" });
+
+    await setEscalation(poster.actor, req.id, "15");
+    expect(await escalateDueRequests()).toBe(1); // 31 Minuten sind um
+    await expect(setEscalation(poster.actor, req.id, "30")).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+});

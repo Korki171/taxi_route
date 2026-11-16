@@ -1,3 +1,4 @@
+import { EscalateSelect } from "@/components/EscalateSelect";
 import Link from "next/link";
 import { Fragment } from "react";
 import { notFound } from "next/navigation";
@@ -34,6 +35,7 @@ import { getI18n } from "@/server/i18n";
 import {
   acceptQuoteAction,
   advanceAudienceAction,
+  setEscalationAction,
   bookingTransitionAction,
   cancelTransferRequestAction,
   declineInvitationAction,
@@ -496,6 +498,13 @@ export default async function RequestDetailPage({ params, searchParams }: { para
               <> {t("Automatisch weiter am {time}", { time: f.dateTime(new Date(r.audienceSince.getTime() + r.escalateAfterMinutes * 60_000)) })}</>
             )}
           </p>
+          {r.audience !== "MARKET" && (
+            <form action={setEscalationAction} className="actions-row">
+              <input type="hidden" name="requestId" value={r.id} />
+              <label>{t("Automatisch weitergeben nach")}<EscalateSelect name="escalateAfterMinutes" value={r.escalateAfterMinutes} /></label>
+              <button type="submit" className="secondary">{t("Speichern")}</button>
+            </form>
+          )}
           <div className="actions-row">
             {actorCan(actor, "jobs.accept") && (
               <form action={takeOwnRequestAction}>

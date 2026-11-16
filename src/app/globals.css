@@ -202,6 +202,10 @@ a.badge:hover { text-decoration: underline; }
 .push-banner p, .push-toggle p { margin: 0; }
 .push-banner > div, .push-toggle > div { flex: 1 1 240px; }
 .push-error { color: var(--bad); }
+/* Fahrer: Live-Link an den Fahrgast senden */
+.share-row { display: flex; gap: 8px; align-items: stretch; }
+.share-row > button { flex: 1; }
+.share-row > a { display: flex; align-items: center; }
 /* Erster Start der Fahrer-Ansicht: drei nummerierte Schritte */
 ol.setup-steps { list-style: none; counter-reset: step; margin: 0; padding: 0; }
 ol.setup-steps li { counter-increment: step; position: relative; padding: 0 0 16px 40px; }

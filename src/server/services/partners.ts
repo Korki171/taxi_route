@@ -102,6 +102,43 @@ export async function unblockOrg(actor: Actor | null, blockedOrgId: string) {
 // Stufen: eigener Betrieb → Partner → gesamte Börse
 // ---------------------------------------------------------------------------
 
+/** Fristen für die automatische Weitergabe, die zur Auswahl stehen (Minuten) */
+export const ESCALATE_CHOICES = [15, 30, 60, 120, 240] as const;
+export const ESCALATE_LABEL: Record<number, string> = { 15: "15 Minuten", 30: "30 Minuten", 60: "1 Stunde", 120: "2 Stunden", 240: "4 Stunden" };
+
+function escalateMinutes(input: unknown): number | null {
+  if (input === "" || input == null || input === "0") return null;
+  const n = Number(input);
+  if (!(ESCALATE_CHOICES as readonly number[]).includes(n)) throw invalid("Ungültige Frist für die Weitergabe.");
+  return n;
+}
+
+/** Standardfrist des Betriebs: gilt als Vorauswahl für neue Aufträge. */
+export async function updateEscalationDefault(actor: Actor | null, minutes: unknown) {
+  requirePermission(actor, "transfers.request");
+  await db.organization.update({ where: { id: actor.org.id }, data: { escalateDefaultMinutes: escalateMinutes(minutes) } });
+}
+
+export async function escalationDefault(actor: Actor | null) {
+  requirePermission(actor, "org.read");
+  return (await db.organization.findUniqueOrThrow({ where: { id: actor.org.id }, select: { escalateDefaultMinutes: true } })).escalateDefaultMinutes;
+}
+
+/** Auftraggeber ändert an einem offenen Auftrag, wann er automatisch weitergeht (oder schaltet das ab). Die Frist zählt ab Beginn der aktuellen Stufe. */
+export async function setEscalation(actor: Actor | null, requestId: string, minutes: unknown) {
+  requirePermission(actor, "transfers.request");
+  const value = escalateMinutes(minutes);
+  const res = await db.$transaction(async (tx) => {
+    const res = await tx.transferRequest.updateMany({
+      where: { id: requestId, requesterOrgId: actor.org.id, status: "OPEN", visibility: "MARKET", audience: { not: "MARKET" } },
+      data: { escalateAfterMinutes: value },
+    });
+    if (res.count === 1) await transferEvent(tx, requestId, "request.escalation_changed", { userId: actor.userId, orgId: actor.org.id }, { minutes: value });
+    return res;
+  });
+  if (res.count !== 1) throw notFound("Auftrag nicht gefunden oder bereits in der Börse.");
+}
+
 /** Nächste Stufe; Stufe 2 entfällt, wenn der Auftraggeber keine Partner hat. */
 export function nextAudience(current: Audience, hasPartners: boolean): Audience {
   if (current === "OWN") return hasPartners ? "PARTNERS" : "MARKET";
