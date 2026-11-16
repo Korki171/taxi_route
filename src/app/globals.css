@@ -335,6 +335,9 @@ main.legal { max-width: 800px; margin: 0 auto; padding: 32px var(--margin) 64px;
 .live { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 0; background: var(--surface); margin-bottom: 12px; }
 .live-stage { position: relative; min-width: 0; }
 .live-map { height: min(74vh, 720px); min-height: 420px; z-index: 0; background: #16202a; }
+/* Safari schneidet Kacheln in Ebenen mit CSS-Filter (Satellit) sonst nicht am Kartenrand ab:
+   dann ragt die Karte über Überschrift und Seitenleiste. clip-path schneidet in allen Browsern. */
+.live-map, .board-map, .track-map { isolation: isolate; clip-path: inset(0); -webkit-clip-path: inset(0); }
 .live .live-map .leaflet-control-attribution { background: rgba(14,18,26,.75); color: #9aa3b5; }
 .live .live-map .leaflet-control-attribution a { color: #c9d2e3; }
 .live .live-map .leaflet-bar { border: 0; box-shadow: 0 4px 14px rgba(0,0,0,.35); }
