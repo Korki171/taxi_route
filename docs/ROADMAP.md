@@ -22,7 +22,8 @@ Optionales kommt hinter „Weitere Angaben“, und Funktionen werden versteckt o
 
 ## Als Nächstes: Nutzung und Attraktivität (in dieser Reihenfolge)
 
-1. **Aufträge in WhatsApp teilen.** Jeder Auftrag bekommt einen Teilen-Link (WhatsApp, Kopieren). Wer den Link
+1. **Aufträge in WhatsApp teilen.** *Gebaut (November 2026):* Knopf „In WhatsApp-Gruppe teilen“ am eigenen
+   offenen Auftrag, öffentliche Seite `/a/<token>` ohne Adressen und Fahrgastdaten. Jeder Auftrag bekommt einen Teilen-Link (WhatsApp, Kopieren). Wer den Link
    öffnet, sieht die Fahrt ohne Login (ohne Fahrgastdaten) und kann nach einer kurzen Registrierung übernehmen.
    Ziel: WhatsApp-Gruppen bringen neue Betriebe auf die Börse, statt ihr Konkurrenz zu machen.
 2. **Übernahme in Minuten.** *Gebaut (November 2026):* Mitteilung aufs Handy bei jedem neuen Auftrag (Web-Push,

@@ -520,6 +520,8 @@ model TransferRequest {
   /// Aktuelle Stufe (nur bei MARKET-Aufträgen): OWN nur eigener Betrieb, PARTNERS eigene Partner, MARKET alle.
   audience             Audience          @default(MARKET)
   audienceSince        DateTime          @default(now())
+  /// Geheimer Schlüssel für den Teilen-Link (/a/…): zeigt den Auftrag ohne Login und ohne Fahrgastdaten, z. B. in WhatsApp-Gruppen.
+  shareToken           String            @unique @default(dbgenerated("replace((gen_random_uuid())::text, '-'::text, ''::text)"))
   /// Nach so vielen Minuten ohne Übernahme geht der Auftrag automatisch zur nächsten Stufe (null = nie)
   escalateAfterMinutes Int?
 

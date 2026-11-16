@@ -1,3 +1,4 @@
+import { ShareLink } from "@/components/ShareLink";
 import { EscalateSelect } from "@/components/EscalateSelect";
 import Link from "next/link";
 import { Fragment } from "react";
@@ -498,6 +499,19 @@ export default async function RequestDetailPage({ params, searchParams }: { para
               <> {t("Automatisch weiter am {time}", { time: f.dateTime(new Date(r.audienceSince.getTime() + r.escalateAfterMinutes * 60_000)) })}</>
             )}
           </p>
+          <ShareLink
+            url={appUrl(`/a/${r.shareToken}`)}
+            text={t("Fahrt abzugeben: {route}, {pickup}, {pax} Pers., {price}. Details und Übernehmen:", {
+              route: `${t(placeName(r.pickupPlaceId))} → ${t(placeName(r.dropoffPlaceId))}`,
+              pickup: f.dateTime(r.pickupAt),
+              pax: r.passengers,
+              price: r.priceCents != null ? `${t(r.priceMode === "FIXED" ? "Festpreis" : "Richtpreis")} ${f.money(r.priceCents)}` : t("Preis auf Anfrage"),
+            })}
+            label={t("In WhatsApp-Gruppe teilen")}
+            copied={t("Link kopiert")}
+            whatsapp={t("WhatsApp")}
+          />
+          <p className="price-note">{t("Wer den Link öffnet, sieht Strecke, Zeit und Preis ohne Anmeldung, aber keine Adressen und keine Fahrgastdaten.")}</p>
           {r.audience !== "MARKET" && (
             <form action={setEscalationAction} className="actions-row">
               <input type="hidden" name="requestId" value={r.id} />
