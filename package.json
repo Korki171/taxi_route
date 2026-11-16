@@ -27,7 +27,7 @@
     "@maplibre/maplibre-gl-leaflet": "^0.1.4",
     "@prisma/client": "^6.19.3",
     "leaflet": "^1.9.4",
-    "maplibre-gl": "^6.18.0",
+    "maplibre-gl": "^4.7.1",
     "next": "^15.5.28",
     "pdf-lib": "^1.17.1",
     "react": "^19.1.1",
